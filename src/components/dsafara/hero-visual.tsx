@@ -1,15 +1,15 @@
 "use client";
 
 /* ============================================================
-   Hero Motion Visual — تصویر سینمایی تریدینگ + لایه‌های موشن گرافیک
-   (کن بِرنز، پارالاکس موس، ذرات صعودی، چارت متحرک SVG،
-    نور جاروب‌کننده، تیکر زنده و نشان‌های شیشه‌ای شناور)
+   Hero backdrop + Gold live card
+   - HeroBackdrop: تصویر سینمایی تمام‌صفحه + ken burns + ذرات + نور جاروب
+   - GoldLiveCard: قاب شیشه‌ای لایو «طلای جهانی» با اسپارک‌لاین زنده
 ============================================================ */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { faNum } from "@/lib/fa";
 import { cn } from "@/lib/utils";
-import { Target, Wallet } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 
 /* ---------- deterministic pseudo-random (SSR-safe) ---------- */
 function mulberry32(seed: number) {
@@ -30,281 +30,247 @@ type Particle = {
 };
 const PARTICLES: Particle[] = (() => {
   const rnd = mulberry32(20240613);
-  return Array.from({ length: 26 }, () => ({
+  return Array.from({ length: 30 }, () => ({
     x: rnd() * 100,
     size: 2 + rnd() * 5,
-    delay: -rnd() * 16,
-    dur: 9 + rnd() * 11,
-    drift: (rnd() - 0.5) * 64,
+    delay: -rnd() * 18,
+    dur: 10 + rnd() * 12,
+    drift: (rnd() - 0.5) * 70,
     opacity: 0.3 + rnd() * 0.55,
-    gold: rnd() < 0.2,
+    gold: rnd() < 0.22,
   }));
 })();
 
-/* ---------- live mini ticker ---------- */
-type Tick = { sym: string; price: number; vol: number; dec: number; up: boolean };
-const INITIAL_TICKS: Tick[] = [
-  { sym: "XAUUSD", price: 2348.5, vol: 2.2, dec: 1, up: true },
-  { sym: "BTCUSD", price: 61240, vol: 85, dec: 0, up: true },
-  { sym: "EURUSD", price: 1.0842, vol: 0.0028, dec: 4, up: false },
-];
+/* ============================================================
+   HeroBackdrop — لایه پس‌زمینه تمام‌صفحه هیرو
+============================================================ */
+export function HeroBackdrop() {
+  return (
+    <div className="absolute inset-0" aria-hidden>
+      {/* cinematic image — slow ken burns */}
+      <img
+        src="/images/hero-motion.png"
+        alt=""
+        draggable={false}
+        fetchPriority="high"
+        className="hero-visual-img size-full select-none object-cover"
+      />
 
-/* ---------- overlay trend path ---------- */
-const CHART_PATH =
-  "M20,316 C96,282 148,300 204,252 C252,212 296,240 348,198 C404,152 448,164 502,112 C544,72 576,64 612,40";
-const CHART_AREA = `${CHART_PATH} L612,400 L20,400 Z`;
+      {/* scrims — deep behind copy (right/RTL), image visible toward left */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(to left, rgba(16,24,39,0.94) 0%, rgba(16,24,39,0.82) 34%, rgba(16,24,39,0.38) 62%, rgba(16,24,39,0.18) 100%)",
+        }}
+      />
+      {/* top/bottom blend into page background */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(to top, #101827 0%, rgba(16,24,39,0.45) 16%, rgba(16,24,39,0.06) 46%, rgba(16,24,39,0.38) 88%, rgba(16,24,39,0.7) 100%)",
+        }}
+      />
 
-export function HeroMotionVisual() {
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const rafRef = useRef(0);
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const [ticks, setTicks] = useState<Tick[]>(INITIAL_TICKS);
+      {/* rising particles */}
+      <div className="absolute inset-0 overflow-hidden">
+        {PARTICLES.map((p, i) => (
+          <span
+            key={i}
+            className={cn("particle", p.gold && "particle-gold")}
+            style={{
+              left: `${p.x}%`,
+              width: p.size,
+              height: p.size,
+              ["--p-delay" as string]: `${p.delay}s`,
+              ["--p-dur" as string]: `${p.dur}s`,
+              ["--p-drift" as string]: `${p.drift}px`,
+              ["--p-opacity" as string]: p.opacity,
+            } as React.CSSProperties}
+          />
+        ))}
+      </div>
 
-  /* live price simulation */
+      {/* diagonal light sweep */}
+      <div className="light-sweep" />
+
+      {/* hairline glow above ticker */}
+      <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-l from-transparent via-primary/50 to-transparent" />
+    </div>
+  );
+}
+
+/* ============================================================
+   GoldLiveCard — قاب کوچک لایو «طلای جهانی»
+============================================================ */
+
+function seededGoldSeries(n: number): number[] {
+  const rnd = mulberry32(1403);
+  const out: number[] = [];
+  let v = 2331 + rnd() * 6;
+  for (let i = 0; i < n; i++) {
+    v += (rnd() - 0.44) * 4.2;
+    out.push(v);
+  }
+  // gently steer the tail toward a natural level
+  const target = 2348.5;
+  const last = out[n - 1];
+  const shift = target - last;
+  return out.map((x, i) => x + (shift * i) / (n - 1));
+}
+
+const SPARK_W = 300;
+const SPARK_H = 72;
+
+export function GoldLiveCard({ className }: { className?: string }) {
+  const [hist, setHist] = useState<number[]>(() => seededGoldSeries(34));
+  const [up, setUp] = useState(true);
+
   useEffect(() => {
     const id = setInterval(() => {
-      setTicks((ts) =>
-        ts.map((t) => {
-          const drift = (Math.random() - 0.46) * t.vol;
-          return { ...t, price: t.price + drift, up: drift >= 0 };
-        })
-      );
-    }, 1600);
+      setHist((h) => {
+        const drift = (Math.random() - 0.47) * 3.4;
+        const np = h[h.length - 1] + drift;
+        setUp(drift >= 0);
+        return [...h.slice(1), np];
+      });
+    }, 1500);
     return () => clearInterval(id);
   }, []);
 
-  /* mouse parallax (rAF-throttled, respects reduced-motion) */
-  const handleMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const el = wrapRef.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const x = ((e.clientX - r.left) / r.width) * 2 - 1;
-    const y = ((e.clientY - r.top) / r.height) * 2 - 1;
-    cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(() => setTilt({ x, y }));
-  };
-  const handleLeave = () => {
-    cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(() => setTilt({ x: 0, y: 0 }));
-  };
-  useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
+  const price = hist[hist.length - 1];
+  const open = hist[0];
+  const chgPct = ((price - open) / open) * 100;
+  const rising = chgPct >= 0;
+  const hi = Math.max(...hist);
+  const lo = Math.min(...hist);
+  const spread = 0.7;
+  const buy = price + spread / 2;
+  const sell = price - spread / 2;
 
-  const head = ticks[0];
+  /* sparkline geometry */
+  const min = Math.min(...hist);
+  const max = Math.max(...hist);
+  const span = max - min || 1;
+  const pts = hist.map(
+    (v, i) =>
+      [
+        (i / (hist.length - 1)) * SPARK_W,
+        SPARK_H - 8 - ((v - min) / span) * (SPARK_H - 18),
+      ] as const
+  );
+  const line = pts
+    .map((p, i) => `${i ? "L" : "M"}${p[0].toFixed(1)},${p[1].toFixed(1)}`)
+    .join(" ");
+  const area = `${line} L${SPARK_W},${SPARK_H} L0,${SPARK_H} Z`;
 
   return (
-    <div className="relative">
-      {/* ambient glow behind panel */}
-      <div className="absolute -inset-7 rounded-[2.75rem] bg-primary/10 blur-3xl" aria-hidden />
-      <div className="absolute -inset-7 left-10 top-10 rounded-[2.75rem] bg-sky-500/8 blur-3xl" aria-hidden />
+    <div className={cn("glass-strong glow-gold relative w-full rounded-3xl p-5", className)}>
+      {/* soft gold aura */}
+      <div className="absolute -inset-6 rounded-[2.25rem] bg-amber-400/10 blur-2xl" aria-hidden />
 
-      <div
-        ref={wrapRef}
-        onMouseMove={handleMove}
-        onMouseLeave={handleLeave}
-        className="hero-visual-in relative aspect-[4/3] w-full overflow-hidden rounded-3xl border border-white/10 shadow-[0_40px_120px_-40px_rgba(0,0,0,0.85)] sm:aspect-[16/11] lg:aspect-[13/10]"
-        role="img"
-        aria-label="چارت سه‌بعدی متحرک از رشد بازارهای جهانی با ذرات نوری و تیکر زنده قیمت‌ها"
-      >
-        {/* layer 1 — cinematic image (ken burns inside, parallax outside) */}
-        <div
-          className="parallax-layer absolute inset-0"
-          style={{ transform: `translate3d(${tilt.x * 10}px, ${tilt.y * 8}px, 0)` }}
-        >
-          <img
-            src="/images/hero-motion.png"
-            alt=""
-            aria-hidden
-            draggable={false}
-            fetchPriority="high"
-            className="hero-visual-img size-full select-none object-cover"
-          />
-        </div>
-
-        {/* layer 2 — rising particles */}
-        <div
-          className="parallax-layer absolute inset-0 z-10 overflow-hidden"
-          style={{ transform: `translate3d(${tilt.x * -8}px, ${tilt.y * -6}px, 0)` }}
-          aria-hidden
-        >
-          {PARTICLES.map((p, i) => (
-            <span
-              key={i}
-              className={cn("particle", p.gold && "particle-gold")}
-              style={{
-                left: `${p.x}%`,
-                width: p.size,
-                height: p.size,
-                ["--p-delay" as string]: `${p.delay}s`,
-                ["--p-dur" as string]: `${p.dur}s`,
-                ["--p-drift" as string]: `${p.drift}px`,
-                ["--p-opacity" as string]: p.opacity,
-              } as React.CSSProperties}
-            />
-          ))}
-        </div>
-
-        {/* layer 3 — animated trend line (draw + traveling glow dot) */}
-        <div
-          className="parallax-layer absolute inset-0 z-10"
-          style={{ transform: `translate3d(${tilt.x * 6}px, ${tilt.y * 5}px, 0)` }}
-          aria-hidden
-        >
-          <svg className="size-full" viewBox="0 0 632 400" preserveAspectRatio="xMidYMid slice" fill="none">
-            <defs>
-              <linearGradient id="hv-stroke" x1="0" y1="1" x2="1" y2="0">
-                <stop offset="0" stopColor="#19b887" stopOpacity="0.2" />
-                <stop offset="0.55" stopColor="#2fd39d" />
-                <stop offset="1" stopColor="#7df0c3" />
-              </linearGradient>
-              <linearGradient id="hv-area" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor="#19b887" stopOpacity="0.28" />
-                <stop offset="1" stopColor="#19b887" stopOpacity="0" />
-              </linearGradient>
-              <filter id="hv-glow" x="-40%" y="-40%" width="180%" height="180%">
-                <feGaussianBlur stdDeviation="7" result="b" />
-                <feMerge>
-                  <feMergeNode in="b" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-            <path d={CHART_AREA} fill="url(#hv-area)" className="hv-area-in" />
-            <path
-              d={CHART_PATH}
-              stroke="url(#hv-stroke)"
-              strokeWidth="7"
-              strokeLinecap="round"
-              opacity="0.5"
-              filter="url(#hv-glow)"
-              className="hv-line-draw"
-            />
-            <path
-              d={CHART_PATH}
-              stroke="url(#hv-stroke)"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              className="hv-line-draw"
-            />
-            <circle r="6" fill="#7df0c3" filter="url(#hv-glow)">
-              <animateMotion dur="7s" repeatCount="indefinite" path={CHART_PATH} />
-            </circle>
-            <circle r="2.8" fill="#ffffff">
-              <animateMotion dur="7s" repeatCount="indefinite" path={CHART_PATH} />
-            </circle>
-          </svg>
-        </div>
-
-        {/* layer 4 — cinematic grading (vignette + bottom blend) */}
-        <div
-          className="absolute inset-0 z-[12] shadow-[inset_0_0_130px_rgba(16,24,39,0.6)]"
-          style={{
-            background:
-              "linear-gradient(to top, rgba(16,24,39,0.92), rgba(16,24,39,0.22) 34%, rgba(16,24,39,0.04) 58%, rgba(16,24,39,0.34))",
-          }}
-          aria-hidden
-        />
-
-        {/* layer 5 — light sweep */}
-        <div className="light-sweep z-[15]" aria-hidden />
-
-        {/* HUD corner brackets */}
-        <span className="absolute right-3 top-3 z-20 size-6 rounded-tr-lg border-r-2 border-t-2 border-primary/60" aria-hidden />
-        <span className="absolute left-3 top-3 z-20 size-6 rounded-tl-lg border-l-2 border-t-2 border-primary/60" aria-hidden />
-
-        {/* floating badge — live market (top-start) */}
-        <div
-          className="parallax-layer absolute right-4 top-4 z-20 sm:right-5 sm:top-5"
-          style={{ transform: `translate3d(${tilt.x * -16}px, ${tilt.y * -12}px, 0)` }}
-        >
-          <div className="float-card glass-strong rounded-2xl px-4 py-3">
-            <div className="flex items-center gap-2">
-              <span className="live-dot size-2 rounded-full bg-primary" />
-              <span className="text-[10px] font-bold text-muted-foreground">بازار جهانی</span>
-              <span dir="ltr" className="rounded bg-primary/15 px-1.5 py-0.5 font-black text-[9px] tracking-widest text-primary">
-                LIVE
-              </span>
-            </div>
-            <p
-              key={`${head.sym}-${head.price.toFixed(head.dec)}`}
-              dir="ltr"
-              className={cn(
-                "price-flash mt-1.5 text-right text-xl font-black tabular-nums",
-                head.up ? "text-primary" : "text-destructive"
-              )}
-            >
-              {faNum(head.price, head.dec)}
-            </p>
-            <p dir="ltr" className="mt-0.5 text-right text-[10px] font-semibold text-muted-foreground">
-              {head.sym} · GOLD
-            </p>
+      {/* header */}
+      <div className="relative flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <span className="relative flex size-10 items-center justify-center rounded-full bg-gradient-to-br from-amber-300 via-amber-400 to-amber-600 text-[11px] font-black text-[#3a2a04] shadow-[0_0_18px_-2px_rgba(245,181,68,0.65)]">
+            Au
+            <span className="absolute -bottom-0.5 -left-0.5 size-3 rounded-full border-2 border-[#141f32] bg-primary" />
+          </span>
+          <div className="leading-tight">
+            <p className="text-sm font-black">طلای جهانی</p>
+            <p className="text-[10px] text-muted-foreground">اونس طلا · بازار اسپات</p>
           </div>
         </div>
-
-        {/* floating badge — win rate (bottom-end, above ticker) */}
-        <div
-          className="parallax-layer absolute bottom-16 right-4 z-20 hidden sm:block"
-          style={{ transform: `translate3d(${tilt.x * -12}px, ${tilt.y * -9}px, 0)` }}
-        >
-          <div className="float-card-2 glass-strong flex items-center gap-2.5 rounded-2xl px-4 py-3">
-            <span className="flex size-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
-              <Target className="size-4.5" />
-            </span>
-            <div className="leading-tight">
-              <p className="text-[10px] text-muted-foreground">نرخ موفقیت سیگنال‌ها</p>
-              <p className="text-sm font-black text-primary">+{faNum(84)}٪</p>
-            </div>
-          </div>
-        </div>
-
-        {/* floating badge — student profit (mid-end) */}
-        <div
-          className="parallax-layer absolute left-4 top-1/2 z-20 hidden -translate-y-1/2 md:block"
-          style={{ transform: `translate3d(${tilt.x * -14}px, calc(${tilt.y * -10}px - 50%), 0)` }}
-        >
-          <div className="float-card glass-strong flex items-center gap-2.5 rounded-2xl px-4 py-3" style={{ animationDelay: "-3s" }}>
-            <span className="flex size-9 items-center justify-center rounded-xl bg-sky-400/15 text-sky-400">
-              <Wallet className="size-4.5" />
-            </span>
-            <div className="leading-tight">
-              <p className="text-[10px] text-muted-foreground">سود ثبت‌شده دانشجویان</p>
-              <p className="text-sm font-black text-sky-300">+{faNum(2480)}$</p>
-            </div>
-          </div>
-        </div>
-
-        {/* layer 6 — live mini ticker (bottom) */}
-        <div className="absolute inset-x-3 bottom-3 z-20 sm:inset-x-4 sm:bottom-4">
-          <div className="glass-strong flex items-center justify-between gap-3 rounded-2xl px-4 py-2.5" dir="ltr">
-            {ticks.map((t, i) => (
-              <div key={t.sym} className={cn("flex min-w-0 items-center gap-2", i > 0 && "hidden sm:flex")}>
-                <span className="text-[11px] font-black tracking-wide">{t.sym}</span>
-                <span
-                  key={t.price.toFixed(t.dec)}
-                  className={cn(
-                    "price-flash text-[11px] font-bold tabular-nums",
-                    t.up ? "text-primary" : "text-destructive"
-                  )}
-                >
-                  {faNum(t.price, t.dec)}
-                </span>
-                <span
-                  className={cn(
-                    "rounded px-1 py-0.5 text-[9px] font-black tabular-nums",
-                    t.up ? "bg-primary/12 text-primary" : "bg-destructive/12 text-destructive"
-                  )}
-                >
-                  {t.up ? "▲" : "▼"}
-                </span>
-              </div>
-            ))}
-            <span className="hidden shrink-0 items-center gap-1.5 text-[9px] font-bold text-muted-foreground md:flex" dir="rtl">
-              <span className="live-dot size-1.5 rounded-full bg-primary" />
-              داده‌های لحظه‌ای
-            </span>
-          </div>
+        <div className="flex items-center gap-2">
+          <span dir="ltr" className="rounded-md border border-amber-400/25 bg-amber-400/10 px-1.5 py-0.5 text-[9px] font-black tracking-wider text-amber-300">
+            XAUUSD
+          </span>
+          <span className="live-dot size-2 rounded-full bg-amber-400" />
         </div>
       </div>
+
+      {/* price */}
+      <div className="relative mt-4 flex items-end justify-between gap-3">
+        <p
+          key={price.toFixed(2)}
+          className={cn(
+            "price-flash text-[2rem] font-black leading-none tabular-nums",
+            up ? "text-amber-300" : "text-amber-300/80"
+          )}
+        >
+          {faNum(price, 2)}
+        </p>
+        <span
+          className={cn(
+            "flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-black tabular-nums",
+            rising ? "bg-primary/12 text-primary" : "bg-destructive/12 text-destructive"
+          )}
+        >
+          {rising ? <ArrowUpRight className="size-3.5" /> : <ArrowDownRight className="size-3.5" />}
+          {faNum(Math.abs(chgPct), 2)}٪
+        </span>
+      </div>
+
+      {/* sparkline */}
+      <div className="relative mt-3 overflow-hidden rounded-xl border border-border/50 bg-[#0d1522]/60 p-1.5">
+        <svg
+          viewBox={`0 0 ${SPARK_W} ${SPARK_H}`}
+          className="block h-16 w-full"
+          preserveAspectRatio="none"
+          fill="none"
+          aria-hidden
+        >
+          <defs>
+            <linearGradient id="gold-stroke" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stopColor="#f5b544" stopOpacity="0.55" />
+              <stop offset="0.6" stopColor="#fcd34d" />
+              <stop offset="1" stopColor="#ffe9a8" />
+            </linearGradient>
+            <linearGradient id="gold-area" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#f5b544" stopOpacity="0.3" />
+              <stop offset="1" stopColor="#f5b544" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path d={area} fill="url(#gold-area)" />
+          <path d={line} stroke="url(#gold-stroke)" strokeWidth="2" strokeLinecap="round" />
+          <circle cx={pts[pts.length - 1][0]} cy={pts[pts.length - 1][1]} r="3.2" fill="#ffe9a8">
+            <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite" />
+          </circle>
+        </svg>
+      </div>
+
+      {/* session stats */}
+      <div className="relative mt-3 grid grid-cols-3 gap-2 text-center">
+        {[
+          { l: "باز امروز", v: faNum(hist[0], 1) },
+          { l: "بیشترین", v: faNum(hi, 1) },
+          { l: "کمترین", v: faNum(lo, 1) },
+        ].map((s) => (
+          <div key={s.l} className="rounded-xl border border-border/50 bg-card/40 px-1 py-2">
+            <p className="text-[9px] text-muted-foreground">{s.l}</p>
+            <p className="mt-0.5 text-[11px] font-bold tabular-nums text-foreground/90">{s.v}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* buy / sell */}
+      <div className="relative mt-3 grid grid-cols-2 gap-2" dir="ltr">
+        <div className="rounded-xl border border-primary/30 bg-primary/10 px-3 py-2 text-center transition-colors hover:bg-primary/15">
+          <p className="text-[9px] font-bold text-primary/80">BUY · خرید</p>
+          <p className="text-sm font-black tabular-nums text-primary">{faNum(buy, 2)}</p>
+        </div>
+        <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-center transition-colors hover:bg-destructive/15">
+          <p className="text-[9px] font-bold text-destructive/80">SELL · فروش</p>
+          <p className="text-sm font-black tabular-nums text-destructive">{faNum(sell, 2)}</p>
+        </div>
+      </div>
+
+      {/* live caption */}
+      <p className="relative mt-3 flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
+        <span className="live-dot size-1.5 rounded-full bg-amber-400" />
+        قیمت لحظه‌ای — به‌روزرسانی خودکار هر ثانیه
+      </p>
     </div>
   );
 }

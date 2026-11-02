@@ -121,13 +121,28 @@ export function Counter({
 
 /* ---------- tiny building blocks ---------- */
 
+const KICKER_TONES = {
+  emerald: "border-primary/25 bg-primary/10 text-primary",
+  sky: "border-sky-400/25 bg-sky-400/10 text-sky-300",
+  violet: "border-violet-400/25 bg-violet-400/10 text-violet-300",
+  amber: "border-amber-400/25 bg-amber-400/10 text-amber-300",
+} as const;
+
+export type KickerTone = keyof typeof KICKER_TONES;
+
 export function SectionHead({
-  kicker, title, desc, center,
-}: { kicker?: string; title: string; desc?: string; center?: boolean }) {
+  kicker, title, desc, center, tone = "emerald",
+}: { kicker?: string; title: string; desc?: string; center?: boolean; tone?: KickerTone }) {
   return (
     <Reveal className={cn("mb-10 space-y-3", center && "text-center")}>
       {kicker && (
-        <span className={cn("inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-1.5 text-xs font-semibold tracking-wide text-primary", center && "kicker-line")}>
+        <span
+          className={cn(
+            "inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-semibold tracking-wide",
+            KICKER_TONES[tone],
+            center && (tone === "emerald" ? "kicker-line" : `kicker-${tone}`)
+          )}
+        >
           {kicker}
         </span>
       )}

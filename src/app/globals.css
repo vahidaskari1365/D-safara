@@ -200,7 +200,7 @@
   0% { transform: translate3d(0, 0, 0) scale(1); opacity: 0; }
   10% { opacity: var(--p-opacity, 0.7); }
   80% { opacity: var(--p-opacity, 0.7); }
-  100% { transform: translate3d(var(--p-drift, 12px), -260px, 0) scale(0.35); opacity: 0; }
+  100% { transform: translate3d(var(--p-drift, 12px), -380px, 0) scale(0.35); opacity: 0; }
 }
 @keyframes sweep-x {
   0%, 55% { transform: translateX(-240%) skewX(-16deg); }
@@ -260,6 +260,18 @@
 .text-gradient-anim {
   animation: gradient-pan 6s ease infinite;
 }
+.text-gradient-gold {
+  background: linear-gradient(120deg, #f5b544 5%, #ffe9a8 48%, #f0a020 95%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.text-gradient-lime {
+  background: linear-gradient(120deg, #34d399 0%, #a3e635 55%, #f5b544 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 
 /* glow */
 .glow-accent {
@@ -270,6 +282,24 @@
 }
 .glow-ring {
   box-shadow: 0 0 0 1px rgba(25, 184, 135, 0.35), 0 0 50px -10px rgba(25, 184, 135, 0.4);
+}
+/* lime gradient CTA — OutPayz style */
+.btn-gradient-lime {
+  background: linear-gradient(120deg, #19b887 0%, #34d399 48%, #a3e635 100%);
+  color: #052018;
+  box-shadow: 0 0 0 1px rgba(163, 230, 53, 0.35), 0 10px 42px -10px rgba(25, 184, 135, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: filter 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+.btn-gradient-lime:hover {
+  filter: brightness(1.07);
+  box-shadow: 0 0 0 1px rgba(163, 230, 53, 0.55), 0 14px 52px -10px rgba(25, 184, 135, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.btn-gradient-lime:active {
+  transform: translateY(1px);
+}
+/* gold glow for gold live card */
+.glow-gold {
+  box-shadow: 0 0 0 1px rgba(245, 181, 68, 0.28), 0 18px 60px -18px rgba(245, 181, 68, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 /* film grain noise */
@@ -288,7 +318,7 @@
 .hero-bg {
   background:
     radial-gradient(ellipse 55% 42% at 78% -5%, rgba(25, 184, 135, 0.16), transparent 65%),
-    radial-gradient(ellipse 40% 36% at 12% 8%, rgba(56, 189, 248, 0.08), transparent 60%),
+    radial-gradient(ellipse 40% 36% at 12% 8%, rgba(167, 139, 250, 0.09), transparent 60%),
     radial-gradient(ellipse 50% 40% at 50% 110%, rgba(25, 184, 135, 0.07), transparent 60%),
     linear-gradient(rgba(139, 160, 189, 0.045) 1px, transparent 1px),
     linear-gradient(90deg, rgba(139, 160, 189, 0.045) 1px, transparent 1px);
@@ -303,7 +333,32 @@
   background-size: 100% 100%, 100% 100%, 56px 56px, 56px 56px;
 }
 .section-alt {
-  background: linear-gradient(180deg, rgba(19, 29, 48, 0.5), rgba(16, 24, 39, 0.2));
+  background:
+    radial-gradient(ellipse 42% 50% at 92% 0%, rgba(25, 184, 135, 0.08), transparent 62%),
+    radial-gradient(ellipse 36% 46% at 4% 100%, rgba(56, 189, 248, 0.06), transparent 60%),
+    linear-gradient(180deg, rgba(19, 29, 48, 0.55), rgba(16, 24, 39, 0.2));
+}
+.section-alt-violet {
+  background:
+    radial-gradient(ellipse 45% 55% at 88% 8%, rgba(167, 139, 250, 0.1), transparent 62%),
+    radial-gradient(ellipse 38% 48% at 6% 92%, rgba(56, 189, 248, 0.06), transparent 60%),
+    linear-gradient(180deg, rgba(20, 27, 48, 0.6), rgba(16, 24, 39, 0.2));
+}
+.section-alt-amber {
+  background:
+    radial-gradient(ellipse 45% 55% at 90% 10%, rgba(245, 181, 68, 0.09), transparent 62%),
+    radial-gradient(ellipse 38% 48% at 6% 90%, rgba(25, 184, 135, 0.06), transparent 60%),
+    linear-gradient(180deg, rgba(21, 28, 46, 0.6), rgba(16, 24, 39, 0.2));
+}
+/* near-black panel for big CTA — OutPayz style */
+.cta-deep {
+  background:
+    radial-gradient(ellipse 62% 75% at 50% -18%, rgba(25, 184, 135, 0.2), transparent 62%),
+    radial-gradient(ellipse 30% 38% at 84% 112%, rgba(163, 230, 53, 0.09), transparent 60%),
+    radial-gradient(ellipse 30% 38% at 12% 112%, rgba(167, 139, 250, 0.09), transparent 60%),
+    linear-gradient(180deg, #0c1322, #0a0f1a);
+  border: 1px solid rgba(25, 184, 135, 0.22);
+  box-shadow: 0 0 100px -32px rgba(25, 184, 135, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 /* fading edges for marquees */
@@ -420,6 +475,36 @@
   margin-inline-end: 10px;
   vertical-align: middle;
 }
+.kicker-sky::before {
+  content: "";
+  display: inline-block;
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #38bdf8, transparent);
+  margin-inline-end: 10px;
+  vertical-align: middle;
+}
+.kicker-violet::before {
+  content: "";
+  display: inline-block;
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #a78bfa, transparent);
+  margin-inline-end: 10px;
+  vertical-align: middle;
+}
+.kicker-amber::before {
+  content: "";
+  display: inline-block;
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #f5b544, transparent);
+  margin-inline-end: 10px;
+  vertical-align: middle;
+}
 
 /* dashed connector for paths */
 .connector-dash {
@@ -499,3 +584,5 @@
     scroll-behavior: auto;
   }
 }
+
+/* palette refresh v2 */

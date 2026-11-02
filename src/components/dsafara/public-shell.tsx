@@ -6,7 +6,7 @@ import { apiGet, apiPost } from "@/lib/api";
 import { faDate, faNum, faToman, toFa } from "@/lib/fa";
 import { cn } from "@/lib/utils";
 import { Reveal, Counter, SectionHead, useFetch } from "./shared";
-import { HeroMotionVisual } from "./hero-visual";
+import { HeroBackdrop, GoldLiveCard } from "./hero-visual";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -763,79 +763,77 @@ export function HomePage() {
 
   return (
     <main>
-      {/* ================= HERO ================= */}
-      <section className="hero-bg noise relative overflow-hidden">
-        <div className="orb left-[-8%] top-[16%] size-72 bg-sky-500/10" aria-hidden />
-        <div className="orb right-[-6%] top-[4%] size-96 bg-primary/15" aria-hidden style={{ animationDelay: "-6s" }} />
+      {/* ================= HERO — full-bleed cinematic ================= */}
+      <section className="relative overflow-hidden">
+        <HeroBackdrop />
 
-        <div className="relative z-10 mx-auto max-w-7xl px-4 pb-20 pt-16 md:px-6 md:pt-24 lg:pb-28">
-          <div className="grid items-center gap-14 lg:grid-cols-[1.02fr_0.98fr]">
-            {/* copy */}
-            <div className="space-y-7">
-              <Reveal>
-                <span className="inline-flex items-center gap-2.5 rounded-full border border-primary/25 bg-primary/8 px-4 py-2 text-xs font-semibold text-primary">
-                  <span className="live-dot size-2 rounded-full bg-primary" />
-                  آکادمی دی‌صفارا — نسل جدید آموزش معامله‌گری
-                </span>
-              </Reveal>
+        <div className="relative z-10 mx-auto max-w-7xl px-4 pb-16 pt-20 md:px-6 md:pt-28 lg:min-h-[700px] lg:pb-24 lg:pt-32">
+          <div className="max-w-xl space-y-7 xl:max-w-2xl">
+            <Reveal>
+              <span className="inline-flex items-center gap-2.5 rounded-full border border-primary/25 bg-[#101827]/60 px-4 py-2 text-xs font-semibold text-primary backdrop-blur">
+                <span className="live-dot size-2 rounded-full bg-primary" />
+                آکادمی دی‌صفارا — نسل جدید آموزش معامله‌گری
+              </span>
+            </Reveal>
 
-              <Reveal delay={90}>
-                <h1 className="text-[2.4rem] font-black leading-[1.25] md:text-6xl md:leading-[1.2] xl:text-[4.2rem]">
-                  از صفر تا
-                  <br />
-                  <span className="text-gradient text-gradient-anim">معامله‌گر حرفه‌ای</span>
-                  <br />
-                  بازارهای جهانی
-                </h1>
-              </Reveal>
+            <Reveal delay={90}>
+              <h1 className="text-[2.5rem] font-black leading-[1.22] md:text-6xl md:leading-[1.18] xl:text-[4.3rem]">
+                از صفر تا
+                <br />
+                <span className="text-gradient text-gradient-anim">معامله‌گر حرفه‌ای</span>
+                <br />
+                بازارهای جهانی
+              </h1>
+            </Reveal>
 
-              <Reveal delay={180}>
-                <p className="max-w-xl text-[15px] leading-8 text-muted-foreground md:text-base">
-                  آموزش ساختاریافته پرایس اکشن و اسمارت مانی، منتورینگ اختصاصی با معامله‌گران واقعی،
-                  ورک‌اسپیس تمرین چارت و ژورنال هوشمند معاملات — همه در یک پلتفرم.
-                  نقشه راه را ما می‌چینیم؛ اجرا با شماست.
-                </p>
-              </Reveal>
+            <Reveal delay={180}>
+              <p className="max-w-xl text-[15px] leading-8 text-foreground/75 md:text-base">
+                آموزش ساختاریافته پرایس اکشن و اسمارت مانی، منتورینگ اختصاصی با معامله‌گران واقعی،
+                ورک‌اسپیس تمرین چارت و ژورنال هوشمند معاملات — همه در یک پلتفرم.
+                نقشه راه را ما می‌چینیم؛ اجرا با شماست.
+              </p>
+            </Reveal>
 
-              <Reveal delay={260} className="flex flex-wrap items-center gap-3">
-                <Button size="lg" className="glow-accent h-13 gap-2 px-7 text-base" onClick={startLearning}>
-                  شروع یادگیری رایگان <ArrowLeft className="size-5" />
-                </Button>
-                <Button size="lg" variant="outline" className="h-13 gap-2 border-border/80 bg-card/40 px-7 backdrop-blur" onClick={() => goPublic("paths")}>
-                  <GraduationCap className="size-5 text-primary" /> مشاهده مسیرها
-                </Button>
-              </Reveal>
+            <Reveal delay={260} className="flex flex-wrap items-center gap-3">
+              <Button size="lg" className="btn-gradient-lime h-13 gap-2 px-7 text-base" onClick={startLearning}>
+                شروع یادگیری رایگان <ArrowLeft className="size-5" />
+              </Button>
+              <Button size="lg" variant="outline" className="h-13 gap-2 border-border/80 bg-[#101827]/50 px-7 backdrop-blur" onClick={() => goPublic("paths")}>
+                <GraduationCap className="size-5 text-primary" /> مشاهده مسیرها
+              </Button>
+            </Reveal>
 
-              <Reveal delay={340} className="flex flex-wrap items-center gap-5 pt-2">
-                <div className="flex -space-x-3 space-x-reverse">
-                  {["ع", "م", "س", "ن", "ر"].map((ch, i) => (
-                    <span
-                      key={i}
-                      className="flex size-10 items-center justify-center rounded-full border-2 border-[#101827] bg-gradient-to-br from-slate-600 to-slate-800 text-xs font-bold text-foreground"
-                      style={{ zIndex: 5 - i }}
-                    >
-                      {ch}
-                    </span>
-                  ))}
-                  <span className="flex size-10 items-center justify-center rounded-full border-2 border-[#101827] bg-primary text-[10px] font-black text-primary-foreground">
-                    +{faNum(12400)}
+            <Reveal delay={340} className="flex flex-wrap items-center gap-5 pt-2">
+              <div className="flex -space-x-3 space-x-reverse">
+                {["ع", "م", "س", "ن", "ر"].map((ch, i) => (
+                  <span
+                    key={i}
+                    className="flex size-10 items-center justify-center rounded-full border-2 border-[#101827] bg-gradient-to-br from-slate-600 to-slate-800 text-xs font-bold text-foreground"
+                    style={{ zIndex: 5 - i }}
+                  >
+                    {ch}
                   </span>
+                ))}
+                <span className="flex size-10 items-center justify-center rounded-full border-2 border-[#101827] bg-primary text-[10px] font-black text-primary-foreground">
+                  +{faNum(12400)}
+                </span>
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="size-3.5 fill-amber-400 text-amber-400" />
+                  ))}
+                  <span className="mr-1 text-xs font-bold">{faNum(4.9, 1)}</span>
                 </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="size-3.5 fill-amber-400 text-amber-400" />
-                    ))}
-                    <span className="mr-1 text-xs font-bold">{faNum(4.9, 1)}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">رضایت بیش از {faNum(12400)} دانشجوی فعال</p>
-                </div>
-              </Reveal>
-            </div>
+                <p className="text-xs text-muted-foreground">رضایت بیش از {faNum(12400)} دانشجوی فعال</p>
+              </div>
+            </Reveal>
+          </div>
 
-            {/* hero motion visual */}
-            <Reveal delay={200} className="relative mx-auto w-full max-w-xl lg:max-w-none">
-              <HeroMotionVisual />
+          {/* قاب لایو طلای جهانی — شناور روی تصویر */}
+          <div className="mt-12 flex justify-center lg:absolute lg:bottom-6 lg:left-6 lg:mt-0 lg:justify-start">
+            <Reveal delay={300} className="w-full max-w-[340px] xl:max-w-sm">
+              <GoldLiveCard className="float-card" />
             </Reveal>
           </div>
         </div>
@@ -847,17 +845,17 @@ export function HomePage() {
       <section className="border-b border-border/60">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 py-10 md:grid-cols-4 md:px-6">
           {[
-            { icon: Users, value: 12400, suffix: "+", label: "دانشجوی فعال" },
-            { icon: GraduationCap, value: 38, suffix: "", label: "منتور متخصص" },
-            { icon: PlayCircle, value: 960, suffix: "+", label: "ساعت محتوای آموزشی" },
-            { icon: ShieldCheck, value: 97, suffix: "٪", label: "رضایت دانشجویان" },
+            { icon: Users, value: 12400, suffix: "+", label: "دانشجوی فعال", chip: "border-primary/20 bg-primary/10 text-primary", num: "text-primary" },
+            { icon: GraduationCap, value: 38, suffix: "", label: "منتور متخصص", chip: "border-sky-400/20 bg-sky-400/10 text-sky-400", num: "text-sky-300" },
+            { icon: PlayCircle, value: 960, suffix: "+", label: "ساعت محتوای آموزشی", chip: "border-violet-400/20 bg-violet-400/10 text-violet-400", num: "text-violet-300" },
+            { icon: ShieldCheck, value: 97, suffix: "٪", label: "رضایت دانشجویان", chip: "border-amber-400/20 bg-amber-400/10 text-amber-400", num: "text-amber-300" },
           ].map((s, i) => (
             <Reveal key={s.label} delay={i * 90} className="flex items-center gap-4">
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
+              <span className={cn("flex size-12 shrink-0 items-center justify-center rounded-2xl border", s.chip)}>
                 <s.icon className="size-5.5" />
               </span>
               <div>
-                <p className="text-2xl font-black text-foreground">
+                <p className={cn("text-2xl font-black", s.num)}>
                   <Counter value={s.value} suffix={s.suffix} />
                 </p>
                 <p className="text-xs text-muted-foreground">{s.label}</p>
@@ -942,6 +940,7 @@ export function HomePage() {
               kicker="دوره‌های محبوب"
               title="پرطرفدارترین دوره‌های دی‌صفارا"
               desc="دسترسی مادام‌العمر، تمرین تعاملی و پشتیبانی منتور — انتخاب اکثر دانشجوهای ما."
+              tone="sky"
             />
             <Reveal className="mb-10 hidden md:block">
               <Button variant="outline" className="gap-1.5" onClick={() => goPublic("courses")}>
@@ -974,6 +973,7 @@ export function HomePage() {
             kicker="چرا دی‌صفارا؟"
             title="فراتر از یک دوره آنلاین"
             desc="ما فقط ویدیو نمی‌فروشیم؛ یک اکوسیستم کامل تمرین، منتورینگ و ارزیابی ساخته‌ایم تا یادگیری به نتیجه واقعی برسد."
+            tone="violet"
           />
           <div className="grid gap-5 md:grid-cols-3">
             {/* workspace — wide */}
@@ -1160,6 +1160,7 @@ export function HomePage() {
               kicker="منتورها"
               title="مربی‌هایی که خودشان معامله‌گرند"
               desc="منتورهای دی‌صفارا سال‌ها در بازار واقعی معامله کرده‌اند و مسیر شما را با تجربه واقعی هدایت می‌کنند."
+              tone="amber"
             />
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {(data?.mentors || []).slice(0, 4).map((m, i) => (
@@ -1191,12 +1192,13 @@ export function HomePage() {
 
       {/* ================= TESTIMONIALS MARQUEE ================= */}
       {(data?.testimonials?.length ?? 0) >= 3 && (
-        <section className="overflow-hidden py-20 md:py-24">
+        <section className="section-alt-violet overflow-hidden py-20 md:py-24">
           <div className="mx-auto max-w-7xl px-4 md:px-6">
             <SectionHead
               center
               kicker="نظرات دانشجویان"
               title="نتایج واقعی، از زبان خود دانشجویان"
+              tone="sky"
             />
           </div>
           {(() => {
@@ -1254,7 +1256,7 @@ export function HomePage() {
         <section className="section-alt py-20 md:py-24">
           <div className="mx-auto max-w-7xl px-4 md:px-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
-              <SectionHead kicker="بلاگ دی‌صفارا" title="آخرین مقالات آموزشی" />
+              <SectionHead kicker="بلاگ دی‌صفارا" title="آخرین مقالات آموزشی" tone="violet" />
               <Reveal className="mb-10 hidden md:block">
                 <Button variant="outline" className="gap-1.5" onClick={() => goPublic("blog")}>
                   همه مقالات <ChevronLeft className="size-4" />
@@ -1294,10 +1296,10 @@ export function HomePage() {
 
       {/* ================= FREE RESOURCES ================= */}
       {(data?.resources?.length ?? 0) > 0 && (
-        <section className="py-20 md:py-24">
+        <section className="section-alt-amber py-20 md:py-24">
           <div className="mx-auto max-w-7xl px-4 md:px-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
-              <SectionHead kicker="منابع رایگان" title="قبل از خرید، رایگان شروع کن" />
+              <SectionHead kicker="منابع رایگان" title="قبل از خرید، رایگان شروع کن" tone="amber" />
               <Reveal className="mb-10 hidden md:block">
                 <Button variant="outline" className="gap-1.5" onClick={() => goPublic("resources")}>
                   همه منابع <ChevronLeft className="size-4" />
@@ -1382,21 +1384,20 @@ export function HomePage() {
       {/* ================= FINAL CTA ================= */}
       <section className="px-4 pb-24 pt-4 md:px-6">
         <Reveal className="mx-auto max-w-5xl">
-          <div className="glass-strong relative overflow-hidden rounded-[2.5rem] px-6 py-14 text-center md:px-14 md:py-20">
-            <div className="orb left-1/2 top-[-40%] size-80 -translate-x-1/2 bg-primary/20" aria-hidden />
+          <div className="cta-deep noise relative overflow-hidden rounded-[2.5rem] px-6 py-14 text-center md:px-14 md:py-20">
             <div className="relative space-y-6">
-              <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-bold text-primary">
+              <span className="inline-flex items-center gap-2 rounded-full border border-lime-300/30 bg-lime-300/10 px-4 py-1.5 text-xs font-bold text-lime-200">
                 <Sparkles className="size-3.5" /> همین امروز شروع کن
               </span>
               <h2 className="mx-auto max-w-2xl text-3xl font-black leading-[1.35] md:text-5xl md:leading-[1.3]">
                 آماده‌ای مسیر حرفه‌ای‌ات را
-                <span className="text-gradient text-gradient-anim"> شروع کنی؟</span>
+                <span className="text-gradient-lime"> شروع کنی؟</span>
               </h2>
               <p className="mx-auto max-w-xl text-sm leading-8 text-muted-foreground md:text-base">
                 اولین قدم رایگان است. ثبت‌نام کن، منابع رایگان را دریافت کن و با منتورهای حرفه‌ای مسیرت را بساز.
               </p>
               <div className="flex flex-wrap justify-center gap-3 pt-2">
-                <Button size="lg" className="glow-accent h-13 gap-2 px-8 text-base" onClick={startLearning}>
+                <Button size="lg" className="btn-gradient-lime h-13 gap-2 px-8 text-base" onClick={startLearning}>
                   ثبت‌نام رایگان <ArrowLeft className="size-5" />
                 </Button>
                 <Button size="lg" variant="outline" className="h-13 border-border/80 bg-card/40 px-8" onClick={() => goPublic("contact")}>
