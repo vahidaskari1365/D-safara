@@ -106,7 +106,7 @@ async function main() {
       longDescription: "در این دوره شما با زبان خام بازار آشنا می‌شوید؛ از ساختار بازار و نواحی عرضه و تقاضا تا ستاپ‌های ورود پرایس اکشن با حد ضرر دقیق. این دوره برای کسانی طراحی شده که می‌خواهند بدون پیچیدگی اندیکاتورها، مستقیماً از حرکت قیمت معامله کنند.",
       cat: "technical", mentor: mentorUser.id, price: 4800000, oldPrice: 6900000,
       level: "INTERMEDIATE", durationHours: 32, rating: 4.9, studentsCount: 1240,
-      image: "/images/course-price-action.jpg",
+      image: "/images/course-price-action.png",
     },
     {
       title: "مدیریت سرمایه و ریسک حرفه‌ای", slug: "risk-management-pro",
@@ -114,7 +114,7 @@ async function main() {
       longDescription: "بزرگ‌ترین دلیل نابودی حساب‌ها، ندانستن مدیریت سرمایه است. در این دوره ریاضیات ریسک، مدل‌های سایز پوزیشن و ساخت پلن معاملاتی شخصی را به‌صورت عملی یاد می‌گیرید.",
       cat: "risk-management", mentor: mentor2.id, price: 2900000, oldPrice: 3900000,
       level: "BEGINNER", durationHours: 18, rating: 4.8, studentsCount: 980,
-      image: "/images/course-risk.jpg",
+      image: "/images/course-risk.png",
     },
     {
       title: "اسمارت مانی کانسپت (SMC) پیشرفته", slug: "smc-advanced",
@@ -122,7 +122,7 @@ async function main() {
       longDescription: "اسمارت مانی کانسپت پرطرفدارترین متد تحلیل مدرن است. در این دوره اردربلاک، بریکر بلاک، FVG، لیکوییدیتی سوپ و پروب و مدل‌های ورود ICT را مرحله به مرحله تمرین می‌کنید.",
       cat: "technical", mentor: mentorUser.id, price: 6500000, oldPrice: 8900000,
       level: "ADVANCED", durationHours: 45, rating: 4.9, studentsCount: 760,
-      image: "/images/course-smc.jpg",
+      image: "/images/course-smc.png",
     },
     {
       title: "روانشناسی معامله‌گری و ذهن میلیاردر", slug: "trading-psychology",
@@ -130,7 +130,7 @@ async function main() {
       longDescription: "بهترین استراتژی دنیا هم بدون ذهن آماده شکست می‌خورد. این دوره ترکیبی از علم روانشناسی، عادت‌سازی و تمرین‌های عملی برای ساختن ذهنیت معامله‌گر حرفه‌ای است.",
       cat: "psychology", mentor: mentor2.id, price: 1900000, oldPrice: null,
       level: "BEGINNER", durationHours: 12, rating: 4.7, studentsCount: 1520,
-      image: "/images/course-psychology.jpg",
+      image: "/images/course-psychology.png",
     },
     {
       title: "فارکس از صفر؛ شروع مسیر حرفه‌ای", slug: "forex-zero-to-hero",
@@ -138,7 +138,7 @@ async function main() {
       longDescription: "اگر تازه می‌خواهید وارد فارکس شوید، این دوره نقطه شروع شماست؛ از باز کردن حساب دمو و آشنایی با متاتریدر تا اجرای اولین معامله با ریسک کنترل‌شده.",
       cat: "forex", mentor: mentorUser.id, price: 0, oldPrice: null,
       level: "BEGINNER", durationHours: 9, rating: 4.8, studentsCount: 3260,
-      image: "/images/course-forex.jpg", isFree: true,
+      image: "/images/course-forex.png", isFree: true,
     },
     {
       title: "تحلیل آنچین بیت‌کوین و آلت‌کوین‌ها", slug: "onchain-analysis",
@@ -146,7 +146,7 @@ async function main() {
       longDescription: "داده‌های آنچین پنجره‌ای شفاف به رفتار نهنگ‌هاست. در این دوره شاخص‌های MVRV، SOPR، جریان صرافی‌ها و مدل‌های سیکلی بیت‌کوین را یاد می‌گیرید.",
       cat: "crypto", mentor: mentor2.id, price: 5200000, oldPrice: 7200000,
       level: "ADVANCED", durationHours: 28, rating: 4.8, studentsCount: 540,
-      image: "/images/course-onchain.jpg",
+      image: "/images/course-onchain.png",
     },
     {
       title: "تحلیل تکنیکال کلاسیک مدرن", slug: "classic-technical",
@@ -154,7 +154,7 @@ async function main() {
       longDescription: "پایه هر تحلیل‌گری، تکنیکال کلاسیک است. الگوهای هارمونیک، کلاسیک، اندیکاتورهای مومنتوم و ترکیب چند زمانی را با صدها مثال واقعی یاد می‌گیرید.",
       cat: "technical", mentor: mentorUser.id, price: 3500000, oldPrice: 4500000,
       level: "BEGINNER", durationHours: 24, rating: 4.7, studentsCount: 2130,
-      image: "/images/course-classic.jpg",
+      image: "/images/course-classic.png",
     },
     {
       title: "استراتژی طلا (XAUUSD) و شاخص‌ها", slug: "gold-strategy",
@@ -162,7 +162,7 @@ async function main() {
       longDescription: "طلا پرمتحرک‌ترین بازار برای معامله‌گران روزانه است. در این دوره سشن لندن و نیویورک، تاثیر داده‌های اقتصادی آمریکا و ستاپ‌های اختصاصی XAUUSD را می‌آموزید.",
       cat: "forex", mentor: mentor2.id, price: 4200000, oldPrice: 5600000,
       level: "INTERMEDIATE", durationHours: 21, rating: 4.9, studentsCount: 870,
-      image: "/images/course-gold.jpg",
+      image: "/images/course-gold.png",
     },
   ];
 

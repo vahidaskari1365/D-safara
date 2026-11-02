@@ -1,0 +1,802 @@
+     1→"use client";
+     2→
+     3→import { useEffect, useState } from "react";
+     4→import { useApp } from "@/lib/store";
+     5→import { apiGet, apiPost } from "@/lib/api";
+     6→import { faNum, faToman, toFa } from "@/lib/fa";
+     7→import { cn } from "@/lib/utils";
+     8→import { SectionHead, Price, useFetch } from "./shared";
+     9→import { Button } from "@/components/ui/button";
+    10→import { Input } from "@/components/ui/input";
+    11→import { Label } from "@/components/ui/label";
+    12→import { Card, CardContent } from "@/components/ui/card";
+    13→import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+    14→import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+    15→import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@/components/ui/input-otp";
+    16→import { toast } from "@/hooks/use-toast";
+    17→import {
+    18→  BadgeCheck, BookOpen, Brain, CandlestickChart, ChartCandlestick, ChevronLeft, Globe,
+    19→  GraduationCap, LayoutDashboard, LineChart, LogIn, LogOut, Menu, ShieldCheck, ShoppingBag,
+    20→  ShoppingCart, Sparkles, TrendingUp, User, Users, Wallet, X, Award, Headphones,
+    21→} from "lucide-react";
+    22→
+    23→/* ================= logo ================= */
+    24→
+    25→export function Logo({ small }: { small?: boolean }) {
+    26→  return (
+    27→    <div className="flex cursor-pointer items-center gap-2.5" onClick={() => useApp.getState().goPublic("home")}>
+    28→      <div className={cn("flex items-center justify-center rounded-xl bg-primary/15 font-extrabold text-primary ring-1 ring-primary/40", small ? "size-8 text-sm" : "size-10 text-lg")}>
+    29→        دی
+    30→      </div>
+    31→      <div className="leading-tight">
+    32→        <p className="font-extrabold tracking-tight">دی‌صفارا</p>
+    33→        <p className="text-[10px] text-muted-foreground">D.SAFARA ACADEMY</p>
+    34→      </div>
+    35→    </div>
+    36→  );
+    37→}
+    38→
+    39→/* ================= course cover (gradient fallback) ================= */
+    40→
+    41→const coverGradients: Record<string, string> = {
+    42→  technical: "from-emerald-500/25 via-teal-600/10 to-background",
+    43→  "risk-management": "from-sky-500/25 via-cyan-600/10 to-background",
+    44→  psychology: "from-violet-500/25 via-purple-600/10 to-background",
+    45→  forex: "from-amber-500/25 via-orange-600/10 to-background",
+    46→  crypto: "from-orange-500/25 via-amber-600/10 to-background",
+    47→  bourse: "from-rose-500/25 via-pink-600/10 to-background",
+    48→};
+    49→
+    50→export function CourseCover({ image, category, className, icon }: { image?: string | null; category?: string | null; className?: string; icon?: React.ReactNode }) {
+    51→  const [failed, setFailed] = useState(false);
+    52→  const grad = coverGradients[category || "technical"] || coverGradients.technical;
+    53→  if (image && !failed) {
+    54→    return (
+    55→      <div className={cn("relative overflow-hidden", className)}>
+    56→        <img src={image} alt="" className="size-full object-cover" onError={() => setFailed(true)} />
+    57→      </div>
+    58→    );
+    59→  }
+    60→  return (
+    61→    <div className={cn("flex items-center justify-center bg-gradient-to-br", grad, className)}>
+    62→      <div className="text-primary/80">{icon || <ChartCandlestick className="size-12" />}</div>
+    63→    </div>
+    64→  );
+    65→}
+    66→
+    67→/* ================= header & footer ================= */
+    68→
+    69→const navItems = [
+    70→  { key: "home", label: "خانه" },
+    71→  { key: "courses", label: "دوره‌ها" },
+    72→  { key: "paths", label: "مسیرهای یادگیری" },
+    73→  { key: "mentors", label: "منتورها" },
+    74→  { key: "services", label: "منتورینگ" },
+    75→  { key: "blog", label: "بلاگ" },
+    76→  { key: "resources", label: "منابع رایگان" },
+    77→  { key: "faq", label: "سوالات" },
+    78→  { key: "contact", label: "تماس" },
+    79→];
+    80→
+    81→export function PublicHeader() {
+    82→  const { user, goPublic, publicPage, setAuthOpen, cart, goStudent, goAdmin, setMode, setUser } = useApp();
+    83→  const [scrolled, setScrolled] = useState(false);
+    84→  const [mobileOpen, setMobileOpen] = useState(false);
+    85→
+    86→  useEffect(() => {
+    87→    const fn = () => setScrolled(window.scrollY > 10);
+    88→    window.addEventListener("scroll", fn);
+    89→    return () => window.removeEventListener("scroll", fn);
+    90→  }, []);
+    91→
+    92→  const doLogout = async () => {
+    93→    await apiPost("/api/auth", { action: "logout" }).catch(() => null);
+    94→    useApp.getState().setUser(null);
+    95→    goPublic("home");
+    96→    toast({ title: "خارج شدید", description: "به امید دیدار دوباره!" });
+    97→  };
+    98→
+    99→  return (
+   100→    <header className={cn("sticky top-0 z-40 w-full border-b transition-all", scrolled ? "border-border bg-background/85 shadow-lg backdrop-blur-xl" : "border-transparent bg-background/60 backdrop-blur-md")}>
+   101→      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 md:px-6">
+   102→        <div className="flex items-center gap-6">
+   103→          <Logo />
+   104→          <nav className="hidden items-center gap-1 lg:flex" aria-label="ناوبری اصلی">
+   105→            {navItems.map((n) => (
+   106→              <button
+   107→                key={n.key}
+   108→                onClick={() => goPublic(n.key)}
+   109→                className={cn(
+   110→                  "rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-card hover:text-primary",
+   111→                  publicPage === n.key ? "text-primary" : "text-muted-foreground"
+   112→                )}
+   113→              >
+   114→                {n.label}
+   115→              </button>
+   116→            ))}
+   117→          </nav>
+   118→        </div>
+   119→
+   120→        <div className="flex items-center gap-2">
+   121→          {/* cart */}
+   122→          <Button variant="ghost" size="icon" className="relative" aria-label="سبد خرید" onClick={() => goPublic("cart")}>
+   123→            <ShoppingCart className="size-5" />
+   124→            {cart.length > 0 && (
+   125→              <span className="absolute -left-1 -top-1 flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+   126→                {toFa(cart.length)}
+   127→              </span>
+   128→            )}
+   129→          </Button>
+   130→
+   131→          {user ? (
+   132→            <div className="flex items-center gap-1.5">
+   133→              {user.role === "ADMIN" ? (
+   134→                <Button size="sm" className="gap-1.5" onClick={() => goAdmin("overview")}>
+   135→                  <LayoutDashboard className="size-4" /> پنل مدیریت
+   136→                </Button>
+   137→              ) : (
+   138→                <Button size="sm" className="gap-1.5" onClick={() => setMode("student")}>
+   139→                  <LayoutDashboard className="size-4" /> داشبورد من
+   140→                </Button>
+   141→              )}
+   142→              <Button variant="ghost" size="icon" aria-label="خروج" onClick={doLogout}>
+   143→                <LogOut className="size-4.5" />
+   144→              </Button>
+   145→            </div>
+   146→          ) : (
+   147→            <>
+   148→              <Button variant="ghost" size="sm" className="hidden sm:flex" onClick={() => setAuthOpen(true)}>
+   149→                <LogIn className="size-4" /> ورود
+   150→              </Button>
+   151→              <Button size="sm" className="hidden sm:flex" onClick={() => setAuthOpen(true)}>
+   152→                شروع رایگان
+   153→              </Button>
+   154→            </>
+   155→          )}
+   156→
+   157→          {/* mobile nav */}
+   158→          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+   159→            <SheetTrigger asChild>
+   160→              <Button variant="ghost" size="icon" className="lg:hidden" aria-label="منو">
+   161→                <Menu className="size-5" />
+   162→              </Button>
+   163→            </SheetTrigger>
+   164→            <SheetContent side="right" className="w-72 border-border bg-sidebar">
+   165→              <SheetHeader>
+   166→                <SheetTitle><Logo small /></SheetTitle>
+   167→              </SheetHeader>
+   168→              <nav className="mt-4 flex flex-col gap-1 px-2" aria-label="منوی موبایل">
+   169→                {navItems.map((n) => (
+   170→                  <button
+   171→                    key={n.key}
+   172→                    onClick={() => { goPublic(n.key); setMobileOpen(false); }}
+   173→                    className={cn("rounded-lg px-3 py-2.5 text-right text-sm font-medium transition-colors hover:bg-card", publicPage === n.key ? "bg-card text-primary" : "text-muted-foreground")}
+   174→                  >
+   175→                    {n.label}
+   176→                  </button>
+   177→                ))}
+   178→                {!user && (
+   179→                  <Button className="mt-3" onClick={() => { setAuthOpen(true); setMobileOpen(false); }}>
+   180→                    <LogIn className="size-4" /> ورود / ثبت‌نام
+   181→                  </Button>
+   182→                )}
+   183→              </nav>
+   184→            </SheetContent>
+   185→          </Sheet>
+   186→        </div>
+   187→      </div>
+   188→    </header>
+   189→  );
+   190→}
+   191→
+   192→export function PublicFooter() {
+   193→  const goPublic = useApp((s) => s.goPublic);
+   194→  const cols: { title: string; links: { label: string; page: string; param?: string }[] }[] = [
+   195→    {
+   196→      title: "آموزش",
+   197→      links: [
+   198→        { label: "همه دوره‌ها", page: "courses" },
+   199→        { label: "مسیرهای یادگیری", page: "paths" },
+   200→        { label: "منابع رایگان", page: "resources" },
+   201→        { label: "بلاگ", page: "blog" },
+   202→      ],
+   203→    },
+   204→    {
+   205→      title: "خدمات",
+   206→      links: [
+   207→        { label: "پلن‌های منتورینگ", page: "services" },
+   208→        { label: "منتورها", page: "mentors" },
+   209→        { label: "نظرات دانشجویان", page: "testimonials" },
+   210→        { label: "سوالات متداول", page: "faq" },
+   211→      ],
+   212→    },
+   213→    {
+   214→      title: "دی‌صفارا",
+   215→      links: [
+   216→        { label: "درباره ما", page: "about" },
+   217→        { label: "تماس با ما", page: "contact" },
+   218→        { label: "حریم خصوصی", page: "privacy" },
+   219→        { label: "قوانین و مقررات", page: "terms" },
+   220→      ],
+   221→    },
+   222→  ];
+   223→  return (
+   224→    <footer className="mt-auto border-t border-border bg-sidebar/60">
+   225→      <div className="mx-auto max-w-7xl px-4 py-12 md:px-6">
+   226→        <div className="grid gap-10 md:grid-cols-5">
+   227→          <div className="space-y-4 md:col-span-2">
+   228→            <Logo />
+   229→            <p className="max-w-sm text-sm leading-7 text-muted-foreground">
+   230→              آکادمی تخصصی آموزش معامله‌گری و بازارهای مالی؛ با مسیرهای یادگیری ساختاریافته، منتورینگ حرفه‌ای و ابزارهای تمرین واقعی، مسیر شما تا معامله‌گری مستقل را کوتاه‌تر می‌کنیم.
+   231→            </p>
+   232→            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+   233→              <ShieldCheck className="size-4 text-primary" /> پرداخت امن
+   234→              <BadgeCheck className="size-4 text-primary" /> ضمانت بازگشت وجه
+   235→              <Headphones className="size-4 text-primary" /> پشتیبانی ۷ روز هفته
+   236→            </div>
+   237→          </div>
+   238→          {cols.map((c) => (
+   239→            <div key={c.title}>
+   240→              <p className="mb-4 text-sm font-bold">{c.title}</p>
+   241→              <ul className="space-y-2.5">
+   242→                {c.links.map((l) => (
+   243→                  <li key={l.label}>
+   244→                    <button onClick={() => goPublic(l.page, l.param)} className="text-sm text-muted-foreground transition-colors hover:text-primary">
+   245→                      {l.label}
+   246→                    </button>
+   247→                  </li>
+   248→                ))}
+   249→              </ul>
+   250→            </div>
+   251→          ))}
+   252→        </div>
+   253→        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-border pt-6 text-xs text-muted-foreground md:flex-row">
+   254→          <p>© {toFa(1403)} دی‌صفارا — تمامی حقوق محفوظ است.</p>
+   255→          <p>ساخته شده با ❤️ برای معامله‌گران ایرانی</p>
+   256→        </div>
+   257→      </div>
+   258→    </footer>
+   259→  );
+   260→}
+   261→
+   262→/* ================= auth dialog (OTP) ================= */
+   263→
+   264→export function AuthDialog() {
+   265→  const { authOpen, setAuthOpen, setUser } = useApp();
+   266→  const [step, setStep] = useState<"phone" | "otp">("phone");
+   267→  const [phone, setPhone] = useState("");
+   268→  const [name, setName] = useState("");
+   269→  const [code, setCode] = useState("");
+   270→  const [devCode, setDevCode] = useState<string | null>(null);
+   271→  const [loading, setLoading] = useState(false);
+   272→  const [error, setError] = useState("");
+   273→
+   274→  const close = () => {
+   275→    setAuthOpen(false);
+   276→    setStep("phone"); setCode(""); setDevCode(null); setError("");
+   277→  };
+   278→
+   279→  const requestOtp = async () => {
+   280→    setLoading(true); setError("");
+   281→    try {
+   282→      const res = await apiPost<{ devCode: string }>("/api/auth", { action: "request-otp", phone });
+   283→      setDevCode(res.devCode);
+   284→      setStep("otp");
+   285→    } catch (e) {
+   286→      setError((e as Error).message);
+   287→    } finally {
+   288→      setLoading(false);
+   289→    }
+   290→  };
+   291→
+   292→  const verify = async () => {
+   293→    setLoading(true); setError("");
+   294→    try {
+   295→      const res = await apiPost<{ ok: boolean; user: { id: string; name: string; phone: string; role: string; avatar: string } }>(
+   296→        "/api/auth", { action: "verify-otp", phone, code, name }
+   297→      );
+   298→      const me = await apiGet<{ user: unknown; unreadNotifications: number; unreadMessages: number }>("/api/auth");
+   299→      setUser(res.user, me.unreadNotifications || 0, me.unreadMessages || 0);
+   300→      close();
+   301→      toast({ title: "خوش آمدید! 🎉", description: "ورود شما با موفقیت انجام شد." });
+   302→      if (res.user.role === "ADMIN") useApp.getState().goAdmin("overview");
+   303→      else useApp.getState().setMode("student");
+   304→    } catch (e) {
+   305→      setError((e as Error).message);
+   306→    } finally {
+   307→      setLoading(false);
+   308→    }
+   309→  };
+   310→
+   311→  return (
+   312→    <Dialog open={authOpen} onOpenChange={(o) => !o && close()}>
+   313→      <DialogContent className="max-w-md border-border bg-card sm:rounded-2xl">
+   314→        <DialogHeader>
+   315→          <DialogTitle className="text-lg font-extrabold">
+   316→            {step === "phone" ? "ورود | ثبت‌نام" : "کد تایید را وارد کنید"}
+   317→          </DialogTitle>
+   318→          <DialogDescription>
+   319→            {step === "phone"
+   320→              ? "با شماره موبایل وارد شوید یا حساب جدید بسازید."
+   321→              : `کد ۶ رقمی ارسال‌شده به ${toFa(phone)} را وارد کنید.`}
+   322→          </DialogDescription>
+   323→        </DialogHeader>
+   324→
+   325→        {step === "phone" ? (
+   326→          <div className="space-y-4">
+   327→            <div className="space-y-2">
+   328→              <Label htmlFor="auth-name">نام و نام خانوادگی (اختیاری)</Label>
+   329→              <Input id="auth-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="مثلاً علی کریمی" />
+   330→            </div>
+   331→            <div className="space-y-2">
+   332→              <Label htmlFor="auth-phone">شماره موبایل</Label>
+   333→              <Input
+   334→                id="auth-phone" dir="ltr" inputMode="numeric" className="text-left"
+   335→                value={phone} onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
+   336→                placeholder="09xxxxxxxxx" maxLength={11}
+   337→              />
+   338→            </div>
+   339→            {error && <p className="text-sm text-destructive">{error}</p>}
+   340→            <Button className="w-full" onClick={requestOtp} disabled={loading || phone.length !== 11}>
+   341→              {loading ? "در حال ارسال..." : "دریافت کد تایید"}
+   342→            </Button>
+   343→            <div className="rounded-xl border border-primary/25 bg-primary/5 p-3 text-xs leading-6 text-muted-foreground">
+   344→              <p className="font-medium text-primary">حساب‌های نمایشی:</p>
+   345→              <p>دانشجو: <span dir="ltr">09123333333</span> | مدیر: <span dir="ltr">09120000000</span> | منتور: <span dir="ltr">09121111111</span></p>
+   346→            </div>
+   347→          </div>
+   348→        ) : (
+   349→          <div className="space-y-4">
+   350→            {devCode && (
+   351→              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-center text-sm">
+   352→                <p className="text-xs text-amber-400">حالت نمایشی — کد تایید شما:</p>
+   353→                <p dir="ltr" className="mt-1 text-2xl font-extrabold tracking-[0.4em] text-amber-300">{toFa(devCode)}</p>
+   354→              </div>
+   355→            )}
+   356→            <div dir="ltr" className="flex justify-center">
+   357→              <InputOTP maxLength={6} value={code} onChange={setCode}>
+   358→                <InputOTPGroup>
+   359→                  <InputOTPSlot index={0} /><InputOTPSlot index={1} /><InputOTPSlot index={2} />
+   360→                </InputOTPGroup>
+   361→                <InputOTPSeparator />
+   362→                <InputOTPGroup>
+   363→                  <InputOTPSlot index={3} /><InputOTPSlot index={4} /><InputOTPSlot index={5} />
+   364→                </InputOTPGroup>
+   365→              </InputOTP>
+   366→            </div>
+   367→            {error && <p className="text-center text-sm text-destructive">{error}</p>}
+   368→            <Button className="w-full" onClick={verify} disabled={loading || code.length !== 6}>
+   369→              {loading ? "در حال بررسی..." : "تایید و ورود"}
+   370→            </Button>
+   371→            <Button variant="ghost" className="w-full" onClick={() => setStep("phone")}>
+   372→              تغییر شماره
+   373→            </Button>
+   374→          </div>
+   375→        )}
+   376→      </DialogContent>
+   377→    </Dialog>
+   378→  );
+   379→}
+   380→
+   381→/* ================= home page ================= */
+   382→
+   383→type PublicHomeData = {
+   384→  courses: CourseType[];
+   385→  paths: PathType[];
+   386→  mentors: { id: string; name: string; bio: string; avatar: string }[];
+   387→  testimonials: { id: string; name: string; role: string; content: string; rating: number }[];
+   388→  faqs: { id: string; question: string; answer: string; category: string }[];
+   389→  resources: { id: string; title: string; description: string; type: string; size: string; downloads: number }[];
+   390→  posts: { id: string; title: string; slug: string; excerpt: string; category: string; readTimeMin: number; createdAt: string }[];
+   391→  categories: { id: string; title: string; slug: string; description: string }[];
+   392→};
+   393→
+   394→export type CourseType = {
+   395→  id: string; title: string; slug: string; description: string; image?: string;
+   396→  level: string; price: number; oldPrice?: number | null; durationHours: number;
+   397→  rating: number; studentsCount: number; isFree: boolean;
+   398→  category?: { title: string; slug: string } | null;
+   399→  mentor?: { id: string; name: string; avatar: string } | null;
+   400→};
+   401→
+   402→export type PathType = {
+   403→  id: string; title: string; slug: string; description: string; icon?: string;
+   404→  level: string; audience?: string; objective?: string; color?: string;
+   405→  courses: { course: CourseType; order: number }[];
+   406→};
+   407→
+   408→const tickerItems = [
+   409→  { sym: "XAUUSD", price: "۲,۳۱۲.۵۰", chg: +0.84 },
+   410→  { sym: "EURUSD", price: "۱.۰۸۴۲", chg: -0.12 },
+   411→  { sym: "BTCUSD", price: "۶۱,۲۴۰", chg: +2.31 },
+   412→  { sym: "GBPUSD", price: "۱.۲۷۱۵", chg: +0.09 },
+   413→  { sym: "US30", price: "۳۸,۴۵۰", chg: +0.52 },
+   414→  { sym: "USOIL", price: "۷۸.۲۴", chg: -1.05 },
+   415→];
+   416→
+   417→function Ticker() {
+   418→  return (
+   419→    <div className="flex items-center gap-6 overflow-hidden" dir="ltr">
+   420→      {tickerItems.map((t) => (
+   421→        <div key={t.sym} className="flex shrink-0 items-center gap-2 text-xs">
+   422→          <span className="font-bold text-foreground">{t.sym}</span>
+   423→          <span className="text-muted-foreground">{t.price}</span>
+   424→          <span className={cn("font-medium tabular-nums", t.chg >= 0 ? "text-primary" : "text-destructive")}>
+   425→            {t.chg >= 0 ? "▲" : "▼"} {toFa(Math.abs(t.chg).toFixed(2))}%
+   426→          </span>
+   427→        </div>
+   428→      ))}
+   429→    </div>
+   430→  );
+   431→}
+   432→
+   433→export function HomePage() {
+   434→  const { data, loading } = useFetch<PublicHomeData>("/api/public?section=home");
+   435→  const goPublic = useApp((s) => s.goPublic);
+   436→  const setMode = useApp((s) => s.setMode);
+   437→  const user = useApp((s) => s.user);
+   438→  const [openFaq, setOpenFaq] = useState<string | null>(null);
+   439→
+   440→  return (
+   441→    <main>
+   442→      {/* ===== hero ===== */}
+   443→      <section className="hero-grid-bg relative overflow-hidden">
+   444→        <div className="mx-auto max-w-7xl px-4 pb-16 pt-14 md:px-6 md:pb-24 md:pt-20">
+   445→          <div className="grid items-center gap-10 lg:grid-cols-2">
+   446→            <div className="space-y-6">
+   447→              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary">
+   448→                <Sparkles className="size-3.5" /> آکادمی تخصصی ترید و بازارهای مالی
+   449→              </div>
+   450→              <h1 className="text-3xl font-extrabold leading-[1.35] md:text-5xl md:leading-[1.3]">
+   451→                از <span className="text-primary ticker-glow">صفر</span> تا معامله‌گر
+   452→                <br />
+   453→                حرفه‌ای و مستقل
+   454→              </h1>
+   455→              <p className="max-w-xl text-sm leading-8 text-muted-foreground md:text-base">
+   456→                آموزش ساختاریافته پرایس اکشن و اسمارت مانی، منتورینگ اختصاصی، ورک‌اسپیس تمرین چارت و ژورنال هوشمند معاملات — همه در یک پلتفرم. مسیر یادگیری شما را ما برنامه‌ریزی می‌کنیم؛ اجرا با شماست.
+   457→              </p>
+   458→              <div className="flex flex-wrap items-center gap-3">
+   459→                <Button size="lg" className="glow-accent gap-2 text-base" onClick={() => goPublic("courses")}>
+   460→                  شروع یادگیری <ChevronLeft className="size-5" />
+   461→                </Button>
+   462→                <Button size="lg" variant="outline" className="gap-2" onClick={() => goPublic("services")}>
+   463→                  <Users className="size-4.5" /> مشاوره و منتورینگ
+   464→                </Button>
+   465→              </div>
+   466→              <div className="flex flex-wrap gap-x-8 gap-y-3 pt-2 text-sm">
+   467→                {[
+   468→                  ["+۴,۲۰۰", "دانشجوی فعال"],
+   469→                  ["+۱۲۰", "ساعت آموزش تخصصی"],
+   470→                  ["۹۸٪", "رضایت دانشجویان"],
+   471→                  ["۸", "منتور حرفه‌ای"],
+   472→                ].map(([v, l]) => (
+   473→                  <div key={l} className="space-y-0.5">
+   474→                    <p className="text-xl font-extrabold text-primary">{v}</p>
+   475→                    <p className="text-xs text-muted-foreground">{l}</p>
+   476→                  </div>
+   477→                ))}
+   478→              </div>
+   479→            </div>
+   480→
+   481→            {/* hero card */}
+   482→            <div className="relative mx-auto w-full max-w-md lg:max-w-none">
+   483→              <Card className="border-border/80 bg-card/90 shadow-2xl backdrop-blur">
+   484→                <CardContent className="space-y-4 p-6">
+   485→                  <div className="flex items-center justify-between">
+   486→                    <div className="flex items-center gap-2 text-sm font-bold">
+   487→                      <CandlestickChart className="size-5 text-primary" /> XAUUSD · طلا / دلار
+   488→                    </div>
+   489→                    <span className="rounded-lg bg-primary/15 px-2.5 py-1 text-xs font-bold text-primary">H1</span>
+   490→                  </div>
+   491→                  {/* mini candlestick svg */}
+   492→                  <svg viewBox="0 0 320 130" className="w-full" role="img" aria-label="نمودار نمایشی قیمت طلا">
+   493→                    {[
+   494→                      [10, 55, 75, 45, 85], [30, 50, 70, 42, 78], [50, 62, 82, 55, 90],
+   495→                      [70, 45, 65, 38, 72], [90, 55, 78, 50, 85], [110, 70, 92, 65, 100],
+   496→                      [130, 82, 95, 76, 105], [150, 75, 90, 70, 98], [170, 88, 108, 84, 115],
+   497→                      [190, 95, 100, 88, 110], [210, 92, 112, 86, 120], [230, 105, 122, 100, 130],
+   498→                      [250, 118, 125, 110, 128], [270, 112, 118, 104, 124], [290, 120, 128, 115, 130],
+   499→                    ].map(([x, o, c, l, h], i) => (
+   500→                      <g key={i}>
+   501→                        <line x1={x + 6} y1={130 - h} x2={x + 6} y2={130 - l} stroke={c >= o ? "#19b887" : "#ef5466"} strokeWidth="1.5" />
+   502→                        <rect x={x} y={130 - Math.max(o, c)} width="12" height={Math.abs(c - o) || 2} fill={c >= o ? "#19b887" : "#ef5466"} rx="2" />
+   503→                      </g>
+   504→                    ))}
+   505→                  </svg>
+   506→                  <div className="grid grid-cols-3 gap-3 text-center">
+   507→                    <div className="rounded-xl bg-muted/70 p-3">
+   508→                      <p className="text-[10px] text-muted-foreground">وین‌ریت این هفته</p>
+   509→                      <p className="mt-1 text-lg font-extrabold text-primary">{toFa("۶۷٪")}</p>
+   510→                    </div>
+   511→                    <div className="rounded-xl bg-muted/70 p-3">
+   512→                      <p className="text-[10px] text-muted-foreground">R:R میانگین</p>
+   513→                      <p className="mt-1 text-lg font-extrabold text-sky-400">{toFa("۱:۲.۸")}</p>
+   514→                    </div>
+   515→                    <div className="rounded-xl bg-muted/70 p-3">
+   516→                      <p className="text-[10px] text-muted-foreground">معاملات ثبت‌شده</p>
+   517→                      <p className="mt-1 text-lg font-extrabold">{faNum(8)}</p>
+   518→                    </div>
+   519→                  </div>
+   520→                  <div className="rounded-xl border border-border bg-background/60 p-4">
+   521→                    <div className="mb-2 flex items-center justify-between text-xs">
+   522→                      <span className="text-muted-foreground">پیشرفت دوره پرایس اکشن</span>
+   523→                      <span className="font-bold text-primary">{toFa(68)}٪</span>
+   524→                    </div>
+   525→                    <div className="h-2 overflow-hidden rounded-full bg-muted">
+   526→                      <div className="h-full rounded-full bg-gradient-to-l from-primary to-emerald-300" style={{ width: "68%" }} />
+   527→                    </div>
+   528→                  </div>
+   529→                </CardContent>
+   530→              </Card>
+   531→            </div>
+   532→          </div>
+   533→        </div>
+   534→
+   535→        {/* ticker strip */}
+   536→        <div className="border-y border-border bg-sidebar/70 py-2.5">
+   537→          <Ticker />
+   538→        </div>
+   539→      </section>
+   540→
+   541→      {/* ===== why us ===== */}
+   542→      <section className="mx-auto max-w-7xl px-4 py-16 md:px-6">
+   543→        <SectionHead center kicker="چرا دی‌صفارا؟" title="متفاوت با کلاس‌های معمول آنلاین" desc="ما فقط ویدیو نمی‌فروشیم؛ یک اکوسیستم کامل تمرین، منتورینگ و ارزیابی می‌سازیم تا یادگیری به نتیجه واقعی برسد." />
+   544→        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+   545→          {[
+   546→            { icon: <ChartCandlestick className="size-6" />, t: "ورک‌اسپیس معاملاتی", d: "تمرین مستقیم روی چارت تعاملی با ابزارهای تحلیل، سناریونویسی و ثبت تمرین برای منتور." },
+   547→            { icon: <Users className="size-6" />, t: "منتورینگ اختصاصی", d: "منتور متناسب با سطح شما، جلسات هفتگی، بررسی ژورنال و گزارش پیشرفت منظم." },
+   548→            { icon: <LineChart className="size-6" />, t: "ژورنال هوشمند", d: "ثبت معاملات با تحلیل خودکار وین‌ریت، پروفیت فکتور و آمار هر نماد." },
+   549→            { icon: <GraduationCap className="size-6" />, t: "مسیر ساختاریافته", d: "از صفر تا تخصص با نقشه راه مرحله‌به‌مرحله، آزمون و گواهینامه معتبر." },
+   550→          ].map((f) => (
+   551→            <Card key={f.t} className="card-hover border-border bg-card">
+   552→              <CardContent className="space-y-3 p-6">
+   553→                <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">{f.icon}</div>
+   554→                <p className="font-bold">{f.t}</p>
+   555→                <p className="text-sm leading-7 text-muted-foreground">{f.d}</p>
+   556→              </CardContent>
+   557→            </Card>
+   558→          ))}
+   559→        </div>
+   560→      </section>
+   561→
+   562→      {/* ===== learning paths ===== */}
+   563→      <section className="border-y border-border bg-sidebar/40 py-16">
+   564→        <div className="mx-auto max-w-7xl px-4 md:px-6">
+   565→          <SectionHead kicker="مسیرهای یادگیری" title="نقشه راه خود را انتخاب کنید" desc="هر مسیر مجموعه‌ای هدفمند از دوره‌هاست که شما را قدم‌به‌قدم به هدف می‌رساند." />
+   566→          {loading ? (
+   567→            <div className="grid gap-5 md:grid-cols-3">{[...Array(3)].map((_, i) => <div key={i} className="h-48 animate-pulse rounded-2xl bg-muted/50" />)}</div>
+   568→          ) : (
+   569→            <div className="grid gap-5 md:grid-cols-3">
+   570→              {data?.paths.map((p) => (
+   571→                <Card key={p.id} className="card-hover cursor-pointer border-border bg-card" onClick={() => goPublic("path", p.slug)}>
+   572→                  <CardContent className="p-6">
+   573→                    <div className="mb-4 flex items-center justify-between">
+   574→                      <div className="flex size-12 items-center justify-center rounded-xl text-2xl" style={{ background: `${p.color}22`, color: p.color || "#19b887" }}>
+   575→                        {p.icon === "Rocket" ? "🚀" : p.icon === "Target" ? "🎯" : "₿"}
+   576→                      </div>
+   577→                      <span className="text-xs text-muted-foreground">{toFa(p.courses.length)} دوره</span>
+   578→                    </div>
+   579→                    <p className="mb-2 font-bold">{p.title}</p>
+   580→                    <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">{p.description}</p>
+   581→                    <div className="mt-4 flex items-center gap-1 text-xs font-medium text-primary">
+   582→                      مشاهده مسیر <ChevronLeft className="size-4" />
+   583→                    </div>
+   584→                  </CardContent>
+   585→                </Card>
+   586→              ))}
+   587→            </div>
+   588→          )}
+   589→        </div>
+   590→      </section>
+   591→
+   592→      {/* ===== featured courses ===== */}
+   593→      <section className="mx-auto max-w-7xl px-4 py-16 md:px-6">
+   594→        <div className="mb-8 flex items-end justify-between">
+   595→          <SectionHead kicker="دوره‌های محبوب" title="پرطرفدارترین دوره‌های دی‌صفارا" />
+   596→          <Button variant="outline" size="sm" onClick={() => goPublic("courses")}>همه دوره‌ها</Button>
+   597→        </div>
+   598→        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+   599→          {(data?.courses || []).slice(0, 6).map((c) => (
+   600→            <CourseCard key={c.id} course={c} />
+   601→          ))}
+   602→        </div>
+   603→      </section>
+   604→
+   605→      {/* ===== mentors ===== */}
+   606→      <section className="border-y border-border bg-sidebar/40 py-16">
+   607→        <div className="mx-auto max-w-7xl px-4 md:px-6">
+   608→          <SectionHead center kicker="منتورها" title="مربی‌هایی که خودشان معامله‌گرند" desc="منتورهای دی‌صفارا سال‌ها در بازار واقعی معامله کرده‌اند و مسیر شما را با تجربه واقعی هدایت می‌کنند." />
+   609→          <div className="grid gap-5 md:grid-cols-2">
+   610→            {data?.mentors.map((m) => (
+   611→              <Card key={m.id} className="card-hover border-border bg-card">
+   612→                <CardContent className="flex items-start gap-4 p-6">
+   613→                  <div className="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-xl font-extrabold text-primary">
+   614→                    {m.name?.charAt(0)}
+   615→                  </div>
+   616→                  <div className="space-y-2">
+   617→                    <p className="font-bold">{m.name}</p>
+   618→                    <p className="text-sm leading-7 text-muted-foreground">{m.bio}</p>
+   619→                    <Button size="sm" variant="outline" onClick={() => goPublic("mentors")}>مشاهده پلن‌ها</Button>
+   620→                  </div>
+   621→                </CardContent>
+   622→              </Card>
+   623→            ))}
+   624→          </div>
+   625→        </div>
+   626→      </section>
+   627→
+   628→      {/* ===== testimonials ===== */}
+   629→      <section className="mx-auto max-w-7xl px-4 py-16 md:px-6">
+   630→        <SectionHead center kicker="نظرات دانشجویان" title="نتایج واقعی، از زبان خود دانشجویان" />
+   631→        <div className="grid gap-5 md:grid-cols-3">
+   632→          {data?.testimonials.slice(0, 3).map((t) => (
+   633→            <Card key={t.id} className="border-border bg-card">
+   634→              <CardContent className="space-y-4 p-6">
+   635→                <div className="flex gap-1 text-amber-400">{[...Array(t.rating)].map((_, i) => <span key={i}>★</span>)}</div>
+   636→                <p className="text-sm leading-7 text-foreground/90">«{t.content}»</p>
+   637→                <div className="flex items-center gap-3 border-t border-border pt-4">
+   638→                  <div className="flex size-10 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary">{t.name.charAt(0)}</div>
+   639→                  <div>
+   640→                    <p className="text-sm font-semibold">{t.name}</p>
+   641→                    <p className="text-xs text-muted-foreground">{t.role}</p>
+   642→                  </div>
+   643→                </div>
+   644→              </CardContent>
+   645→            </Card>
+   646→          ))}
+   647→        </div>
+   648→      </section>
+   649→
+   650→      {/* ===== free resources ===== */}
+   651→      <section className="border-y border-border bg-sidebar/40 py-16">
+   652→        <div className="mx-auto max-w-7xl px-4 md:px-6">
+   653→          <div className="mb-8 flex items-end justify-between">
+   654→            <SectionHead kicker="منابع رایگان" title="قبل از خرید، رایگان شروع کنید" />
+   655→            <Button variant="outline" size="sm" onClick={() => goPublic("resources")}>همه منابع</Button>
+   656→          </div>
+   657→          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+   658→            {data?.resources.slice(0, 3).map((r) => (
+   659→              <Card key={r.id} className="card-hover border-border bg-card">
+   660→                <CardContent className="flex items-center gap-4 p-5">
+   661→                  <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+   662→                    {r.type === "VIDEO" ? <LineChart className="size-5" /> : <BookOpen className="size-5" />}
+   663→                  </div>
+   664→                  <div className="min-w-0">
+   665→                    <p className="truncate text-sm font-semibold">{r.title}</p>
+   666→                    <p className="truncate text-xs text-muted-foreground">{r.description}</p>
+   667→                  </div>
+   668→                </CardContent>
+   669→              </Card>
+   670→            ))}
+   671→          </div>
+   672→        </div>
+   673→      </section>
+   674→
+   675→      {/* ===== blog teaser ===== */}
+   676→      <section className="mx-auto max-w-7xl px-4 py-16 md:px-6">
+   677→        <div className="mb-8 flex items-end justify-between">
+   678→          <SectionHead kicker="بلاگ" title="آخرین مقالات آموزشی" />
+   679→          <Button variant="outline" size="sm" onClick={() => goPublic("blog")}>همه مقالات</Button>
+   680→        </div>
+   681→        <div className="grid gap-5 md:grid-cols-3">
+   682→          {data?.posts.map((p) => (
+   683→            <Card key={p.id} className="card-hover cursor-pointer border-border bg-card" onClick={() => goPublic("post", p.slug)}>
+   684→              <CardContent className="space-y-3 p-6">
+   685→                <span className="rounded-lg bg-primary/10 px-2.5 py-1 text-xs text-primary">{p.category}</span>
+   686→                <p className="font-bold leading-7">{p.title}</p>
+   687→                <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">{p.excerpt}</p>
+   688→                <p className="text-xs text-muted-foreground">{toFa(p.readTimeMin)} دقیقه مطالعه</p>
+   689→              </CardContent>
+   690→            </Card>
+   691→          ))}
+   692→        </div>
+   693→      </section>
+   694→
+   695→      {/* ===== faq ===== */}
+   696→      <section className="border-y border-border bg-sidebar/40 py-16">
+   697→        <div className="mx-auto max-w-3xl px-4 md:px-6">
+   698→          <SectionHead center kicker="سوالات متداول" title="هر سوالی داری، اینجا جوابش هست" />
+   699→          <div className="space-y-3">
+   700→            {data?.faqs.slice(0, 5).map((f) => (
+   701→              <Card key={f.id} className="overflow-hidden border-border bg-card">
+   702→                <button className="flex w-full items-center justify-between gap-4 p-5 text-right" onClick={() => setOpenFaq(openFaq === f.id ? null : f.id)}>
+   703→                  <span className="text-sm font-semibold">{f.question}</span>
+   704→                  <ChevronLeft className={cn("size-5 shrink-0 text-muted-foreground transition-transform", openFaq === f.id ? "-rotate-90" : "rotate-180")} />
+   705→                </button>
+   706→                {openFaq === f.id && <p className="border-t border-border px-5 py-4 text-sm leading-7 text-muted-foreground">{f.answer}</p>}
+   707→              </Card>
+   708→            ))}
+   709→          </div>
+   710→          <div className="mt-6 text-center">
+   711→            <Button variant="link" onClick={() => goPublic("faq")}>مشاهده همه سوالات</Button>
+   712→          </div>
+   713→        </div>
+   714→      </section>
+   715→
+   716→      {/* ===== final CTA ===== */}
+   717→      <section className="hero-grid-bg mx-auto w-full py-20">
+   718→        <div className="mx-auto max-w-3xl px-4 text-center md:px-6">
+   719→          <h2 className="text-2xl font-extrabold md:text-4xl">مسیر معامله‌گری حرفه‌ای را امروز شروع کنید</h2>
+   720→          <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-muted-foreground md:text-base">
+   721→            اولین درس هر دوره رایگان است. همین حالا ثبت‌نام کنید و به بیش از ۴,۲۰۰ دانشجوی دی‌صفارا بپیوندید.
+   722→          </p>
+   723→          <div className="mt-8 flex flex-wrap justify-center gap-3">
+   724→            {user ? (
+   725→              <Button size="lg" className="glow-accent gap-2" onClick={() => setMode("student")}>
+   726→                <LayoutDashboard className="size-5" /> رفتن به داشبورد
+   727→              </Button>
+   728→            ) : (
+   729→              <AuthButtons />
+   730→            )}
+   731→            <Button size="lg" variant="outline" onClick={() => goPublic("courses")}>
+   732→              مرور دوره‌ها
+   733→            </Button>
+   734→          </div>
+   735→        </div>
+   736→      </section>
+   737→    </main>
+   738→  );
+   739→}
+   740→
+   741→function AuthButtons() {
+   742→  const setAuthOpen = useApp((s) => s.setAuthOpen);
+   743→  return (
+   744→    <Button size="lg" className="glow-accent gap-2" onClick={() => setAuthOpen(true)}>
+   745→      <LogIn className="size-5" /> ثبت‌نام رایگان
+   746→    </Button>
+   747→  );
+   748→}
+   749→
+   750→/* ================= course card ================= */
+   751→
+   752→export function CourseCard({ course }: { course: CourseType }) {
+   753→  const { goPublic, addToCart, user, setAuthOpen } = useApp();
+   754→  const off = course.oldPrice ? Math.round(((course.oldPrice - course.price) / course.oldPrice) * 100) : 0;
+   755→
+   756→  const add = (e: React.MouseEvent) => {
+   757→    e.stopPropagation();
+   758→    if (!user) { setAuthOpen(true); return; }
+   759→    const ok = addToCart({ type: "course", slug: course.slug, title: course.title, price: course.price });
+   760→    toast({ title: ok ? "به سبد خرید اضافه شد 🛒" : "قبلاً در سبد هست", description: course.title });
+   761→    if (ok) goPublic("cart");
+   762→  };
+   763→
+   764→  return (
+   765→    <Card className="card-hover group cursor-pointer overflow-hidden border-border bg-card" onClick={() => goPublic("course", course.slug)}>
+   766→      <div className="relative">
+   767→        <CourseCover image={course.image} category={course.category?.slug} className="h-40 w-full" />
+   768→        {off > 0 && (
+   769→          <span className="absolute left-3 top-3 rounded-lg bg-destructive px-2 py-1 text-[11px] font-bold text-white">
+   770→            {toFa(off)}٪ تخفیف
+   771→          </span>
+   772→        )}
+   773→        {course.isFree && (
+   774→          <span className="absolute left-3 top-3 rounded-lg bg-primary px-2 py-1 text-[11px] font-bold text-primary-foreground">رایگان</span>
+   775→        )}
+   776→      </div>
+   777→      <CardContent className="space-y-3 p-5">
+   778→        {course.category && <span className="text-xs text-primary">{course.category.title}</span>}
+   779→        <p className="line-clamp-1 font-bold leading-7">{course.title}</p>
+   780→        <p className="line-clamp-2 text-xs leading-6 text-muted-foreground">{course.description}</p>
+   781→        <div className="flex items-center justify-between text-xs text-muted-foreground">
+   782→          <div className="flex items-center gap-3">
+   783→            <span className="flex items-center gap-1"><GraduationCap className="size-3.5" /> {faNum(course.studentsCount)}</span>
+   784→            <span className="flex items-center gap-1 text-amber-400">★ {faNum(course.rating, 1)}</span>
+   785→          </div>
+   786→          <span>{faNum(course.durationHours)} ساعت</span>
+   787→        </div>
+   788→        <div className="flex items-center justify-between border-t border-border pt-3">
+   789→          <div className="flex items-baseline gap-2">
+   790→            <Price amount={course.price} className="text-primary" />
+   791→            {course.oldPrice ? <span className="text-xs text-muted-foreground line-through">{faNum(course.oldPrice)}</span> : null}
+   792→          </div>
+   793→          <Button size="sm" variant="secondary" onClick={add} className="gap-1">
+   794→            <ShoppingBag className="size-3.5" /> ثبت‌نام
+   795→          </Button>
+   796→        </div>
+   797→      </CardContent>
+   798→    </Card>
+   799→  );
+   800→}
+   801→
+   802→

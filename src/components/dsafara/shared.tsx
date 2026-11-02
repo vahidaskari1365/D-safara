@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { apiGet } from "@/lib/api";
 import { faNum, faPercent, faToman, toFa } from "@/lib/fa";
 import { Badge } from "@/components/ui/badge";
@@ -42,21 +42,104 @@ export function useFetch<T>(url: string | null) {
   return { data, loading, error, refetch };
 }
 
+/* ---------- scroll reveal ---------- */
+
+export function Reveal({
+  children, delay = 0, className, as: Tag = "div",
+}: {
+  children: React.ReactNode; delay?: number; className?: string; as?: "div" | "section" | "li" | "span";
+}) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-in");
+            io.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <Tag
+      ref={ref as React.RefObject<HTMLDivElement>}
+      className={cn("reveal", className)}
+      style={{ "--reveal-delay": `${delay}ms` } as React.CSSProperties}
+    >
+      {children}
+    </Tag>
+  );
+}
+
+/* ---------- animated counter ---------- */
+
+export function Counter({
+  value, suffix = "", prefix = "", duration = 1500, className, decimals = 0,
+}: {
+  value: number; suffix?: string; prefix?: string; duration?: number; className?: string; decimals?: number;
+}) {
+  const [display, setDisplay] = useState(0);
+  const ref = useRef<HTMLSpanElement | null>(null);
+  const started = useRef(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0]?.isIntersecting || started.current) return;
+        started.current = true;
+        const t0 = performance.now();
+        const step = (t: number) => {
+          const p = Math.min((t - t0) / duration, 1);
+          const eased = 1 - Math.pow(1 - p, 4);
+          setDisplay(value * eased);
+          if (p < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+        io.disconnect();
+      },
+      { threshold: 0.4 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [value, duration]);
+  return (
+    <span ref={ref} className={cn("tabular-nums", className)}>
+      {prefix}
+      {faNum(display, decimals)}
+      {suffix}
+    </span>
+  );
+}
+
 /* ---------- tiny building blocks ---------- */
 
 export function SectionHead({
   kicker, title, desc, center,
 }: { kicker?: string; title: string; desc?: string; center?: boolean }) {
   return (
-    <div className={cn("mb-8 space-y-2", center && "text-center")}>
+    <Reveal className={cn("mb-10 space-y-3", center && "text-center")}>
       {kicker && (
-        <span className="inline-block rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+        <span className={cn("inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-1.5 text-xs font-semibold tracking-wide text-primary", center && "kicker-line")}>
           {kicker}
         </span>
       )}
-      <h2 className="text-2xl font-bold md:text-3xl">{title}</h2>
-      {desc && <p className="max-w-2xl text-sm leading-7 text-muted-foreground md:text-base" style={center ? { marginInline: "auto" } : undefined}>{desc}</p>}
-    </div>
+      <h2 className="text-[1.75rem] font-extrabold leading-[1.35] md:text-4xl md:leading-[1.3]">
+        {title}
+      </h2>
+      {desc && (
+        <p className={cn("max-w-2xl text-sm leading-8 text-muted-foreground md:text-base", center && "mx-auto")}>
+          {desc}
+        </p>
+      )}
+    </Reveal>
   );
 }
 

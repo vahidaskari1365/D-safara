@@ -3,182 +3,367 @@
 import { useEffect, useState } from "react";
 import { useApp } from "@/lib/store";
 import { apiGet, apiPost } from "@/lib/api";
-import { faNum, faToman, toFa } from "@/lib/fa";
+import { faDate, faNum, faToman, toFa } from "@/lib/fa";
 import { cn } from "@/lib/utils";
-import { SectionHead, Price, useFetch } from "./shared";
+import { Reveal, Counter, SectionHead, useFetch } from "./shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@/components/ui/input-otp";
 import { toast } from "@/hooks/use-toast";
 import {
-  BadgeCheck, BookOpen, Brain, CandlestickChart, ChartCandlestick, ChevronLeft, Globe,
-  GraduationCap, LayoutDashboard, LineChart, LogIn, LogOut, Menu, ShieldCheck, ShoppingBag,
-  ShoppingCart, Sparkles, TrendingUp, User, Users, Wallet, X, Award, Headphones,
+  ArrowLeft, Award, BookOpen, Brain, CalendarDays, ChartCandlestick, CheckCircle2, ChevronLeft,
+  Clock, Download, FileText, Globe, GraduationCap, Headphones, Instagram, LayoutDashboard,
+  LineChart, LogIn, Menu, Newspaper, PlayCircle, Plus, Send, ShieldCheck, ShoppingCart,
+  Sparkles, Star, Target, TrendingUp, Twitter, Users, Wallet, Youtube, Zap,
 } from "lucide-react";
 
-/* ================= logo ================= */
+/* ============================================================
+   types (public contract)
+============================================================ */
 
-export function Logo({ small }: { small?: boolean }) {
-  return (
-    <div className="flex cursor-pointer items-center gap-2.5" onClick={() => useApp.getState().goPublic("home")}>
-      <div className={cn("flex items-center justify-center rounded-xl bg-primary/15 font-extrabold text-primary ring-1 ring-primary/40", small ? "size-8 text-sm" : "size-10 text-lg")}>
-        دی
-      </div>
-      <div className="leading-tight">
-        <p className="font-extrabold tracking-tight">دی‌صفارا</p>
-        <p className="text-[10px] text-muted-foreground">D.SAFARA ACADEMY</p>
-      </div>
-    </div>
-  );
-}
-
-/* ================= course cover (gradient fallback) ================= */
-
-const coverGradients: Record<string, string> = {
-  technical: "from-emerald-500/25 via-teal-600/10 to-background",
-  "risk-management": "from-sky-500/25 via-cyan-600/10 to-background",
-  psychology: "from-violet-500/25 via-purple-600/10 to-background",
-  forex: "from-amber-500/25 via-orange-600/10 to-background",
-  crypto: "from-orange-500/25 via-amber-600/10 to-background",
-  bourse: "from-rose-500/25 via-pink-600/10 to-background",
+export type CourseType = {
+  id: string; title: string; slug: string; description: string; image?: string;
+  level: string; price: number; oldPrice?: number | null; durationHours: number;
+  rating: number; studentsCount: number; isFree: boolean;
+  category?: { title: string; slug: string } | null;
+  mentor?: { id: string; name: string; avatar: string } | null;
 };
 
-export function CourseCover({ image, category, className, icon }: { image?: string | null; category?: string | null; className?: string; icon?: React.ReactNode }) {
-  const [failed, setFailed] = useState(false);
-  const grad = coverGradients[category || "technical"] || coverGradients.technical;
-  if (image && !failed) {
-    return (
-      <div className={cn("relative overflow-hidden", className)}>
-        <img src={image} alt="" className="size-full object-cover" onError={() => setFailed(true)} />
-      </div>
-    );
-  }
+export type PathType = {
+  id: string; title: string; slug: string; description: string; icon?: string;
+  level: string; audience?: string; objective?: string; color?: string;
+  courses: { course: CourseType; order: number }[];
+};
+
+/* ============================================================
+   logo
+============================================================ */
+
+export function Logo({ small, showText }: { small?: boolean; showText?: boolean }) {
   return (
-    <div className={cn("flex items-center justify-center bg-gradient-to-br", grad, className)}>
-      <div className="text-primary/80">{icon || <ChartCandlestick className="size-12" />}</div>
+    <button
+      type="button"
+      onClick={() => useApp.getState().goPublic("home")}
+      className="group flex cursor-pointer items-center gap-3 outline-none"
+      aria-label="دی‌صفارا — صفحه اصلی"
+    >
+      <span
+        className={cn(
+          "relative flex items-center justify-center rounded-xl bg-gradient-to-br from-primary to-emerald-700 text-primary-foreground shadow-[0_6px_20px_-6px_rgba(25,184,135,0.6)] transition-transform duration-300 group-hover:scale-105 group-hover:rotate-3",
+          small ? "size-9" : "size-11"
+        )}
+      >
+        {/* candlestick mark */}
+        <svg viewBox="0 0 24 24" fill="none" className={cn(small ? "size-5" : "size-6")}>
+          <line x1="7" y1="4" x2="7" y2="20" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity="0.65" />
+          <rect x="4.4" y="9" width="5.2" height="8" rx="1.4" fill="currentColor" />
+          <line x1="17" y1="2.5" x2="17" y2="18.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity="0.65" />
+          <rect x="14.4" y="5" width="5.2" height="8" rx="1.4" fill="currentColor" opacity="0.85" />
+        </svg>
+      </span>
+      {(showText || !small) && (
+        <span className="leading-tight">
+          <span className="block text-lg font-black tracking-tight">دی‌صفارا</span>
+          <span className="block text-[9px] font-semibold tracking-[0.28em] text-muted-foreground">D.SAFARA ACADEMY</span>
+        </span>
+      )}
+    </button>
+  );
+}
+
+/* ============================================================
+   course cover (deterministic gradient per category)
+============================================================ */
+
+const COVER_THEMES = [
+  { grad: "from-emerald-600/30 via-emerald-800/20 to-background", icon: ChartCandlestick },
+  { grad: "from-sky-600/25 via-sky-900/20 to-background", icon: Globe },
+  { grad: "from-amber-500/25 via-amber-800/20 to-background", icon: Brain },
+  { grad: "from-violet-500/25 via-violet-900/20 to-background", icon: LineChart },
+  { grad: "from-rose-500/25 via-rose-900/20 to-background", icon: Target },
+];
+
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+export function CourseCover({
+  image, category, className, icon,
+}: { image?: string | null; category?: string | null; className?: string; icon?: React.ReactNode }) {
+  const theme = COVER_THEMES[hashStr(category || "trading") % COVER_THEMES.length];
+  const Icon = theme.icon;
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const showImg = image && failedSrc !== image;
+  return (
+    <div className={cn("relative flex items-center justify-center overflow-hidden bg-gradient-to-br", theme.grad, className)}>
+      {showImg ? (
+        <>
+          <img
+            src={image} alt={category || "دوره"}
+            className="absolute inset-0 size-full object-cover"
+            onError={() => setFailedSrc(image || null)}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#101827] via-transparent to-transparent" />
+        </>
+      ) : (
+        <>
+          <div className="absolute inset-0 opacity-25 [background-image:radial-gradient(circle_at_1px_1px,rgba(232,237,244,0.35)_1px,transparent_0)] [background-size:18px_18px]" />
+          <div className="absolute -bottom-6 -left-6 size-28 rounded-full bg-primary/15 blur-2xl" />
+          <div className="absolute -top-8 right-4 size-20 rounded-full bg-sky-400/10 blur-2xl" />
+          {icon || <Icon className="relative size-14 text-foreground/30" strokeWidth={1.4} />}
+        </>
+      )}
     </div>
   );
 }
 
-/* ================= header & footer ================= */
+/* ============================================================
+   candle chart (shared renderer for hero + mocks)
+============================================================ */
 
-const navItems = [
-  { key: "home", label: "خانه" },
-  { key: "courses", label: "دوره‌ها" },
-  { key: "paths", label: "مسیرهای یادگیری" },
-  { key: "mentors", label: "منتورها" },
-  { key: "services", label: "منتورینگ" },
-  { key: "blog", label: "بلاگ" },
-  { key: "resources", label: "منابع رایگان" },
-  { key: "faq", label: "سوالات" },
-  { key: "contact", label: "تماس" },
+type Candle = { o: number; h: number; l: number; c: number };
+
+function seededCandles(n: number, seed: number, base: number, volatility: number): Candle[] {
+  let s = seed | 0;
+  const rnd = () => {
+    s = (s + 0x6d2b79f5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  let price = base;
+  const out: Candle[] = [];
+  for (let i = 0; i < n; i++) {
+    const o = price;
+    const c = o + (rnd() - 0.44) * volatility;
+    const h = Math.max(o, c) + rnd() * volatility * 0.5;
+    const l = Math.min(o, c) - rnd() * volatility * 0.5;
+    price = c;
+    out.push({ o, h, l, c });
+  }
+  return out;
+}
+
+function CandleChart({
+  data, height = 220, showArea = true, gridLines = 3, className, decimals,
+}: {
+  data: Candle[]; height?: number; showArea?: boolean; gridLines?: number; className?: string; decimals?: number;
+}) {
+  const W = 600, H = 260, PAD_R = 74, PAD_B = 34, PAD_T = 12;
+  if (data.length === 0) return null;
+  const innerW = W - PAD_R - 10;
+  const innerH = H - PAD_T - PAD_B;
+  const lo = Math.min(...data.map((c) => c.l));
+  const hi = Math.max(...data.map((c) => c.h));
+  const span = hi - lo || 1;
+  const y = (v: number) => PAD_T + ((hi - v) / span) * innerH;
+  const step = innerW / data.length;
+  const bodyW = Math.max(4, step * 0.55);
+  const closes = data.map((c) => c.c);
+  const smaPath = closes
+    .map((_, i) => {
+      const from = Math.max(0, i - 3);
+      const slice = closes.slice(from, i + 1);
+      const avg = slice.reduce((a, b) => a + b, 0) / slice.length;
+      const x = 10 + i * step + step / 2;
+      return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y(avg).toFixed(1)}`;
+    })
+    .join(" ");
+  const areaPath = `${smaPath} L${(10 + (data.length - 1) * step + step / 2).toFixed(1)},${(H - PAD_B)} L10,${H - PAD_B} Z`;
+  const last = data[data.length - 1];
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className={cn("w-full", className)} role="img" aria-label="نمودار قیمت">
+      <defs>
+        <linearGradient id="cc-area" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#19b887" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="#19b887" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {/* grid */}
+      {Array.from({ length: gridLines }).map((_, i) => {
+        const gy = PAD_T + (innerH / (gridLines - 1 || 1)) * i;
+        return <line key={i} x1="0" y1={gy} x2={W - PAD_R} y2={gy} stroke="rgba(139,160,189,0.09)" strokeDasharray="3 5" />;
+      })}
+      {/* area */}
+      {showArea && <path d={areaPath} fill="url(#cc-area)" />}
+      {/* sma */}
+      <path d={smaPath} fill="none" stroke="#38bdf8" strokeWidth="1.6" opacity="0.7" strokeLinecap="round" />
+      {/* candles */}
+      {data.map((c, i) => {
+        const x = 10 + i * step + step / 2;
+        const up = c.c >= c.o;
+        const color = up ? "#19b887" : "#ef5466";
+        const isLast = i === data.length - 1;
+        const top = y(Math.max(c.o, c.c));
+        const bot = y(Math.min(c.o, c.c));
+        return (
+          <g key={i} className={i > data.length - 4 ? "candle-in" : undefined}>
+            <line x1={x} y1={y(c.h)} x2={x} y2={y(c.l)} stroke={color} strokeWidth="1.4" opacity={isLast ? 1 : 0.85} />
+            <rect
+              x={x - bodyW / 2} y={top} width={bodyW}
+              height={Math.max(2, bot - top)} fill={color} rx="1.5"
+              opacity={isLast ? 1 : 0.9}
+            />
+            {/* volume */}
+            <rect
+              x={x - bodyW / 2} y={H - PAD_B + 8} width={bodyW}
+              height={Math.max(2, ((c.h - c.l) / span) * 16)}
+              fill={color} opacity="0.28" rx="1.5"
+            />
+          </g>
+        );
+      })}
+      {/* last price line */}
+      <line x1="0" y1={y(last.c)} x2={W - PAD_R} y2={y(last.c)} stroke="#19b887" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+      <circle cx={W - PAD_R} cy={y(last.c)} r="3.5" fill="#19b887" className="live-dot" />
+      <rect x={W - PAD_R + 8} y={y(last.c) - 13} width="62" height="26" rx="7" fill="#0f2c22" stroke="rgba(25,184,135,0.5)" />
+      <text x={W - PAD_R + 39} y={y(last.c) + 4.5} textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#4de3b0" fontFamily="Vazirmatn">
+        {faNum(last.c, decimals ?? (last.c > 1000 ? 0 : last.c > 10 ? 2 : 4))}
+      </text>
+    </svg>
+  );
+}
+
+/* ============================================================
+   public header
+============================================================ */
+
+const NAV_ITEMS = [
+  { key: "courses", match: ["courses", "course"], label: "دوره‌ها" },
+  { key: "paths", match: ["paths", "path"], label: "مسیرهای یادگیری" },
+  { key: "mentors", match: ["mentors"], label: "منتورها" },
+  { key: "services", match: ["services"], label: "خدمات منتورینگ" },
+  { key: "blog", match: ["blog", "post"], label: "بلاگ" },
+  { key: "contact", match: ["contact"], label: "تماس" },
 ];
 
 export function PublicHeader() {
-  const { user, goPublic, publicPage, setAuthOpen, cart, goStudent, goAdmin, setMode, setUser } = useApp();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { publicPage, user, cart } = useApp();
+  const goPublic = useApp((s) => s.goPublic);
+  const setAuthOpen = useApp((s) => s.setAuthOpen);
+  const goStudent = useApp((s) => s.goStudent);
 
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", fn);
-    return () => window.removeEventListener("scroll", fn);
+    const onScroll = () => setScrolled(window.scrollY > 18);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const doLogout = async () => {
-    await apiPost("/api/auth", { action: "logout" }).catch(() => null);
-    useApp.getState().setUser(null);
-    goPublic("home");
-    toast({ title: "خارج شدید", description: "به امید دیدار دوباره!" });
-  };
+  const isActive = (matches: string[]) => matches.includes(publicPage);
 
   return (
-    <header className={cn("sticky top-0 z-40 w-full border-b transition-all", scrolled ? "border-border bg-background/85 shadow-lg backdrop-blur-xl" : "border-transparent bg-background/60 backdrop-blur-md")}>
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 md:px-6">
-        <div className="flex items-center gap-6">
-          <Logo />
-          <nav className="hidden items-center gap-1 lg:flex" aria-label="ناوبری اصلی">
-            {navItems.map((n) => (
-              <button
-                key={n.key}
-                onClick={() => goPublic(n.key)}
-                className={cn(
-                  "rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-card hover:text-primary",
-                  publicPage === n.key ? "text-primary" : "text-muted-foreground"
-                )}
-              >
-                {n.label}
-              </button>
-            ))}
-          </nav>
-        </div>
+    <header
+      className={cn(
+        "sticky top-0 z-50 w-full transition-all duration-500",
+        scrolled ? "glass-strong border-b border-border/80" : "border-b border-transparent bg-transparent"
+      )}
+    >
+      <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between gap-4 px-4 md:px-6">
+        <Logo />
 
+        {/* desktop nav */}
+        <nav className="hidden items-center gap-7 lg:flex" aria-label="ناوبری اصلی">
+          {NAV_ITEMS.map((n) => (
+            <button
+              key={n.key}
+              type="button"
+              onClick={() => goPublic(n.key)}
+              data-active={isActive(n.match)}
+              className="nav-link cursor-pointer text-sm font-medium text-foreground/75 transition-colors hover:text-foreground data-[active=true]:text-primary"
+            >
+              {n.label}
+            </button>
+          ))}
+        </nav>
+
+        {/* actions */}
         <div className="flex items-center gap-2">
           {/* cart */}
-          <Button variant="ghost" size="icon" className="relative" aria-label="سبد خرید" onClick={() => goPublic("cart")}>
-            <ShoppingCart className="size-5" />
+          <button
+            type="button"
+            onClick={() => goPublic("cart")}
+            className="relative flex size-10 cursor-pointer items-center justify-center rounded-xl border border-border bg-card/60 text-foreground/80 transition-all hover:border-primary/40 hover:text-primary"
+            aria-label="سبد خرید"
+          >
+            <ShoppingCart className="size-[18px]" />
             {cart.length > 0 && (
-              <span className="absolute -left-1 -top-1 flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                {toFa(cart.length)}
+              <span className="absolute -left-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                {faNum(cart.length)}
               </span>
             )}
-          </Button>
+          </button>
 
           {user ? (
-            <div className="flex items-center gap-1.5">
-              {user.role === "ADMIN" ? (
-                <Button size="sm" className="gap-1.5" onClick={() => goAdmin("overview")}>
-                  <LayoutDashboard className="size-4" /> پنل مدیریت
-                </Button>
-              ) : (
-                <Button size="sm" className="gap-1.5" onClick={() => setMode("student")}>
-                  <LayoutDashboard className="size-4" /> داشبورد من
-                </Button>
-              )}
-              <Button variant="ghost" size="icon" aria-label="خروج" onClick={doLogout}>
-                <LogOut className="size-4.5" />
-              </Button>
-            </div>
+            <Button
+              className="hidden gap-2 sm:inline-flex"
+              onClick={() => goStudent(user.role === "ADMIN" ? "overview" : "overview")}
+            >
+              <LayoutDashboard className="size-4" /> داشبورد من
+            </Button>
           ) : (
             <>
-              <Button variant="ghost" size="sm" className="hidden sm:flex" onClick={() => setAuthOpen(true)}>
-                <LogIn className="size-4" /> ورود
+              <Button variant="ghost" className="hidden sm:inline-flex" onClick={() => setAuthOpen(true)}>
+                ورود
               </Button>
-              <Button size="sm" className="hidden sm:flex" onClick={() => setAuthOpen(true)}>
-                شروع رایگان
+              <Button className="glow-accent hidden gap-1.5 sm:inline-flex" onClick={() => goPublic("courses")}>
+                شروع یادگیری <ArrowLeft className="size-4" />
               </Button>
             </>
           )}
 
-          {/* mobile nav */}
+          {/* mobile menu */}
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden" aria-label="منو">
+              <button
+                type="button"
+                className="flex size-10 cursor-pointer items-center justify-center rounded-xl border border-border bg-card/60 lg:hidden"
+                aria-label="باز کردن منو"
+              >
                 <Menu className="size-5" />
-              </Button>
+              </button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72 border-border bg-sidebar">
-              <SheetHeader>
-                <SheetTitle><Logo small /></SheetTitle>
+            <SheetContent side="left" className="w-[300px] border-border bg-[#131d30]/95 backdrop-blur-xl p-0">
+              <SheetHeader className="border-b border-border p-5 pb-4 text-right">
+                <SheetTitle className="sr-only">منوی ناوبری</SheetTitle>
+                <Logo showText />
               </SheetHeader>
-              <nav className="mt-4 flex flex-col gap-1 px-2" aria-label="منوی موبایل">
-                {navItems.map((n) => (
+              <nav className="flex flex-col gap-1 p-4" aria-label="ناوبری موبایل">
+                {NAV_ITEMS.map((n) => (
                   <button
                     key={n.key}
+                    type="button"
                     onClick={() => { goPublic(n.key); setMobileOpen(false); }}
-                    className={cn("rounded-lg px-3 py-2.5 text-right text-sm font-medium transition-colors hover:bg-card", publicPage === n.key ? "bg-card text-primary" : "text-muted-foreground")}
+                    className={cn(
+                      "cursor-pointer rounded-xl px-4 py-3 text-right text-sm font-medium transition-colors hover:bg-primary/10 hover:text-primary",
+                      isActive(n.match) ? "bg-primary/10 text-primary" : "text-foreground/80"
+                    )}
                   >
                     {n.label}
                   </button>
                 ))}
-                {!user && (
-                  <Button className="mt-3" onClick={() => { setAuthOpen(true); setMobileOpen(false); }}>
-                    <LogIn className="size-4" /> ورود / ثبت‌نام
+                <div className="my-3 h-px bg-border" />
+                {user ? (
+                  <Button className="w-full gap-2" onClick={() => { goStudent("overview"); setMobileOpen(false); }}>
+                    <LayoutDashboard className="size-4" /> داشبورد من
                   </Button>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <Button className="glow-accent w-full" onClick={() => { setAuthOpen(true); setMobileOpen(false); }}>
+                      <LogIn className="size-4" /> ورود | ثبت‌نام
+                    </Button>
+                    <Button variant="outline" className="w-full" onClick={() => { goPublic("courses"); setMobileOpen(false); }}>
+                      مشاهده دوره‌ها
+                    </Button>
+                  </div>
                 )}
               </nav>
             </SheetContent>
@@ -189,77 +374,143 @@ export function PublicHeader() {
   );
 }
 
+/* ============================================================
+   public footer
+============================================================ */
+
 export function PublicFooter() {
   const goPublic = useApp((s) => s.goPublic);
-  const cols: { title: string; links: { label: string; page: string; param?: string }[] }[] = [
-    {
-      title: "آموزش",
-      links: [
-        { label: "همه دوره‌ها", page: "courses" },
-        { label: "مسیرهای یادگیری", page: "paths" },
-        { label: "منابع رایگان", page: "resources" },
-        { label: "بلاگ", page: "blog" },
-      ],
-    },
-    {
-      title: "خدمات",
-      links: [
-        { label: "پلن‌های منتورینگ", page: "services" },
-        { label: "منتورها", page: "mentors" },
-        { label: "نظرات دانشجویان", page: "testimonials" },
-        { label: "سوالات متداول", page: "faq" },
-      ],
-    },
-    {
-      title: "دی‌صفارا",
-      links: [
-        { label: "درباره ما", page: "about" },
-        { label: "تماس با ما", page: "contact" },
-        { label: "حریم خصوصی", page: "privacy" },
-        { label: "قوانین و مقررات", page: "terms" },
-      ],
-    },
+  const [email, setEmail] = useState("");
+
+  const quickLinks = [
+    { label: "صفحه اصلی", page: "home" },
+    { label: "همه دوره‌ها", page: "courses" },
+    { label: "مسیرهای یادگیری", page: "paths" },
+    { label: "منتورها", page: "mentors" },
+    { label: "بلاگ", page: "blog" },
+    { label: "سوالات متداول", page: "faq" },
   ];
+  const serviceLinks = [
+    { label: "خدمات منتورینگ", page: "services" },
+    { label: "منابع رایگان", page: "resources" },
+    { label: "نظرات دانشجویان", page: "testimonials" },
+    { label: "درباره ما", page: "about" },
+    { label: "تماس با ما", page: "contact" },
+  ];
+
+  const subscribe = () => {
+    if (!email.includes("@")) {
+      toast({ title: "ایمیل نامعتبر است", description: "لطفاً یک ایمیل صحیح وارد کنید.", variant: "destructive" });
+      return;
+    }
+    setEmail("");
+    toast({ title: "عضویت شما ثبت شد ✉️", description: "آخرین تحلیل‌ها و تخفیف‌ها را برایتان ارسال می‌کنیم." });
+  };
+
+  const socials = [
+    { icon: Instagram, label: "اینستاگرام" },
+    { icon: Send, label: "تلگرام" },
+    { icon: Youtube, label: "یوتیوب" },
+    { icon: Twitter, label: "توییتر" },
+  ];
+
   return (
-    <footer className="mt-auto border-t border-border bg-sidebar/60">
-      <div className="mx-auto max-w-7xl px-4 py-12 md:px-6">
-        <div className="grid gap-10 md:grid-cols-5">
-          <div className="space-y-4 md:col-span-2">
+    <footer className="relative mt-auto border-t border-border/70 bg-[#0d1522]">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-primary/60 to-transparent" />
+      <div className="mx-auto max-w-7xl px-4 py-14 md:px-6">
+        <div className="grid gap-10 lg:grid-cols-[1.4fr_0.8fr_0.8fr_1fr]">
+          {/* brand */}
+          <div className="space-y-5">
             <Logo />
             <p className="max-w-sm text-sm leading-7 text-muted-foreground">
-              آکادمی تخصصی آموزش معامله‌گری و بازارهای مالی؛ با مسیرهای یادگیری ساختاریافته، منتورینگ حرفه‌ای و ابزارهای تمرین واقعی، مسیر شما تا معامله‌گری مستقل را کوتاه‌تر می‌کنیم.
+              دی‌صفارا آکادمی تخصصی آموزش معامله‌گری در بازارهای مالی جهانی است؛ با دوره‌های ساختاریافته، منتورینگ اختصاصی و ورک‌اسپیس معاملاتی، مسیر شما از صفر تا حرفه‌ای طراحی شده است.
             </p>
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <ShieldCheck className="size-4 text-primary" /> پرداخت امن
-              <BadgeCheck className="size-4 text-primary" /> ضمانت بازگشت وجه
-              <Headphones className="size-4 text-primary" /> پشتیبانی ۷ روز هفته
+            <div className="flex gap-2.5">
+              {socials.map((s) => (
+                <button
+                  key={s.label}
+                  type="button"
+                  aria-label={s.label}
+                  className="flex size-10 cursor-pointer items-center justify-center rounded-xl border border-border bg-card/50 text-muted-foreground transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary"
+                >
+                  <s.icon className="size-[18px]" />
+                </button>
+              ))}
             </div>
           </div>
-          {cols.map((c) => (
-            <div key={c.title}>
-              <p className="mb-4 text-sm font-bold">{c.title}</p>
-              <ul className="space-y-2.5">
-                {c.links.map((l) => (
-                  <li key={l.label}>
-                    <button onClick={() => goPublic(l.page, l.param)} className="text-sm text-muted-foreground transition-colors hover:text-primary">
-                      {l.label}
-                    </button>
-                  </li>
-                ))}
-              </ul>
+
+          {/* links */}
+          <nav aria-label="لینک‌های سریع">
+            <p className="mb-4 text-sm font-bold">لینک‌های سریع</p>
+            <ul className="space-y-2.5">
+              {quickLinks.map((l) => (
+                <li key={l.page}>
+                  <button type="button" onClick={() => goPublic(l.page)} className="cursor-pointer text-sm text-muted-foreground transition-colors hover:text-primary">
+                    {l.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <nav aria-label="خدمات">
+            <p className="mb-4 text-sm font-bold">خدمات و منابع</p>
+            <ul className="space-y-2.5">
+              {serviceLinks.map((l) => (
+                <li key={l.page}>
+                  <button type="button" onClick={() => goPublic(l.page)} className="cursor-pointer text-sm text-muted-foreground transition-colors hover:text-primary">
+                    {l.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* contact + newsletter */}
+          <div className="space-y-5">
+            <p className="text-sm font-bold">در تماس باشیم</p>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li>تهران، خیابان ولیعصر، برج نگین، طبقه ۱۲</li>
+              <li dir="ltr" className="text-right">{toFa("021-9100 2233")}</li>
+              <li dir="ltr" className="text-right">support@dsafara.com</li>
+              <li>شنبه تا پنجشنبه، {toFa(9)} تا {toFa(18)}</li>
+            </ul>
+            <div className="space-y-2">
+              <Label htmlFor="newsletter" className="text-xs text-muted-foreground">عضویت در خبرنامه تحلیل‌های هفتگی</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="newsletter" dir="ltr" type="email" placeholder="you@email.com"
+                  value={email} onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && subscribe()}
+                  className="bg-card/60"
+                />
+                <Button size="icon" className="glow-accent shrink-0" onClick={subscribe} aria-label="عضویت">
+                  <Send className="size-4" />
+                </Button>
+              </div>
             </div>
-          ))}
+          </div>
         </div>
-        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-border pt-6 text-xs text-muted-foreground md:flex-row">
-          <p>© {toFa(1403)} دی‌صفارا — تمامی حقوق محفوظ است.</p>
-          <p>ساخته شده با ❤️ برای معامله‌گران ایرانی</p>
+
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border/60 pt-6 md:flex-row">
+          <p className="text-xs text-muted-foreground">
+            © {toFa(1403)} دی‌صفارا — تمامی حقوق محفوظ است.
+          </p>
+          <div className="flex items-center gap-5">
+            <button type="button" onClick={() => goPublic("privacy")} className="cursor-pointer text-xs text-muted-foreground transition-colors hover:text-primary">حریم خصوصی</button>
+            <button type="button" onClick={() => goPublic("terms")} className="cursor-pointer text-xs text-muted-foreground transition-colors hover:text-primary">قوانین و مقررات</button>
+            <span className="flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1 text-[11px] text-primary">
+              <span className="live-dot size-1.5 rounded-full bg-primary" /> همه سرویس‌ها فعال
+            </span>
+          </div>
         </div>
       </div>
     </footer>
   );
 }
 
-/* ================= auth dialog (OTP) ================= */
+/* ============================================================
+   auth dialog
+============================================================ */
 
 export function AuthDialog() {
   const { authOpen, setAuthOpen, setUser } = useApp();
@@ -310,75 +561,340 @@ export function AuthDialog() {
 
   return (
     <Dialog open={authOpen} onOpenChange={(o) => !o && close()}>
-      <DialogContent className="max-w-md border-border bg-card sm:rounded-2xl">
-        <DialogHeader>
-          <DialogTitle className="text-lg font-extrabold">
-            {step === "phone" ? "ورود | ثبت‌نام" : "کد تایید را وارد کنید"}
-          </DialogTitle>
-          <DialogDescription>
-            {step === "phone"
-              ? "با شماره موبایل وارد شوید یا حساب جدید بسازید."
-              : `کد ۶ رقمی ارسال‌شده به ${toFa(phone)} را وارد کنید.`}
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="max-w-md overflow-hidden border-border bg-card p-0 sm:rounded-3xl">
+        <div className="h-1.5 w-full bg-gradient-to-l from-primary via-emerald-400 to-sky-400" />
+        <div className="p-6">
+          <DialogHeader className="space-y-2 text-right">
+            <DialogTitle className="text-xl font-black">
+              {step === "phone" ? "ورود | ثبت‌نام" : "کد تایید را وارد کنید"}
+            </DialogTitle>
+            <DialogDescription className="leading-6">
+              {step === "phone"
+                ? "با شماره موبایل وارد شوید یا حساب جدید بسازید؛ کمتر از ۳۰ ثانیه."
+                : `کد ۶ رقمی ارسال‌شده به ${toFa(phone)} را وارد کنید.`}
+            </DialogDescription>
+          </DialogHeader>
 
-        {step === "phone" ? (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="auth-name">نام و نام خانوادگی (اختیاری)</Label>
-              <Input id="auth-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="مثلاً علی کریمی" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="auth-phone">شماره موبایل</Label>
-              <Input
-                id="auth-phone" dir="ltr" inputMode="numeric" className="text-left"
-                value={phone} onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
-                placeholder="09xxxxxxxxx" maxLength={11}
-              />
-            </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button className="w-full" onClick={requestOtp} disabled={loading || phone.length !== 11}>
-              {loading ? "در حال ارسال..." : "دریافت کد تایید"}
-            </Button>
-            <div className="rounded-xl border border-primary/25 bg-primary/5 p-3 text-xs leading-6 text-muted-foreground">
-              <p className="font-medium text-primary">حساب‌های نمایشی:</p>
-              <p>دانشجو: <span dir="ltr">09123333333</span> | مدیر: <span dir="ltr">09120000000</span> | منتور: <span dir="ltr">09121111111</span></p>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {devCode && (
-              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-center text-sm">
-                <p className="text-xs text-amber-400">حالت نمایشی — کد تایید شما:</p>
-                <p dir="ltr" className="mt-1 text-2xl font-extrabold tracking-[0.4em] text-amber-300">{toFa(devCode)}</p>
+          {step === "phone" ? (
+            <div className="mt-5 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="auth-name">نام و نام خانوادگی (اختیاری)</Label>
+                <Input id="auth-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="مثلاً علی کریمی" className="bg-card/60" />
               </div>
-            )}
-            <div dir="ltr" className="flex justify-center">
-              <InputOTP maxLength={6} value={code} onChange={setCode}>
-                <InputOTPGroup>
-                  <InputOTPSlot index={0} /><InputOTPSlot index={1} /><InputOTPSlot index={2} />
-                </InputOTPGroup>
-                <InputOTPSeparator />
-                <InputOTPGroup>
-                  <InputOTPSlot index={3} /><InputOTPSlot index={4} /><InputOTPSlot index={5} />
-                </InputOTPGroup>
-              </InputOTP>
+              <div className="space-y-2">
+                <Label htmlFor="auth-phone">شماره موبایل</Label>
+                <Input
+                  id="auth-phone" dir="ltr" inputMode="numeric" className="text-left bg-card/60"
+                  value={phone} onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
+                  placeholder="09xxxxxxxxx" maxLength={11}
+                />
+              </div>
+              {error && <p className="text-sm text-destructive">{error}</p>}
+              <Button className="glow-accent w-full" onClick={requestOtp} disabled={loading || phone.length !== 11}>
+                {loading ? "در حال ارسال..." : "دریافت کد تایید"}
+              </Button>
+              <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3.5 text-xs leading-6 text-muted-foreground">
+                <p className="mb-1 flex items-center gap-1.5 font-semibold text-primary"><Sparkles className="size-3.5" /> حساب‌های نمایشی:</p>
+                <p>دانشجو: <span dir="ltr" className="font-medium">09123333333</span> | مدیر: <span dir="ltr" className="font-medium">09120000000</span> | منتور: <span dir="ltr" className="font-medium">09121111111</span></p>
+              </div>
             </div>
-            {error && <p className="text-center text-sm text-destructive">{error}</p>}
-            <Button className="w-full" onClick={verify} disabled={loading || code.length !== 6}>
-              {loading ? "در حال بررسی..." : "تایید و ورود"}
-            </Button>
-            <Button variant="ghost" className="w-full" onClick={() => setStep("phone")}>
-              تغییر شماره
-            </Button>
-          </div>
-        )}
+          ) : (
+            <div className="mt-5 space-y-4">
+              {devCode && (
+                <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-center">
+                  <p className="text-xs text-amber-400">حالت نمایشی — کد تایید شما:</p>
+                  <p dir="ltr" className="mt-1 text-2xl font-black tracking-[0.4em] text-amber-300">{toFa(devCode)}</p>
+                </div>
+              )}
+              <div dir="ltr" className="flex justify-center">
+                <InputOTP maxLength={6} value={code} onChange={setCode}>
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} /><InputOTPSlot index={1} /><InputOTPSlot index={2} />
+                  </InputOTPGroup>
+                  <InputOTPSeparator />
+                  <InputOTPGroup>
+                    <InputOTPSlot index={3} /><InputOTPSlot index={4} /><InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+              {error && <p className="text-center text-sm text-destructive">{error}</p>}
+              <Button className="glow-accent w-full" onClick={verify} disabled={loading || code.length !== 6}>
+                {loading ? "در حال بررسی..." : "تایید و ورود"}
+              </Button>
+              <Button variant="ghost" className="w-full" onClick={() => setStep("phone")}>
+                تغییر شماره
+              </Button>
+            </div>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
 }
 
-/* ================= home page ================= */
+/* ============================================================
+   course card
+============================================================ */
+
+export function CourseCard({ course }: { course: CourseType }) {
+  const goPublic = useApp((s) => s.goPublic);
+  const levelMap: Record<string, string> = { BEGINNER: "مقدماتی", INTERMEDIATE: "متوسط", ADVANCED: "پیشرفته" };
+  return (
+    <article
+      role="link" tabIndex={0}
+      onClick={() => goPublic("course", course.slug)}
+      onKeyDown={(e) => e.key === "Enter" && goPublic("course", course.slug)}
+      className="card-premium group flex cursor-pointer flex-col overflow-hidden rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <div className="relative">
+        <CourseCover image={course.image} category={course.category?.title} className="h-44 w-full" />
+        <div className="absolute right-3 top-3 flex gap-2">
+          <span className="rounded-lg border border-border/60 bg-[#101827]/70 px-2.5 py-1 text-[11px] font-semibold backdrop-blur">
+            {levelMap[course.level] || course.level}
+          </span>
+          {course.isFree && (
+            <span className="rounded-lg bg-primary px-2.5 py-1 text-[11px] font-bold text-primary-foreground">رایگان</span>
+          )}
+        </div>
+        <span className="absolute bottom-3 left-3 flex items-center gap-1 rounded-lg border border-border/60 bg-[#101827]/70 px-2.5 py-1 text-[11px] backdrop-blur">
+          <Clock className="size-3 text-primary" /> {faNum(course.durationHours)} ساعت
+        </span>
+      </div>
+
+      <div className="flex flex-1 flex-col gap-3 p-5">
+        <div className="flex items-center justify-between text-xs">
+          <span className="flex items-center gap-1.5 text-amber-400">
+            <Star className="size-3.5 fill-amber-400" />
+            <span className="font-bold">{faNum(course.rating, 1)}</span>
+          </span>
+          <span className="text-muted-foreground">{faNum(course.studentsCount)} دانشجو</span>
+        </div>
+        <h3 className="line-clamp-2 min-h-[3.5rem] text-[15px] font-bold leading-7 transition-colors group-hover:text-primary">
+          {course.title}
+        </h3>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="flex size-6 items-center justify-center rounded-full bg-primary/15 text-[10px] font-bold text-primary">
+            {course.mentor?.name?.charAt(0) || "د"}
+          </span>
+          {course.mentor?.name || "تیم دی‌صفارا"}
+          {course.category && <span className="mr-auto rounded-md bg-muted px-2 py-0.5">{course.category.title}</span>}
+        </div>
+        <div className="mt-auto flex items-center justify-between border-t border-border pt-4">
+          <div className="flex items-baseline gap-2">
+            {course.oldPrice ? <span className="text-xs text-muted-foreground line-through">{faToman(course.oldPrice)}</span> : null}
+            <span className={cn("text-base font-black", course.price === 0 ? "text-primary" : "text-foreground")}>
+              {course.price === 0 ? "رایگان" : faToman(course.price)}
+            </span>
+          </div>
+          <span className="flex size-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-all duration-300 group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground">
+            <ChevronLeft className="size-4" />
+          </span>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+/* ============================================================
+   hero — live chart
+============================================================ */
+
+const PAIRS = [
+  { sym: "XAUUSD", label: "طلا / دلار", base: 2332, vol: 9, decimals: 1, seed: 7 },
+  { sym: "BTCUSD", label: "بیت‌کوین / دلار", base: 61240, vol: 320, decimals: 0, seed: 13 },
+  { sym: "EURUSD", label: "یورو / دلار", base: 1.0842, vol: 0.004, decimals: 4, seed: 21 },
+];
+
+function LiveChart() {
+  const [pairIdx, setPairIdx] = useState(0);
+  const [tf, setTf] = useState(0);
+  const pair = PAIRS[pairIdx];
+  const [candles, setCandles] = useState<Candle[]>(() => seededCandles(26, pair.seed, pair.base, pair.vol));
+  const [price, setPrice] = useState(pair.base);
+  const [dir, setDir] = useState<"up" | "down">("up");
+  const [prevKey, setPrevKey] = useState({ p: pairIdx, t: tf });
+
+  // regenerate when pair/tf changes (adjust state during render pattern)
+  if (prevKey.p !== pairIdx || prevKey.t !== tf) {
+    setPrevKey({ p: pairIdx, t: tf });
+    const fresh = seededCandles(26, pair.seed + tf * 101, pair.base, pair.vol);
+    setCandles(fresh);
+    setPrice(fresh[fresh.length - 1].c);
+    setDir("up");
+  }
+
+  // live tick
+  useEffect(() => {
+    const id = setInterval(() => {
+      setCandles((cs) => {
+        const last = cs[cs.length - 1];
+        const drift = (Math.random() - 0.47) * pair.vol * 0.9;
+        const nc = last.c + drift;
+        const next = cs.slice(0, -1).concat({ o: last.o, h: Math.max(last.h, nc), l: Math.min(last.l, nc), c: nc });
+        if (Math.random() < 0.35) {
+          const nnc = nc + (Math.random() - 0.46) * pair.vol * 0.8;
+          next.push({ o: nc, h: Math.max(nc, nnc), l: Math.min(nc, nnc), c: nnc });
+          if (next.length > 30) next.shift();
+        }
+        setPrice(nc);
+        setDir(nc >= last.c ? "up" : "down");
+        return next;
+      });
+    }, 1100);
+    return () => clearInterval(id);
+  }, [pair.vol]);
+
+  const first = candles[0]?.c ?? pair.base;
+  const changePct = ((price - first) / first) * 100;
+
+  return (
+    <div className="relative">
+      {/* glow */}
+      <div className="absolute -inset-8 rounded-[2.5rem] bg-primary/10 blur-3xl" aria-hidden />
+
+      <div className="glass-strong relative rounded-3xl p-5 md:p-6">
+        {/* header */}
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="flex size-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
+              <ChartCandlestick className="size-5" />
+            </span>
+            <div className="leading-tight">
+              <p className="text-sm font-black">{pair.sym}</p>
+              <p className="text-[11px] text-muted-foreground">{pair.label} · بازار جهانی</p>
+            </div>
+          </div>
+          <div className="text-left">
+            <p key={price} className={cn("price-flash rounded-lg px-2 py-0.5 text-xl font-black tabular-nums", dir === "up" ? "text-primary" : "text-destructive")}>
+              {faNum(price, pair.decimals)}
+            </p>
+            <p className={cn("flex items-center justify-end gap-1 text-xs font-bold", changePct >= 0 ? "text-primary" : "text-destructive")}>
+              {changePct >= 0 ? <TrendingUp className="size-3.5" /> : <TrendingUp className="size-3.5 rotate-180" />}
+              {faNum(Math.abs(changePct), 2)}٪
+            </p>
+          </div>
+        </div>
+
+        {/* pair chips */}
+        <div className="mb-3 flex gap-2">
+          {PAIRS.map((p, i) => (
+            <button
+              key={p.sym}
+              type="button"
+              onClick={() => setPairIdx(i)}
+              className={cn(
+                "cursor-pointer rounded-lg border px-3 py-1.5 text-[11px] font-bold transition-all",
+                i === pairIdx
+                  ? "border-primary/50 bg-primary/15 text-primary"
+                  : "border-border bg-card/50 text-muted-foreground hover:border-primary/30 hover:text-foreground"
+              )}
+            >
+              {p.sym}
+            </button>
+          ))}
+          <div className="mr-auto flex gap-1">
+            {["H1", "H4", "D1", "W1"].map((t, i) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setTf(i)}
+                className={cn(
+                  "cursor-pointer rounded-md px-2 py-1 text-[10px] font-bold transition-colors",
+                  i === tf ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* chart */}
+        <div className="rounded-2xl border border-border/60 bg-[#0d1522]/60 p-2">
+          <CandleChart data={candles} height={220} decimals={pair.decimals} />
+        </div>
+
+        {/* footer meta */}
+        <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+          {[
+            { l: "وین‌ریت این ماه", v: `${faNum(68)}٪`, c: "text-primary" },
+            { l: "R:R میانگین", v: toFa("1:2.8"), c: "text-sky-400" },
+            { l: "معاملات فعال", v: faNum(12), c: "text-foreground" },
+          ].map((s) => (
+            <div key={s.l} className="rounded-xl border border-border/60 bg-card/50 p-3">
+              <p className="text-[10px] text-muted-foreground">{s.l}</p>
+              <p className={cn("mt-1 text-base font-black", s.c)}>{s.v}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* floating badges */}
+      <div className="float-card glass absolute -right-4 -top-5 hidden items-center gap-2.5 rounded-2xl px-4 py-3 md:flex">
+        <span className="flex size-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
+          <Target className="size-4.5" />
+        </span>
+        <div className="leading-tight">
+          <p className="text-[10px] text-muted-foreground">سیگنال موفق</p>
+          <p className="text-sm font-black text-primary">+{faNum(84)}٪</p>
+        </div>
+      </div>
+      <div className="float-card-2 glass absolute -bottom-6 -left-4 hidden items-center gap-2.5 rounded-2xl px-4 py-3 md:flex">
+        <span className="flex size-9 items-center justify-center rounded-xl bg-sky-400/15 text-sky-400">
+          <Wallet className="size-4.5" />
+        </span>
+        <div className="leading-tight">
+          <p className="text-[10px] text-muted-foreground">سود ثبت‌شده دانشجویان</p>
+          <p className="text-sm font-black text-sky-300">+{faNum(2480)}$</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   ticker band
+============================================================ */
+
+const TICKER = [
+  { sym: "XAUUSD", price: 2348.5, chg: +0.84, d: 2 },
+  { sym: "EURUSD", price: 1.0842, chg: -0.12, d: 4 },
+  { sym: "BTCUSD", price: 61240, chg: +2.31, d: 0 },
+  { sym: "GBPUSD", price: 1.2715, chg: +0.09, d: 4 },
+  { sym: "US30", price: 38450, chg: +0.52, d: 0 },
+  { sym: "USOIL", price: 78.24, chg: -1.05, d: 2 },
+  { sym: "ETHUSD", price: 3342, chg: +1.72, d: 0 },
+  { sym: "SP500", price: 5128, chg: +0.34, d: 0 },
+];
+
+function TickerBand() {
+  const row = [...TICKER, ...TICKER];
+  return (
+    <div className="border-y border-border/70 bg-[#0d1522]/80 py-3" dir="ltr">
+      <div className="mask-fade-x overflow-hidden">
+        <div className="marquee gap-10" style={{ "--marquee-dur": "42s" } as React.CSSProperties}>
+          {[0, 1].map((half) => (
+            <div key={half} className="flex shrink-0 items-center gap-10 pl-10">
+              {row.map((t, i) => (
+                <div key={`${half}-${i}`} className="flex shrink-0 items-center gap-2.5 text-xs">
+                  <span className="font-black tracking-wide text-foreground">{t.sym}</span>
+                  <span className="text-muted-foreground tabular-nums">{faNum(t.price, t.d)}</span>
+                  <span className={cn("rounded-md px-1.5 py-0.5 font-bold tabular-nums", t.chg >= 0 ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive")}>
+                    {t.chg >= 0 ? "▲" : "▼"} {faNum(Math.abs(t.chg), 2)}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   home page
+============================================================ */
 
 type PublicHomeData = {
   courses: CourseType[];
@@ -391,411 +907,669 @@ type PublicHomeData = {
   categories: { id: string; title: string; slug: string; description: string }[];
 };
 
-export type CourseType = {
-  id: string; title: string; slug: string; description: string; image?: string;
-  level: string; price: number; oldPrice?: number | null; durationHours: number;
-  rating: number; studentsCount: number; isFree: boolean;
-  category?: { title: string; slug: string } | null;
-  mentor?: { id: string; name: string; avatar: string } | null;
-};
-
-export type PathType = {
-  id: string; title: string; slug: string; description: string; icon?: string;
-  level: string; audience?: string; objective?: string; color?: string;
-  courses: { course: CourseType; order: number }[];
-};
-
-const tickerItems = [
-  { sym: "XAUUSD", price: "۲,۳۱۲.۵۰", chg: +0.84 },
-  { sym: "EURUSD", price: "۱.۰۸۴۲", chg: -0.12 },
-  { sym: "BTCUSD", price: "۶۱,۲۴۰", chg: +2.31 },
-  { sym: "GBPUSD", price: "۱.۲۷۱۵", chg: +0.09 },
-  { sym: "US30", price: "۳۸,۴۵۰", chg: +0.52 },
-  { sym: "USOIL", price: "۷۸.۲۴", chg: -1.05 },
-];
-
-function Ticker() {
-  return (
-    <div className="flex items-center gap-6 overflow-hidden" dir="ltr">
-      {tickerItems.map((t) => (
-        <div key={t.sym} className="flex shrink-0 items-center gap-2 text-xs">
-          <span className="font-bold text-foreground">{t.sym}</span>
-          <span className="text-muted-foreground">{t.price}</span>
-          <span className={cn("font-medium tabular-nums", t.chg >= 0 ? "text-primary" : "text-destructive")}>
-            {t.chg >= 0 ? "▲" : "▼"} {toFa(Math.abs(t.chg).toFixed(2))}%
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export function HomePage() {
   const { data, loading } = useFetch<PublicHomeData>("/api/public?section=home");
   const goPublic = useApp((s) => s.goPublic);
+  const setAuthOpen = useApp((s) => s.setAuthOpen);
   const setMode = useApp((s) => s.setMode);
   const user = useApp((s) => s.user);
   const [openFaq, setOpenFaq] = useState<string | null>(null);
 
+  const startLearning = () => (user ? setMode("student") : setAuthOpen(true));
+
   return (
     <main>
-      {/* ===== hero ===== */}
-      <section className="hero-grid-bg relative overflow-hidden">
-        <div className="mx-auto max-w-7xl px-4 pb-16 pt-14 md:px-6 md:pb-24 md:pt-20">
-          <div className="grid items-center gap-10 lg:grid-cols-2">
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary">
-                <Sparkles className="size-3.5" /> آکادمی تخصصی ترید و بازارهای مالی
-              </div>
-              <h1 className="text-3xl font-extrabold leading-[1.35] md:text-5xl md:leading-[1.3]">
-                از <span className="text-primary ticker-glow">صفر</span> تا معامله‌گر
-                <br />
-                حرفه‌ای و مستقل
-              </h1>
-              <p className="max-w-xl text-sm leading-8 text-muted-foreground md:text-base">
-                آموزش ساختاریافته پرایس اکشن و اسمارت مانی، منتورینگ اختصاصی، ورک‌اسپیس تمرین چارت و ژورنال هوشمند معاملات — همه در یک پلتفرم. مسیر یادگیری شما را ما برنامه‌ریزی می‌کنیم؛ اجرا با شماست.
-              </p>
-              <div className="flex flex-wrap items-center gap-3">
-                <Button size="lg" className="glow-accent gap-2 text-base" onClick={() => goPublic("courses")}>
-                  شروع یادگیری <ChevronLeft className="size-5" />
+      {/* ================= HERO ================= */}
+      <section className="hero-bg noise relative overflow-hidden">
+        <div className="orb left-[-8%] top-[16%] size-72 bg-sky-500/10" aria-hidden />
+        <div className="orb right-[-6%] top-[4%] size-96 bg-primary/15" aria-hidden style={{ animationDelay: "-6s" }} />
+
+        <div className="relative z-10 mx-auto max-w-7xl px-4 pb-20 pt-16 md:px-6 md:pt-24 lg:pb-28">
+          <div className="grid items-center gap-14 lg:grid-cols-[1.02fr_0.98fr]">
+            {/* copy */}
+            <div className="space-y-7">
+              <Reveal>
+                <span className="inline-flex items-center gap-2.5 rounded-full border border-primary/25 bg-primary/8 px-4 py-2 text-xs font-semibold text-primary">
+                  <span className="live-dot size-2 rounded-full bg-primary" />
+                  آکادمی دی‌صفارا — نسل جدید آموزش معامله‌گری
+                </span>
+              </Reveal>
+
+              <Reveal delay={90}>
+                <h1 className="text-[2.4rem] font-black leading-[1.25] md:text-6xl md:leading-[1.2] xl:text-[4.2rem]">
+                  از صفر تا
+                  <br />
+                  <span className="text-gradient text-gradient-anim">معامله‌گر حرفه‌ای</span>
+                  <br />
+                  بازارهای جهانی
+                </h1>
+              </Reveal>
+
+              <Reveal delay={180}>
+                <p className="max-w-xl text-[15px] leading-8 text-muted-foreground md:text-base">
+                  آموزش ساختاریافته پرایس اکشن و اسمارت مانی، منتورینگ اختصاصی با معامله‌گران واقعی،
+                  ورک‌اسپیس تمرین چارت و ژورنال هوشمند معاملات — همه در یک پلتفرم.
+                  نقشه راه را ما می‌چینیم؛ اجرا با شماست.
+                </p>
+              </Reveal>
+
+              <Reveal delay={260} className="flex flex-wrap items-center gap-3">
+                <Button size="lg" className="glow-accent h-13 gap-2 px-7 text-base" onClick={startLearning}>
+                  شروع یادگیری رایگان <ArrowLeft className="size-5" />
                 </Button>
-                <Button size="lg" variant="outline" className="gap-2" onClick={() => goPublic("services")}>
-                  <Users className="size-4.5" /> مشاوره و منتورینگ
+                <Button size="lg" variant="outline" className="h-13 gap-2 border-border/80 bg-card/40 px-7 backdrop-blur" onClick={() => goPublic("paths")}>
+                  <GraduationCap className="size-5 text-primary" /> مشاهده مسیرها
                 </Button>
-              </div>
-              <div className="flex flex-wrap gap-x-8 gap-y-3 pt-2 text-sm">
-                {[
-                  ["+۴,۲۰۰", "دانشجوی فعال"],
-                  ["+۱۲۰", "ساعت آموزش تخصصی"],
-                  ["۹۸٪", "رضایت دانشجویان"],
-                  ["۸", "منتور حرفه‌ای"],
-                ].map(([v, l]) => (
-                  <div key={l} className="space-y-0.5">
-                    <p className="text-xl font-extrabold text-primary">{v}</p>
-                    <p className="text-xs text-muted-foreground">{l}</p>
+              </Reveal>
+
+              <Reveal delay={340} className="flex flex-wrap items-center gap-5 pt-2">
+                <div className="flex -space-x-3 space-x-reverse">
+                  {["ع", "م", "س", "ن", "ر"].map((ch, i) => (
+                    <span
+                      key={i}
+                      className="flex size-10 items-center justify-center rounded-full border-2 border-[#101827] bg-gradient-to-br from-slate-600 to-slate-800 text-xs font-bold text-foreground"
+                      style={{ zIndex: 5 - i }}
+                    >
+                      {ch}
+                    </span>
+                  ))}
+                  <span className="flex size-10 items-center justify-center rounded-full border-2 border-[#101827] bg-primary text-[10px] font-black text-primary-foreground">
+                    +{faNum(12400)}
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="size-3.5 fill-amber-400 text-amber-400" />
+                    ))}
+                    <span className="mr-1 text-xs font-bold">{faNum(4.9, 1)}</span>
                   </div>
-                ))}
-              </div>
+                  <p className="text-xs text-muted-foreground">رضایت بیش از {faNum(12400)} دانشجوی فعال</p>
+                </div>
+              </Reveal>
             </div>
 
-            {/* hero card */}
-            <div className="relative mx-auto w-full max-w-md lg:max-w-none">
-              <Card className="border-border/80 bg-card/90 shadow-2xl backdrop-blur">
-                <CardContent className="space-y-4 p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm font-bold">
-                      <CandlestickChart className="size-5 text-primary" /> XAUUSD · طلا / دلار
-                    </div>
-                    <span className="rounded-lg bg-primary/15 px-2.5 py-1 text-xs font-bold text-primary">H1</span>
-                  </div>
-                  {/* mini candlestick svg */}
-                  <svg viewBox="0 0 320 130" className="w-full" role="img" aria-label="نمودار نمایشی قیمت طلا">
-                    {[
-                      [10, 55, 75, 45, 85], [30, 50, 70, 42, 78], [50, 62, 82, 55, 90],
-                      [70, 45, 65, 38, 72], [90, 55, 78, 50, 85], [110, 70, 92, 65, 100],
-                      [130, 82, 95, 76, 105], [150, 75, 90, 70, 98], [170, 88, 108, 84, 115],
-                      [190, 95, 100, 88, 110], [210, 92, 112, 86, 120], [230, 105, 122, 100, 130],
-                      [250, 118, 125, 110, 128], [270, 112, 118, 104, 124], [290, 120, 128, 115, 130],
-                    ].map(([x, o, c, l, h], i) => (
-                      <g key={i}>
-                        <line x1={x + 6} y1={130 - h} x2={x + 6} y2={130 - l} stroke={c >= o ? "#19b887" : "#ef5466"} strokeWidth="1.5" />
-                        <rect x={x} y={130 - Math.max(o, c)} width="12" height={Math.abs(c - o) || 2} fill={c >= o ? "#19b887" : "#ef5466"} rx="2" />
-                      </g>
-                    ))}
-                  </svg>
-                  <div className="grid grid-cols-3 gap-3 text-center">
-                    <div className="rounded-xl bg-muted/70 p-3">
-                      <p className="text-[10px] text-muted-foreground">وین‌ریت این هفته</p>
-                      <p className="mt-1 text-lg font-extrabold text-primary">{toFa("۶۷٪")}</p>
-                    </div>
-                    <div className="rounded-xl bg-muted/70 p-3">
-                      <p className="text-[10px] text-muted-foreground">R:R میانگین</p>
-                      <p className="mt-1 text-lg font-extrabold text-sky-400">{toFa("۱:۲.۸")}</p>
-                    </div>
-                    <div className="rounded-xl bg-muted/70 p-3">
-                      <p className="text-[10px] text-muted-foreground">معاملات ثبت‌شده</p>
-                      <p className="mt-1 text-lg font-extrabold">{faNum(8)}</p>
-                    </div>
-                  </div>
-                  <div className="rounded-xl border border-border bg-background/60 p-4">
-                    <div className="mb-2 flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">پیشرفت دوره پرایس اکشن</span>
-                      <span className="font-bold text-primary">{toFa(68)}٪</span>
-                    </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-muted">
-                      <div className="h-full rounded-full bg-gradient-to-l from-primary to-emerald-300" style={{ width: "68%" }} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            {/* chart */}
+            <Reveal delay={200} className="relative mx-auto w-full max-w-lg lg:max-w-none">
+              <LiveChart />
+            </Reveal>
           </div>
         </div>
 
-        {/* ticker strip */}
-        <div className="border-y border-border bg-sidebar/70 py-2.5">
-          <Ticker />
-        </div>
+        <TickerBand />
       </section>
 
-      {/* ===== why us ===== */}
-      <section className="mx-auto max-w-7xl px-4 py-16 md:px-6">
-        <SectionHead center kicker="چرا دی‌صفارا؟" title="متفاوت با کلاس‌های معمول آنلاین" desc="ما فقط ویدیو نمی‌فروشیم؛ یک اکوسیستم کامل تمرین، منتورینگ و ارزیابی می‌سازیم تا یادگیری به نتیجه واقعی برسد." />
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {/* ================= STATS ================= */}
+      <section className="border-b border-border/60">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 py-10 md:grid-cols-4 md:px-6">
           {[
-            { icon: <ChartCandlestick className="size-6" />, t: "ورک‌اسپیس معاملاتی", d: "تمرین مستقیم روی چارت تعاملی با ابزارهای تحلیل، سناریونویسی و ثبت تمرین برای منتور." },
-            { icon: <Users className="size-6" />, t: "منتورینگ اختصاصی", d: "منتور متناسب با سطح شما، جلسات هفتگی، بررسی ژورنال و گزارش پیشرفت منظم." },
-            { icon: <LineChart className="size-6" />, t: "ژورنال هوشمند", d: "ثبت معاملات با تحلیل خودکار وین‌ریت، پروفیت فکتور و آمار هر نماد." },
-            { icon: <GraduationCap className="size-6" />, t: "مسیر ساختاریافته", d: "از صفر تا تخصص با نقشه راه مرحله‌به‌مرحله، آزمون و گواهینامه معتبر." },
-          ].map((f) => (
-            <Card key={f.t} className="card-hover border-border bg-card">
-              <CardContent className="space-y-3 p-6">
-                <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">{f.icon}</div>
-                <p className="font-bold">{f.t}</p>
-                <p className="text-sm leading-7 text-muted-foreground">{f.d}</p>
-              </CardContent>
-            </Card>
+            { icon: Users, value: 12400, suffix: "+", label: "دانشجوی فعال" },
+            { icon: GraduationCap, value: 38, suffix: "", label: "منتور متخصص" },
+            { icon: PlayCircle, value: 960, suffix: "+", label: "ساعت محتوای آموزشی" },
+            { icon: ShieldCheck, value: 97, suffix: "٪", label: "رضایت دانشجویان" },
+          ].map((s, i) => (
+            <Reveal key={s.label} delay={i * 90} className="flex items-center gap-4">
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
+                <s.icon className="size-5.5" />
+              </span>
+              <div>
+                <p className="text-2xl font-black text-foreground">
+                  <Counter value={s.value} suffix={s.suffix} />
+                </p>
+                <p className="text-xs text-muted-foreground">{s.label}</p>
+              </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
-      {/* ===== learning paths ===== */}
-      <section className="border-y border-border bg-sidebar/40 py-16">
+      {/* ================= LEARNING PATHS ================= */}
+      <section className="section-alt py-20 md:py-24">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
-          <SectionHead kicker="مسیرهای یادگیری" title="نقشه راه خود را انتخاب کنید" desc="هر مسیر مجموعه‌ای هدفمند از دوره‌هاست که شما را قدم‌به‌قدم به هدف می‌رساند." />
+          <SectionHead
+            center
+            kicker="مسیرهای یادگیری"
+            title="نقشه راه خودت را انتخاب کن"
+            desc="هر مسیر یک برنامه هدفمند از دوره‌ها، تمرین‌ها و آزمون‌هاست که قدم‌به‌قدم شما را به هدف می‌رساند."
+          />
           {loading ? (
-            <div className="grid gap-5 md:grid-cols-3">{[...Array(3)].map((_, i) => <div key={i} className="h-48 animate-pulse rounded-2xl bg-muted/50" />)}</div>
-          ) : (
             <div className="grid gap-5 md:grid-cols-3">
-              {data?.paths.map((p) => (
-                <Card key={p.id} className="card-hover cursor-pointer border-border bg-card" onClick={() => goPublic("path", p.slug)}>
-                  <CardContent className="p-6">
-                    <div className="mb-4 flex items-center justify-between">
-                      <div className="flex size-12 items-center justify-center rounded-xl text-2xl" style={{ background: `${p.color}22`, color: p.color || "#19b887" }}>
-                        {p.icon === "Rocket" ? "🚀" : p.icon === "Target" ? "🎯" : "₿"}
+              {[...Array(3)].map((_, i) => <div key={i} className="h-56 animate-pulse rounded-2xl bg-muted/40" />)}
+            </div>
+          ) : (
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {(data?.paths || []).map((p, i) => {
+                const hours = p.courses.reduce((a, c) => a + (c.course?.durationHours || 0), 0);
+                const featured = i === 0;
+                return (
+                  <Reveal
+                    key={p.id}
+                    delay={i * 110}
+                    className={cn(featured && "md:col-span-2 lg:col-span-1")}
+                  >
+                    <article
+                      role="link" tabIndex={0}
+                      onClick={() => goPublic("path", p.slug)}
+                      onKeyDown={(e) => e.key === "Enter" && goPublic("path", p.slug)}
+                      className="card-premium group flex h-full cursor-pointer flex-col gap-4 rounded-2xl p-6 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <div className="flex items-start justify-between">
+                        <span
+                          className="flex size-13 items-center justify-center rounded-2xl text-2xl"
+                          style={{ background: `${p.color || "#19b887"}1f`, color: p.color || "#19b887" }}
+                        >
+                          {p.icon === "Rocket" ? "🚀" : p.icon === "Target" ? "🎯" : p.icon === "Bitcoin" ? "₿" : "📈"}
+                        </span>
+                        <span className="rounded-lg bg-muted px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
+                          {faNum(p.courses.length)} دوره · {faNum(hours)} ساعت
+                        </span>
                       </div>
-                      <span className="text-xs text-muted-foreground">{toFa(p.courses.length)} دوره</span>
-                    </div>
-                    <p className="mb-2 font-bold">{p.title}</p>
-                    <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">{p.description}</p>
-                    <div className="mt-4 flex items-center gap-1 text-xs font-medium text-primary">
-                      مشاهده مسیر <ChevronLeft className="size-4" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      <div className="space-y-2">
+                        <h3 className="text-lg font-black transition-colors group-hover:text-primary">{p.title}</h3>
+                        <p className={cn("text-sm leading-7 text-muted-foreground", featured ? "line-clamp-2" : "line-clamp-3")}>{p.description}</p>
+                      </div>
+                      {featured && p.courses.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {p.courses.slice(0, 3).map((c) => (
+                            <span key={c.course.id} className="rounded-lg border border-border/70 bg-card/60 px-2.5 py-1 text-[11px] text-muted-foreground">
+                              {c.course.title}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <span className="mt-auto flex items-center gap-1.5 pt-2 text-sm font-bold text-primary">
+                        شروع مسیر
+                        <ChevronLeft className="size-4 transition-transform duration-300 group-hover:-translate-x-1" />
+                      </span>
+                    </article>
+                  </Reveal>
+                );
+              })}
             </div>
           )}
         </div>
       </section>
 
-      {/* ===== featured courses ===== */}
-      <section className="mx-auto max-w-7xl px-4 py-16 md:px-6">
-        <div className="mb-8 flex items-end justify-between">
-          <SectionHead kicker="دوره‌های محبوب" title="پرطرفدارترین دوره‌های دی‌صفارا" />
-          <Button variant="outline" size="sm" onClick={() => goPublic("courses")}>همه دوره‌ها</Button>
-        </div>
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {(data?.courses || []).slice(0, 6).map((c) => (
-            <CourseCard key={c.id} course={c} />
-          ))}
+      {/* ================= FEATURED COURSES ================= */}
+      <section className="py-20 md:py-24">
+        <div className="mx-auto max-w-7xl px-4 md:px-6">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <SectionHead
+              kicker="دوره‌های محبوب"
+              title="پرطرفدارترین دوره‌های دی‌صفارا"
+              desc="دسترسی مادام‌العمر، تمرین تعاملی و پشتیبانی منتور — انتخاب اکثر دانشجوهای ما."
+            />
+            <Reveal className="mb-10 hidden md:block">
+              <Button variant="outline" className="gap-1.5" onClick={() => goPublic("courses")}>
+                همه دوره‌ها <ChevronLeft className="size-4" />
+              </Button>
+            </Reveal>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {loading
+              ? [...Array(6)].map((_, i) => <div key={i} className="h-80 animate-pulse rounded-2xl bg-muted/40" />)
+              : (data?.courses || []).slice(0, 6).map((c, i) => (
+                  <Reveal key={c.id} delay={(i % 3) * 90}>
+                    <CourseCard course={c} />
+                  </Reveal>
+                ))}
+          </div>
+          <Reveal className="mt-10 text-center md:hidden">
+            <Button variant="outline" className="gap-1.5" onClick={() => goPublic("courses")}>
+              مشاهده همه دوره‌ها <ChevronLeft className="size-4" />
+            </Button>
+          </Reveal>
         </div>
       </section>
 
-      {/* ===== mentors ===== */}
-      <section className="border-y border-border bg-sidebar/40 py-16">
+      {/* ================= WHY US (BENTO) ================= */}
+      <section className="section-alt py-20 md:py-24">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
-          <SectionHead center kicker="منتورها" title="مربی‌هایی که خودشان معامله‌گرند" desc="منتورهای دی‌صفارا سال‌ها در بازار واقعی معامله کرده‌اند و مسیر شما را با تجربه واقعی هدایت می‌کنند." />
-          <div className="grid gap-5 md:grid-cols-2">
-            {data?.mentors.map((m) => (
-              <Card key={m.id} className="card-hover border-border bg-card">
-                <CardContent className="flex items-start gap-4 p-6">
-                  <div className="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-xl font-extrabold text-primary">
-                    {m.name?.charAt(0)}
-                  </div>
-                  <div className="space-y-2">
-                    <p className="font-bold">{m.name}</p>
-                    <p className="text-sm leading-7 text-muted-foreground">{m.bio}</p>
-                    <Button size="sm" variant="outline" onClick={() => goPublic("mentors")}>مشاهده پلن‌ها</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <SectionHead
+            center
+            kicker="چرا دی‌صفارا؟"
+            title="فراتر از یک دوره آنلاین"
+            desc="ما فقط ویدیو نمی‌فروشیم؛ یک اکوسیستم کامل تمرین، منتورینگ و ارزیابی ساخته‌ایم تا یادگیری به نتیجه واقعی برسد."
+          />
+          <div className="grid gap-5 md:grid-cols-3">
+            {/* workspace — wide */}
+            <Reveal className="md:col-span-2">
+              <div className="card-premium flex h-full flex-col justify-between gap-6 overflow-hidden rounded-2xl p-7 md:flex-row md:items-center">
+                <div className="max-w-xs space-y-3">
+                  <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/12 text-primary">
+                    <ChartCandlestick className="size-6" />
+                  </span>
+                  <h3 className="text-lg font-black">ورک‌اسپیس معاملاتی</h3>
+                  <p className="text-sm leading-7 text-muted-foreground">
+                    تمرین مستقیم روی چارت تعاملی با ابزارهای تحلیل، سناریونویسی و ثبت تمرین برای بررسی منتور.
+                  </p>
+                </div>
+                <div className="w-full max-w-[240px] shrink-0 rounded-2xl border border-border/60 bg-[#0d1522]/70 p-3">
+                  <CandleChart data={seededCandles(14, 5, 2180, 8)} height={150} showArea={false} gridLines={2} />
+                </div>
+              </div>
+            </Reveal>
+
+            {/* mentoring */}
+            <Reveal delay={100}>
+              <div className="card-premium flex h-full flex-col gap-3 rounded-2xl p-7">
+                <span className="flex size-12 items-center justify-center rounded-2xl bg-sky-400/12 text-sky-400">
+                  <Users className="size-6" />
+                </span>
+                <h3 className="text-lg font-black">منتورینگ اختصاصی</h3>
+                <p className="text-sm leading-7 text-muted-foreground">
+                  منتور متناسب با سطح شما؛ جلسات هفتگی، بررسی ژورنال و گزارش پیشرفت منظم.
+                </p>
+                <div className="mt-auto flex -space-x-2 space-x-reverse pt-2">
+                  {["ا", "ش", "ک"].map((ch, i) => (
+                    <span key={i} className="flex size-8 items-center justify-center rounded-full border-2 border-[#141f32] bg-gradient-to-br from-primary/60 to-emerald-900 text-[10px] font-bold text-primary-foreground">
+                      {ch}
+                    </span>
+                  ))}
+                  <span className="flex size-8 items-center justify-center rounded-full border-2 border-[#141f32] bg-muted text-[9px] font-bold">
+                    +۳۵
+                  </span>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* journal */}
+            <Reveal>
+              <div className="card-premium flex h-full flex-col gap-3 rounded-2xl p-7">
+                <span className="flex size-12 items-center justify-center rounded-2xl bg-violet-400/12 text-violet-400">
+                  <LineChart className="size-6" />
+                </span>
+                <h3 className="text-lg font-black">ژورنال هوشمند</h3>
+                <p className="text-sm leading-7 text-muted-foreground">
+                  ثبت معاملات با تحلیل خودکار وین‌ریت، پروفیت فکتور و آمار هر نماد.
+                </p>
+                <div className="mt-auto flex items-end gap-1.5 pt-2" aria-hidden>
+                  {[38, 62, 46, 80, 58, 92].map((h, i) => (
+                    <span key={i} className={cn("w-4 rounded-t-md", i % 3 === 2 ? "bg-destructive/50" : "bg-primary/60")} style={{ height: h / 4 + 8 }} />
+                  ))}
+                </div>
+              </div>
+            </Reveal>
+
+            {/* certificate */}
+            <Reveal delay={90}>
+              <div className="card-premium flex h-full flex-col gap-3 rounded-2xl p-7">
+                <span className="flex size-12 items-center justify-center rounded-2xl bg-amber-400/12 text-amber-400">
+                  <Award className="size-6" />
+                </span>
+                <h3 className="text-lg font-black">آزمون و گواهینامه معتبر</h3>
+                <p className="text-sm leading-7 text-muted-foreground">
+                  با آزمون‌های پایان دوره، گواهینامه قابل استعلام بگیرید و رزومه‌تان را قوی کنید.
+                </p>
+                <div className="mt-auto pt-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-1.5 text-[11px] font-bold text-amber-300">
+                    <Award className="size-3.5" /> گواهینامه DS-۲۴۰۷
+                  </span>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* support */}
+            <Reveal delay={180}>
+              <div className="card-premium flex h-full flex-col gap-3 rounded-2xl p-7">
+                <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/12 text-primary">
+                  <Headphones className="size-6" />
+                </span>
+                <h3 className="text-lg font-black">پشتیبانی ۲۴/۷ و جامعه حرفه‌ای</h3>
+                <p className="text-sm leading-7 text-muted-foreground">
+                  هر سوالی داری بپرس؛ تیم پشتیبانی و جامعه هزاران معامله‌گر همیشه پاسخگوست.
+                </p>
+                <div className="mt-auto flex items-center gap-2 pt-2 text-xs text-primary">
+                  <span className="live-dot size-2 rounded-full bg-primary" /> پشتیبان آنلاین است
+                </div>
+              </div>
+            </Reveal>
           </div>
         </div>
       </section>
 
-      {/* ===== testimonials ===== */}
-      <section className="mx-auto max-w-7xl px-4 py-16 md:px-6">
-        <SectionHead center kicker="نظرات دانشجویان" title="نتایج واقعی، از زبان خود دانشجویان" />
-        <div className="grid gap-5 md:grid-cols-3">
-          {data?.testimonials.slice(0, 3).map((t) => (
-            <Card key={t.id} className="border-border bg-card">
-              <CardContent className="space-y-4 p-6">
-                <div className="flex gap-1 text-amber-400">{[...Array(t.rating)].map((_, i) => <span key={i}>★</span>)}</div>
-                <p className="text-sm leading-7 text-foreground/90">«{t.content}»</p>
-                <div className="flex items-center gap-3 border-t border-border pt-4">
-                  <div className="flex size-10 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary">{t.name.charAt(0)}</div>
-                  <div>
-                    <p className="text-sm font-semibold">{t.name}</p>
-                    <p className="text-xs text-muted-foreground">{t.role}</p>
+      {/* ================= WORKSPACE SHOWCASE ================= */}
+      <section className="py-20 md:py-24">
+        <div className="mx-auto max-w-7xl px-4 md:px-6">
+          <Reveal>
+            <div className="glass relative overflow-hidden rounded-[2rem]">
+              <div className="orb -left-20 bottom-[-30%] size-72 bg-primary/10" aria-hidden />
+              <div className="relative grid gap-10 p-8 md:p-12 lg:grid-cols-2 lg:items-center">
+                {/* copy */}
+                <div className="space-y-6">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-sky-400/25 bg-sky-400/10 px-4 py-1.5 text-xs font-semibold text-sky-300">
+                    <Zap className="size-3.5" /> تریدینگ ورک‌اسپیس
+                  </span>
+                  <h2 className="text-2xl font-black leading-[1.4] md:text-4xl md:leading-[1.35]">
+                    همان محیطی که در آن
+                    <span className="text-gradient"> معامله می‌کنی</span>، همان‌جا یاد می‌گیری
+                  </h2>
+                  <ul className="space-y-3.5">
+                    {[
+                      "چارت کندل‌استیک زنده با ابزارهای ترسیم و اندازه‌گیری",
+                      "ثبت تمرین تحلیل و ارسال مستقیم برای بررسی منتور",
+                      "اتصال به ژورنال معاملات و مشاهده آمار لحظه‌ای",
+                      "تمرین روی سناریوهای واقعی بازار بدون ریسک مالی",
+                    ].map((t) => (
+                      <li key={t} className="flex items-start gap-2.5 text-sm leading-7 text-foreground/85">
+                        <CheckCircle2 className="mt-1 size-4.5 shrink-0 text-primary" />
+                        {t}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button size="lg" className="glow-accent gap-2" onClick={startLearning}>
+                    ورود به ورک‌اسپیس <ArrowLeft className="size-4.5" />
+                  </Button>
+                </div>
+
+                {/* mock window */}
+                <div className="relative">
+                  <div className="absolute -inset-4 rounded-3xl bg-primary/8 blur-2xl" aria-hidden />
+                  <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-[#0d1522] shadow-2xl">
+                    {/* window bar */}
+                    <div className="flex items-center gap-2 border-b border-border/60 bg-card/60 px-4 py-2.5" dir="ltr">
+                      <span className="size-2.5 rounded-full bg-rose-500/70" />
+                      <span className="size-2.5 rounded-full bg-amber-400/70" />
+                      <span className="size-2.5 rounded-full bg-primary/70" />
+                      <span className="mx-auto rounded-md bg-muted/70 px-3 py-0.5 text-[10px] font-bold text-muted-foreground" dir="rtl">
+                        XAUUSD · H1 — ورک‌اسپیس دی‌صفارا
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-[44px_1fr]">
+                      {/* tool rail */}
+                      <div className="flex flex-col items-center gap-3 border-e border-border/60 py-4" dir="ltr">
+                        {[ChartCandlestick, LineChart, Target, Wallet].map((I, i) => (
+                          <span key={i} className={cn("flex size-8 items-center justify-center rounded-lg", i === 0 ? "bg-primary/15 text-primary" : "text-muted-foreground")}>
+                            <I className="size-4" />
+                          </span>
+                        ))}
+                      </div>
+                      <div className="space-y-3 p-3">
+                        <CandleChart data={seededCandles(20, 11, 2310, 8)} height={170} />
+                        {/* order row */}
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="rounded-xl border border-primary/30 bg-primary/10 p-2.5 text-center">
+                            <p className="text-[10px] text-primary/80">خرید / BUY</p>
+                            <p className="text-sm font-black text-primary">{faNum(2346.8, 1)}</p>
+                          </div>
+                          <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-2.5 text-center">
+                            <p className="text-[10px] text-destructive/80">فروش / SELL</p>
+                            <p className="text-sm font-black text-destructive">{faNum(2344.2, 1)}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              </div>
+            </div>
+          </Reveal>
         </div>
       </section>
 
-      {/* ===== free resources ===== */}
-      <section className="border-y border-border bg-sidebar/40 py-16">
-        <div className="mx-auto max-w-7xl px-4 md:px-6">
-          <div className="mb-8 flex items-end justify-between">
-            <SectionHead kicker="منابع رایگان" title="قبل از خرید، رایگان شروع کنید" />
-            <Button variant="outline" size="sm" onClick={() => goPublic("resources")}>همه منابع</Button>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {data?.resources.slice(0, 3).map((r) => (
-              <Card key={r.id} className="card-hover border-border bg-card">
-                <CardContent className="flex items-center gap-4 p-5">
-                  <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    {r.type === "VIDEO" ? <LineChart className="size-5" /> : <BookOpen className="size-5" />}
+      {/* ================= MENTORS ================= */}
+      {(data?.mentors?.length ?? 0) > 0 && (
+        <section className="section-alt py-20 md:py-24">
+          <div className="mx-auto max-w-7xl px-4 md:px-6">
+            <SectionHead
+              center
+              kicker="منتورها"
+              title="مربی‌هایی که خودشان معامله‌گرند"
+              desc="منتورهای دی‌صفارا سال‌ها در بازار واقعی معامله کرده‌اند و مسیر شما را با تجربه واقعی هدایت می‌کنند."
+            />
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {(data?.mentors || []).slice(0, 4).map((m, i) => (
+                <Reveal key={m.id} delay={i * 90}>
+                  <div className="card-premium group flex h-full flex-col items-center gap-3 rounded-2xl p-6 text-center">
+                    <span className="relative flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-primary/30 to-emerald-900/60 text-2xl font-black text-primary ring-2 ring-primary/30 ring-offset-4 ring-offset-[#101827] transition-transform duration-300 group-hover:scale-105">
+                      {m.name?.charAt(0)}
+                      <span className="absolute bottom-1 left-1 size-3.5 rounded-full border-2 border-[#141f32] bg-primary" />
+                    </span>
+                    <div>
+                      <p className="font-black">{m.name}</p>
+                      <p className="mt-0.5 text-xs text-primary">منتور دی‌صفارا</p>
+                    </div>
+                    <p className="line-clamp-3 text-xs leading-6 text-muted-foreground">{m.bio}</p>
+                    <button
+                      type="button"
+                      onClick={() => goPublic("mentors")}
+                      className="mt-auto inline-flex cursor-pointer items-center gap-1 text-xs font-bold text-primary hover:underline"
+                    >
+                      پلن‌های منتورینگ <ChevronLeft className="size-3.5" />
+                    </button>
                   </div>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold">{r.title}</p>
-                    <p className="truncate text-xs text-muted-foreground">{r.description}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                </Reveal>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* ===== blog teaser ===== */}
-      <section className="mx-auto max-w-7xl px-4 py-16 md:px-6">
-        <div className="mb-8 flex items-end justify-between">
-          <SectionHead kicker="بلاگ" title="آخرین مقالات آموزشی" />
-          <Button variant="outline" size="sm" onClick={() => goPublic("blog")}>همه مقالات</Button>
-        </div>
-        <div className="grid gap-5 md:grid-cols-3">
-          {data?.posts.map((p) => (
-            <Card key={p.id} className="card-hover cursor-pointer border-border bg-card" onClick={() => goPublic("post", p.slug)}>
-              <CardContent className="space-y-3 p-6">
-                <span className="rounded-lg bg-primary/10 px-2.5 py-1 text-xs text-primary">{p.category}</span>
-                <p className="font-bold leading-7">{p.title}</p>
-                <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">{p.excerpt}</p>
-                <p className="text-xs text-muted-foreground">{toFa(p.readTimeMin)} دقیقه مطالعه</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
+      {/* ================= TESTIMONIALS MARQUEE ================= */}
+      {(data?.testimonials?.length ?? 0) >= 3 && (
+        <section className="overflow-hidden py-20 md:py-24">
+          <div className="mx-auto max-w-7xl px-4 md:px-6">
+            <SectionHead
+              center
+              kicker="نظرات دانشجویان"
+              title="نتایج واقعی، از زبان خود دانشجویان"
+            />
+          </div>
+          {(() => {
+            const t = data!.testimonials;
+            const half = Math.ceil(t.length / 2);
+            const rows = [t.slice(0, half), t.slice(half).length >= 2 ? t.slice(half) : t.slice(0, half)];
+            return (
+              <div className="marquee-paused space-y-5" dir="ltr">
+                {rows.map((row, ri) => {
+                  const doubled = [...row, ...row];
+                  return (
+                    <div key={ri} className="mask-fade-x overflow-hidden">
+                      <div
+                        className={cn("marquee gap-5", ri === 1 && "marquee-rev")}
+                        style={{ "--marquee-dur": ri === 0 ? "46s" : "54s" } as React.CSSProperties}
+                      >
+                        {[0, 1].map((halfIdx) => (
+                          <div key={halfIdx} className="flex shrink-0 gap-5 pl-5" dir="rtl">
+                            {doubled.map((q, i) => (
+                              <figure
+                                key={`${halfIdx}-${i}`}
+                                className="glass w-[320px] shrink-0 rounded-2xl p-5 md:w-[380px]"
+                              >
+                                <div className="mb-3 flex gap-1">
+                                  {[...Array(q.rating)].map((_, si) => (
+                                    <Star key={si} className="size-3.5 fill-amber-400 text-amber-400" />
+                                  ))}
+                                </div>
+                                <blockquote className="text-sm leading-7 text-foreground/90">«{q.content}»</blockquote>
+                                <figcaption className="mt-4 flex items-center gap-3 border-t border-border/60 pt-4">
+                                  <span className="flex size-10 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary">
+                                    {q.name.charAt(0)}
+                                  </span>
+                                  <span>
+                                    <span className="block text-sm font-bold">{q.name}</span>
+                                    <span className="block text-xs text-muted-foreground">{q.role}</span>
+                                  </span>
+                                </figcaption>
+                              </figure>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </section>
+      )}
 
-      {/* ===== faq ===== */}
-      <section className="border-y border-border bg-sidebar/40 py-16">
-        <div className="mx-auto max-w-3xl px-4 md:px-6">
-          <SectionHead center kicker="سوالات متداول" title="هر سوالی داری، اینجا جوابش هست" />
-          <div className="space-y-3">
-            {data?.faqs.slice(0, 5).map((f) => (
-              <Card key={f.id} className="overflow-hidden border-border bg-card">
-                <button className="flex w-full items-center justify-between gap-4 p-5 text-right" onClick={() => setOpenFaq(openFaq === f.id ? null : f.id)}>
-                  <span className="text-sm font-semibold">{f.question}</span>
-                  <ChevronLeft className={cn("size-5 shrink-0 text-muted-foreground transition-transform", openFaq === f.id ? "-rotate-90" : "rotate-180")} />
+      {/* ================= BLOG ================= */}
+      {(data?.posts?.length ?? 0) > 0 && (
+        <section className="section-alt py-20 md:py-24">
+          <div className="mx-auto max-w-7xl px-4 md:px-6">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <SectionHead kicker="بلاگ دی‌صفارا" title="آخرین مقالات آموزشی" />
+              <Reveal className="mb-10 hidden md:block">
+                <Button variant="outline" className="gap-1.5" onClick={() => goPublic("blog")}>
+                  همه مقالات <ChevronLeft className="size-4" />
+                </Button>
+              </Reveal>
+            </div>
+            <div className="grid gap-5 md:grid-cols-3">
+              {(data?.posts || []).slice(0, 3).map((p, i) => (
+                <Reveal key={p.id} delay={i * 100}>
+                  <article
+                    role="link" tabIndex={0}
+                    onClick={() => goPublic("post", p.slug)}
+                    onKeyDown={(e) => e.key === "Enter" && goPublic("post", p.slug)}
+                    className="card-premium group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <div className="relative h-36">
+                      <CourseCover category={p.category} className="h-full w-full" icon={<Newspaper className="size-10 text-foreground/25" strokeWidth={1.4} />} />
+                      <span className="absolute right-3 top-3 rounded-lg bg-[#101827]/75 px-2.5 py-1 text-[11px] font-semibold text-primary backdrop-blur">
+                        {p.category}
+                      </span>
+                    </div>
+                    <div className="flex flex-1 flex-col gap-2.5 p-5">
+                      <h3 className="line-clamp-2 font-bold leading-7 transition-colors group-hover:text-primary">{p.title}</h3>
+                      <p className="line-clamp-2 text-xs leading-6 text-muted-foreground">{p.excerpt}</p>
+                      <div className="mt-auto flex items-center gap-4 pt-3 text-[11px] text-muted-foreground">
+                        <span className="flex items-center gap-1"><CalendarDays className="size-3.5" /> {faDate(p.createdAt)}</span>
+                        <span className="flex items-center gap-1"><Clock className="size-3.5" /> {faNum(p.readTimeMin)} دقیقه</span>
+                      </div>
+                    </div>
+                  </article>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ================= FREE RESOURCES ================= */}
+      {(data?.resources?.length ?? 0) > 0 && (
+        <section className="py-20 md:py-24">
+          <div className="mx-auto max-w-7xl px-4 md:px-6">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <SectionHead kicker="منابع رایگان" title="قبل از خرید، رایگان شروع کن" />
+              <Reveal className="mb-10 hidden md:block">
+                <Button variant="outline" className="gap-1.5" onClick={() => goPublic("resources")}>
+                  همه منابع <ChevronLeft className="size-4" />
+                </Button>
+              </Reveal>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {(data?.resources || []).slice(0, 4).map((r, i) => {
+                const Icon = r.type === "VIDEO" ? PlayCircle : r.type === "PDF" ? FileText : BookOpen;
+                return (
+                  <Reveal key={r.id} delay={i * 80}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        apiPost("/api/public", { action: "download-resource", id: r.id })
+                          .then(() => toast({ title: "درخواست شما ثبت شد 📥", description: "لینک دانلود برایتان ارسال می‌شود." }))
+                          .catch(() => toast({ title: "خطا در دریافت", variant: "destructive" }))
+                      }
+                      className="card-premium group flex w-full cursor-pointer items-center gap-3.5 rounded-2xl p-4 text-right outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Icon className="size-5" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-bold">{r.title}</span>
+                        <span className="block text-[11px] text-muted-foreground">{faNum(r.downloads)} دانلود · {r.size}</span>
+                      </span>
+                      <Download className="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" />
+                    </button>
+                  </Reveal>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ================= FAQ ================= */}
+      {(data?.faqs?.length ?? 0) > 0 && (
+        <section className="section-alt py-20 md:py-24">
+          <div className="mx-auto max-w-3xl px-4 md:px-6">
+            <SectionHead center kicker="سوالات متداول" title="هر سوالی داری، اینجا جوابش هست" />
+            <div className="space-y-3">
+              {(data?.faqs || []).slice(0, 6).map((f, i) => {
+                const open = openFaq === f.id;
+                return (
+                  <Reveal key={f.id} delay={i * 60}>
+                    <div className={cn("overflow-hidden rounded-2xl border bg-card transition-colors", open ? "border-primary/40" : "border-border")}>
+                      <button
+                        type="button"
+                        onClick={() => setOpenFaq(open ? null : f.id)}
+                        className="flex w-full cursor-pointer items-center justify-between gap-4 p-5 text-right"
+                        aria-expanded={open}
+                      >
+                        <span className="text-sm font-bold leading-7">{f.question}</span>
+                        <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg border border-border transition-all duration-300", open && "rotate-45 border-primary/40 bg-primary/10 text-primary")}>
+                          <Plus className="size-4" />
+                        </span>
+                      </button>
+                      <div className={cn("grid transition-[grid-template-rows] duration-300 ease-out", open ? "grid-rows-[1fr]" : "grid-rows-[0fr]")}>
+                        <div className="overflow-hidden">
+                          <p className="border-t border-border/60 px-5 py-4 text-sm leading-8 text-muted-foreground">{f.answer}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </Reveal>
+                );
+              })}
+            </div>
+            <Reveal className="mt-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                جوابت را پیدا نکردی؟{" "}
+                <button type="button" onClick={() => goPublic("contact")} className="cursor-pointer font-bold text-primary hover:underline">
+                  با ما در تماس باش
                 </button>
-                {openFaq === f.id && <p className="border-t border-border px-5 py-4 text-sm leading-7 text-muted-foreground">{f.answer}</p>}
-              </Card>
-            ))}
+              </p>
+            </Reveal>
           </div>
-          <div className="mt-6 text-center">
-            <Button variant="link" onClick={() => goPublic("faq")}>مشاهده همه سوالات</Button>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* ===== final CTA ===== */}
-      <section className="hero-grid-bg mx-auto w-full py-20">
-        <div className="mx-auto max-w-3xl px-4 text-center md:px-6">
-          <h2 className="text-2xl font-extrabold md:text-4xl">مسیر معامله‌گری حرفه‌ای را امروز شروع کنید</h2>
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-muted-foreground md:text-base">
-            اولین درس هر دوره رایگان است. همین حالا ثبت‌نام کنید و به بیش از ۴,۲۰۰ دانشجوی دی‌صفارا بپیوندید.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            {user ? (
-              <Button size="lg" className="glow-accent gap-2" onClick={() => setMode("student")}>
-                <LayoutDashboard className="size-5" /> رفتن به داشبورد
-              </Button>
-            ) : (
-              <AuthButtons />
-            )}
-            <Button size="lg" variant="outline" onClick={() => goPublic("courses")}>
-              مرور دوره‌ها
-            </Button>
+      {/* ================= FINAL CTA ================= */}
+      <section className="px-4 pb-24 pt-4 md:px-6">
+        <Reveal className="mx-auto max-w-5xl">
+          <div className="glass-strong relative overflow-hidden rounded-[2.5rem] px-6 py-14 text-center md:px-14 md:py-20">
+            <div className="orb left-1/2 top-[-40%] size-80 -translate-x-1/2 bg-primary/20" aria-hidden />
+            <div className="relative space-y-6">
+              <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-bold text-primary">
+                <Sparkles className="size-3.5" /> همین امروز شروع کن
+              </span>
+              <h2 className="mx-auto max-w-2xl text-3xl font-black leading-[1.35] md:text-5xl md:leading-[1.3]">
+                آماده‌ای مسیر حرفه‌ای‌ات را
+                <span className="text-gradient text-gradient-anim"> شروع کنی؟</span>
+              </h2>
+              <p className="mx-auto max-w-xl text-sm leading-8 text-muted-foreground md:text-base">
+                اولین قدم رایگان است. ثبت‌نام کن، منابع رایگان را دریافت کن و با منتورهای حرفه‌ای مسیرت را بساز.
+              </p>
+              <div className="flex flex-wrap justify-center gap-3 pt-2">
+                <Button size="lg" className="glow-accent h-13 gap-2 px-8 text-base" onClick={startLearning}>
+                  ثبت‌نام رایگان <ArrowLeft className="size-5" />
+                </Button>
+                <Button size="lg" variant="outline" className="h-13 border-border/80 bg-card/40 px-8" onClick={() => goPublic("contact")}>
+                  مشاوره رایگان
+                </Button>
+              </div>
+              <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 pt-4 text-xs text-muted-foreground">
+                {["دسترسی مادام‌العمر به محتوا", "تضمین بازگشت وجه تا ۷ روز", "پشتیبانی مستقیم منتور"].map((t) => (
+                  <span key={t} className="flex items-center gap-1.5">
+                    <CheckCircle2 className="size-3.5 text-primary" /> {t}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        </Reveal>
       </section>
     </main>
   );
 }
-
-function AuthButtons() {
-  const setAuthOpen = useApp((s) => s.setAuthOpen);
-  return (
-    <Button size="lg" className="glow-accent gap-2" onClick={() => setAuthOpen(true)}>
-      <LogIn className="size-5" /> ثبت‌نام رایگان
-    </Button>
-  );
-}
-
-/* ================= course card ================= */
-
-export function CourseCard({ course }: { course: CourseType }) {
-  const { goPublic, addToCart, user, setAuthOpen } = useApp();
-  const off = course.oldPrice ? Math.round(((course.oldPrice - course.price) / course.oldPrice) * 100) : 0;
-
-  const add = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!user) { setAuthOpen(true); return; }
-    const ok = addToCart({ type: "course", slug: course.slug, title: course.title, price: course.price });
-    toast({ title: ok ? "به سبد خرید اضافه شد 🛒" : "قبلاً در سبد هست", description: course.title });
-    if (ok) goPublic("cart");
-  };
-
-  return (
-    <Card className="card-hover group cursor-pointer overflow-hidden border-border bg-card" onClick={() => goPublic("course", course.slug)}>
-      <div className="relative">
-        <CourseCover image={course.image} category={course.category?.slug} className="h-40 w-full" />
-        {off > 0 && (
-          <span className="absolute left-3 top-3 rounded-lg bg-destructive px-2 py-1 text-[11px] font-bold text-white">
-            {toFa(off)}٪ تخفیف
-          </span>
-        )}
-        {course.isFree && (
-          <span className="absolute left-3 top-3 rounded-lg bg-primary px-2 py-1 text-[11px] font-bold text-primary-foreground">رایگان</span>
-        )}
-      </div>
-      <CardContent className="space-y-3 p-5">
-        {course.category && <span className="text-xs text-primary">{course.category.title}</span>}
-        <p className="line-clamp-1 font-bold leading-7">{course.title}</p>
-        <p className="line-clamp-2 text-xs leading-6 text-muted-foreground">{course.description}</p>
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1"><GraduationCap className="size-3.5" /> {faNum(course.studentsCount)}</span>
-            <span className="flex items-center gap-1 text-amber-400">★ {faNum(course.rating, 1)}</span>
-          </div>
-          <span>{faNum(course.durationHours)} ساعت</span>
-        </div>
-        <div className="flex items-center justify-between border-t border-border pt-3">
-          <div className="flex items-baseline gap-2">
-            <Price amount={course.price} className="text-primary" />
-            {course.oldPrice ? <span className="text-xs text-muted-foreground line-through">{faNum(course.oldPrice)}</span> : null}
-          </div>
-          <Button size="sm" variant="secondary" onClick={add} className="gap-1">
-            <ShoppingBag className="size-3.5" /> ثبت‌نام
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
