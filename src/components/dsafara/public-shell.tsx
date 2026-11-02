@@ -634,12 +634,28 @@ export function AuthDialog() {
 }
 
 /* ============================================================
-   course card
+   course card — color-coded by category & level (palette v3)
 ============================================================ */
+
+const CAT_HUES: Record<string, string> = {
+  technical: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
+  "risk-management": "border-sky-400/30 bg-sky-400/10 text-sky-300",
+  psychology: "border-violet-400/30 bg-violet-400/10 text-violet-300",
+  forex: "border-amber-400/30 bg-amber-400/10 text-amber-300",
+  crypto: "border-orange-400/30 bg-orange-400/10 text-orange-300",
+  bourse: "border-rose-400/30 bg-rose-400/10 text-rose-300",
+};
+
+const LEVEL_HUES: Record<string, string> = {
+  BEGINNER: "border-emerald-400/30 bg-[#0b1a16]/70 text-emerald-300",
+  INTERMEDIATE: "border-sky-400/30 bg-[#0a1726]/70 text-sky-300",
+  ADVANCED: "border-violet-400/30 bg-[#150f28]/70 text-violet-300",
+};
 
 export function CourseCard({ course }: { course: CourseType }) {
   const goPublic = useApp((s) => s.goPublic);
   const levelMap: Record<string, string> = { BEGINNER: "مقدماتی", INTERMEDIATE: "متوسط", ADVANCED: "پیشرفته" };
+  const catHue = CAT_HUES[course.category?.slug || ""];
   return (
     <article
       role="link" tabIndex={0}
@@ -650,11 +666,11 @@ export function CourseCard({ course }: { course: CourseType }) {
       <div className="relative">
         <CourseCover image={course.image} category={course.category?.title} className="h-44 w-full" />
         <div className="absolute right-3 top-3 flex gap-2">
-          <span className="rounded-lg border border-border/60 bg-[#101827]/70 px-2.5 py-1 text-[11px] font-semibold backdrop-blur">
+          <span className={cn("rounded-lg border px-2.5 py-1 text-[11px] font-semibold backdrop-blur", LEVEL_HUES[course.level] || "border-border/60 bg-[#101827]/70 text-foreground/90")}>
             {levelMap[course.level] || course.level}
           </span>
           {course.isFree && (
-            <span className="rounded-lg bg-primary px-2.5 py-1 text-[11px] font-bold text-primary-foreground">رایگان</span>
+            <span className="rounded-lg bg-gradient-to-l from-amber-300 to-amber-500 px-2.5 py-1 text-[11px] font-black text-amber-950 shadow-[0_4px_16px_-4px_rgba(245,181,68,0.55)]">رایگان</span>
           )}
         </div>
         <span className="absolute bottom-3 left-3 flex items-center gap-1 rounded-lg border border-border/60 bg-[#101827]/70 px-2.5 py-1 text-[11px] backdrop-blur">
@@ -678,7 +694,11 @@ export function CourseCard({ course }: { course: CourseType }) {
             {course.mentor?.name?.charAt(0) || "د"}
           </span>
           {course.mentor?.name || "تیم دی‌صفارا"}
-          {course.category && <span className="mr-auto rounded-md bg-muted px-2 py-0.5">{course.category.title}</span>}
+          {course.category && (
+            <span className={cn("mr-auto rounded-md border px-2 py-0.5", catHue || "border-border bg-muted text-muted-foreground")}>
+              {course.category.title}
+            </span>
+          )}
         </div>
         <div className="mt-auto flex items-center justify-between border-t border-border pt-4">
           <div className="flex items-baseline gap-2">
@@ -841,14 +861,16 @@ export function HomePage() {
         <TickerBand />
       </section>
 
-      {/* ================= STATS ================= */}
-      <section className="border-b border-border/60">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 py-10 md:grid-cols-4 md:px-6">
-          {[
-            { icon: Users, value: 12400, suffix: "+", label: "دانشجوی فعال", chip: "border-primary/20 bg-primary/10 text-primary", num: "text-primary" },
+      {/* ================= STATS — glass strip ================= */}
+      <section className="relative">
+        <div className="mx-auto max-w-7xl px-4 py-8 md:px-6">
+          <div className="glass-strong relative grid grid-cols-2 gap-6 overflow-hidden rounded-3xl px-6 py-8 md:grid-cols-4 md:px-10">
+            <div className="pointer-events-none absolute inset-x-16 top-0 h-px bg-gradient-to-l from-transparent via-primary/70 to-transparent" aria-hidden />
+            {[
+            { icon: Users, value: 12400, suffix: "+", label: "دانشجوی فعال", chip: "border-primary/20 bg-primary/10 text-primary", num: "text-gradient" },
             { icon: GraduationCap, value: 38, suffix: "", label: "منتور متخصص", chip: "border-sky-400/20 bg-sky-400/10 text-sky-400", num: "text-sky-300" },
             { icon: PlayCircle, value: 960, suffix: "+", label: "ساعت محتوای آموزشی", chip: "border-violet-400/20 bg-violet-400/10 text-violet-400", num: "text-violet-300" },
-            { icon: ShieldCheck, value: 97, suffix: "٪", label: "رضایت دانشجویان", chip: "border-amber-400/20 bg-amber-400/10 text-amber-400", num: "text-amber-300" },
+            { icon: ShieldCheck, value: 97, suffix: "٪", label: "رضایت دانشجویان", chip: "border-amber-400/20 bg-amber-400/10 text-amber-400", num: "text-gradient-gold" },
           ].map((s, i) => (
             <Reveal key={s.label} delay={i * 90} className="flex items-center gap-4">
               <span className={cn("flex size-12 shrink-0 items-center justify-center rounded-2xl border", s.chip)}>
@@ -862,11 +884,12 @@ export function HomePage() {
               </div>
             </Reveal>
           ))}
+          </div>
         </div>
       </section>
 
       {/* ================= LEARNING PATHS ================= */}
-      <section className="section-alt py-20 md:py-24">
+      <section className="band band-emerald py-20 md:py-24">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
           <SectionHead
             center
@@ -966,7 +989,7 @@ export function HomePage() {
       </section>
 
       {/* ================= WHY US (BENTO) ================= */}
-      <section className="section-alt py-20 md:py-24">
+      <section className="band band-deep py-20 md:py-24">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
           <SectionHead
             center
@@ -1153,7 +1176,7 @@ export function HomePage() {
 
       {/* ================= MENTORS ================= */}
       {(data?.mentors?.length ?? 0) > 0 && (
-        <section className="section-alt py-20 md:py-24">
+        <section className="band band-sky py-20 md:py-24">
           <div className="mx-auto max-w-7xl px-4 md:px-6">
             <SectionHead
               center
@@ -1192,7 +1215,7 @@ export function HomePage() {
 
       {/* ================= TESTIMONIALS MARQUEE ================= */}
       {(data?.testimonials?.length ?? 0) >= 3 && (
-        <section className="section-alt-violet overflow-hidden py-20 md:py-24">
+        <section className="band band-violet overflow-hidden py-20 md:py-24">
           <div className="mx-auto max-w-7xl px-4 md:px-6">
             <SectionHead
               center
@@ -1253,7 +1276,7 @@ export function HomePage() {
 
       {/* ================= BLOG ================= */}
       {(data?.posts?.length ?? 0) > 0 && (
-        <section className="section-alt py-20 md:py-24">
+        <section className="py-20 md:py-24">
           <div className="mx-auto max-w-7xl px-4 md:px-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <SectionHead kicker="بلاگ دی‌صفارا" title="آخرین مقالات آموزشی" tone="violet" />
@@ -1296,7 +1319,7 @@ export function HomePage() {
 
       {/* ================= FREE RESOURCES ================= */}
       {(data?.resources?.length ?? 0) > 0 && (
-        <section className="section-alt-amber py-20 md:py-24">
+        <section className="band band-gold py-20 md:py-24">
           <div className="mx-auto max-w-7xl px-4 md:px-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <SectionHead kicker="منابع رایگان" title="قبل از خرید، رایگان شروع کن" tone="amber" />
@@ -1339,7 +1362,7 @@ export function HomePage() {
 
       {/* ================= FAQ ================= */}
       {(data?.faqs?.length ?? 0) > 0 && (
-        <section className="section-alt py-20 md:py-24">
+        <section className="py-20 md:py-24">
           <div className="mx-auto max-w-3xl px-4 md:px-6">
             <SectionHead center kicker="سوالات متداول" title="هر سوالی داری، اینجا جوابش هست" />
             <div className="space-y-3">

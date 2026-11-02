@@ -67,7 +67,7 @@
   --secondary: #223450;
   --secondary-foreground: #e8edf4;
   --muted: #1b2942;
-  --muted-foreground: #8ba0bd;
+  --muted-foreground: #94aac9;
   --accent: #19b887;
   --accent-foreground: #052018;
   --destructive: #ef5466;
@@ -100,7 +100,14 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-background text-foreground;
+    background:
+      radial-gradient(ellipse 85% 55% at 88% -12%, rgba(25, 184, 135, 0.08), transparent 62%),
+      radial-gradient(ellipse 60% 45% at -5% 28%, rgba(56, 189, 248, 0.055), transparent 60%),
+      radial-gradient(ellipse 70% 50% at 105% 78%, rgba(245, 181, 68, 0.05), transparent 60%),
+      radial-gradient(ellipse 60% 42% at -8% 100%, rgba(167, 139, 250, 0.055), transparent 60%),
+      var(--background);
+    background-attachment: fixed;
+    color: var(--foreground);
     font-feature-settings: "ss02";
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
@@ -228,17 +235,23 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 24px 70px -28px rgba(0, 0, 0, 0.7);
 }
 
-/* premium card */
+/* premium card — v3: brighter fill, sheen, vivid hover */
 .card-premium {
-  background: linear-gradient(160deg, rgba(28, 44, 71, 0.6), rgba(22, 35, 58, 0.9));
-  border: 1px solid rgba(139, 160, 189, 0.15);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 18px 50px -28px rgba(0, 0, 0, 0.55);
+  background: linear-gradient(168deg, rgba(35, 53, 84, 0.72) 0%, rgba(23, 36, 60, 0.92) 48%, rgba(19, 30, 51, 0.96) 100%);
+  border: 1px solid rgba(139, 160, 189, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+    0 20px 50px -30px rgba(0, 0, 0, 0.65);
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.35s, box-shadow 0.35s;
 }
 .card-premium:hover {
-  transform: translateY(-4px);
-  border-color: rgba(25, 184, 135, 0.45);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 24px 60px -24px rgba(0, 0, 0, 0.7), 0 0 40px -12px rgba(25, 184, 135, 0.18);
+  transform: translateY(-5px);
+  border-color: rgba(25, 184, 135, 0.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    0 28px 64px -26px rgba(0, 0, 0, 0.75),
+    0 0 46px -12px rgba(25, 184, 135, 0.28);
 }
 .card-hover {
   transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
@@ -332,23 +345,78 @@
     linear-gradient(90deg, rgba(139, 160, 189, 0.05) 1px, transparent 1px);
   background-size: 100% 100%, 100% 100%, 56px 56px, 56px 56px;
 }
+/* ============ palette v3 — section bands ============
+   Every band is a DISTINCT depth+color zone so the page never
+   reads as one flat navy. Hairlines separate zones gracefully. */
+.band {
+  position: relative;
+}
+.band::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 4%, var(--band-line, rgba(25, 184, 135, 0.35)) 50%, transparent 96%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.band-emerald {
+  --band-line: rgba(25, 184, 135, 0.4);
+  background:
+    radial-gradient(ellipse 52% 68% at 88% -6%, rgba(25, 184, 135, 0.15), transparent 64%),
+    radial-gradient(ellipse 42% 55% at 4% 104%, rgba(77, 227, 176, 0.07), transparent 60%),
+    linear-gradient(180deg, #13203a 0%, #101b2f 100%);
+}
+.band-sky {
+  --band-line: rgba(56, 189, 248, 0.38);
+  background:
+    radial-gradient(ellipse 50% 64% at 10% -8%, rgba(56, 189, 248, 0.13), transparent 64%),
+    radial-gradient(ellipse 42% 55% at 96% 102%, rgba(25, 184, 135, 0.07), transparent 60%),
+    linear-gradient(180deg, #121f3c 0%, #101b30 100%);
+}
+.band-violet {
+  --band-line: rgba(167, 139, 250, 0.4);
+  background:
+    radial-gradient(ellipse 52% 66% at 86% -6%, rgba(167, 139, 250, 0.14), transparent 64%),
+    radial-gradient(ellipse 40% 52% at 6% 104%, rgba(56, 189, 248, 0.08), transparent 60%),
+    linear-gradient(180deg, #141b38 0%, #101829 100%);
+}
+.band-gold {
+  --band-line: rgba(245, 181, 68, 0.42);
+  background:
+    radial-gradient(ellipse 52% 66% at 90% -8%, rgba(245, 181, 68, 0.14), transparent 64%),
+    radial-gradient(ellipse 42% 54% at 4% 102%, rgba(25, 184, 135, 0.08), transparent 60%),
+    linear-gradient(180deg, #1a2036 0%, #131a2c 100%);
+}
+.band-deep {
+  --band-line: rgba(25, 184, 135, 0.32);
+  background:
+    radial-gradient(ellipse 58% 72% at 50% -22%, rgba(25, 184, 135, 0.13), transparent 60%),
+    radial-gradient(ellipse 36% 46% at 92% 112%, rgba(245, 181, 68, 0.06), transparent 55%),
+    radial-gradient(ellipse 36% 46% at 6% 112%, rgba(167, 139, 250, 0.06), transparent 55%),
+    linear-gradient(180deg, #0a111e 0%, #0c1424 100%);
+}
+
+/* legacy aliases (internal pages) — mapped onto v3 bands */
 .section-alt {
   background:
-    radial-gradient(ellipse 42% 50% at 92% 0%, rgba(25, 184, 135, 0.08), transparent 62%),
-    radial-gradient(ellipse 36% 46% at 4% 100%, rgba(56, 189, 248, 0.06), transparent 60%),
-    linear-gradient(180deg, rgba(19, 29, 48, 0.55), rgba(16, 24, 39, 0.2));
+    radial-gradient(ellipse 52% 68% at 88% -6%, rgba(25, 184, 135, 0.15), transparent 64%),
+    radial-gradient(ellipse 42% 55% at 4% 104%, rgba(77, 227, 176, 0.07), transparent 60%),
+    linear-gradient(180deg, #13203a 0%, #101b2f 100%);
 }
 .section-alt-violet {
   background:
-    radial-gradient(ellipse 45% 55% at 88% 8%, rgba(167, 139, 250, 0.1), transparent 62%),
-    radial-gradient(ellipse 38% 48% at 6% 92%, rgba(56, 189, 248, 0.06), transparent 60%),
-    linear-gradient(180deg, rgba(20, 27, 48, 0.6), rgba(16, 24, 39, 0.2));
+    radial-gradient(ellipse 52% 66% at 86% -6%, rgba(167, 139, 250, 0.14), transparent 64%),
+    radial-gradient(ellipse 40% 52% at 6% 104%, rgba(56, 189, 248, 0.08), transparent 60%),
+    linear-gradient(180deg, #141b38 0%, #101829 100%);
 }
 .section-alt-amber {
   background:
-    radial-gradient(ellipse 45% 55% at 90% 10%, rgba(245, 181, 68, 0.09), transparent 62%),
-    radial-gradient(ellipse 38% 48% at 6% 90%, rgba(25, 184, 135, 0.06), transparent 60%),
-    linear-gradient(180deg, rgba(21, 28, 46, 0.6), rgba(16, 24, 39, 0.2));
+    radial-gradient(ellipse 52% 66% at 90% -8%, rgba(245, 181, 68, 0.14), transparent 64%),
+    radial-gradient(ellipse 42% 54% at 4% 102%, rgba(25, 184, 135, 0.08), transparent 60%),
+    linear-gradient(180deg, #1a2036 0%, #131a2c 100%);
 }
 /* near-black panel for big CTA — OutPayz style */
 .cta-deep {

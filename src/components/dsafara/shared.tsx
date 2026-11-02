@@ -149,6 +149,12 @@ export function SectionHead({
       <h2 className="text-[1.75rem] font-extrabold leading-[1.35] md:text-4xl md:leading-[1.3]">
         {title}
       </h2>
+      {center && (
+        <span
+          aria-hidden
+          className="mx-auto block h-px w-28 bg-gradient-to-l from-transparent via-primary/80 to-transparent"
+        />
+      )}
       {desc && (
         <p className={cn("max-w-2xl text-sm leading-8 text-muted-foreground md:text-base", center && "mx-auto")}>
           {desc}
