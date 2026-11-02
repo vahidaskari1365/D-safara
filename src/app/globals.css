@@ -53,7 +53,7 @@
   bg #101827 · surface #17243A · accent #19B887 · text #E8EDF4
 */
 :root {
-  --radius: 0.85rem;
+  --radius: 1.15rem;
   --background: #101827;
   --foreground: #e8edf4;
   --surface: #17243a;
@@ -235,23 +235,23 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 24px 70px -28px rgba(0, 0, 0, 0.7);
 }
 
-/* premium card — v3: brighter fill, sheen, vivid hover */
+/* premium card — v4 template: brighter glass fill, vivid hover glow */
 .card-premium {
-  background: linear-gradient(168deg, rgba(35, 53, 84, 0.72) 0%, rgba(23, 36, 60, 0.92) 48%, rgba(19, 30, 51, 0.96) 100%);
-  border: 1px solid rgba(139, 160, 189, 0.18);
+  background: linear-gradient(165deg, rgba(38, 57, 92, 0.66) 0%, rgba(24, 38, 64, 0.9) 46%, rgba(18, 29, 50, 0.96) 100%);
+  border: 1px solid rgba(139, 160, 189, 0.2);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
     inset 0 -1px 0 rgba(0, 0, 0, 0.2),
-    0 20px 50px -30px rgba(0, 0, 0, 0.65);
+    0 24px 55px -32px rgba(0, 0, 0, 0.7);
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.35s, box-shadow 0.35s;
 }
 .card-premium:hover {
-  transform: translateY(-5px);
-  border-color: rgba(25, 184, 135, 0.5);
+  transform: translateY(-6px);
+  border-color: rgba(25, 184, 135, 0.55);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.09),
-    0 28px 64px -26px rgba(0, 0, 0, 0.75),
-    0 0 46px -12px rgba(25, 184, 135, 0.28);
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 32px 70px -28px rgba(0, 0, 0, 0.8),
+    0 0 54px -10px rgba(25, 184, 135, 0.32);
 }
 .card-hover {
   transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
@@ -629,6 +629,39 @@
 .hv-area-in {
   opacity: 0;
   animation: fade-in-soft 1.8s ease 1.4s forwards;
+}
+
+/* ============ template v4 — new shape kit ============ */
+
+/* soft top hairline for panels */
+.hairline-top {
+  position: relative;
+}
+.hairline-top::before {
+  content: "";
+  position: absolute;
+  inset-inline: 12%;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--hairline-color, rgba(25, 184, 135, 0.65)), transparent);
+  pointer-events: none;
+}
+
+/* colored icon orb */
+.icon-orb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 10px 26px -12px rgba(0, 0, 0, 0.55);
+}
+
+/* dotted pattern overlay */
+.dots-pattern {
+  background-image: radial-gradient(circle at 1px 1px, rgba(232, 237, 244, 0.16) 1px, transparent 0);
+  background-size: 20px 20px;
 }
 
 /* animation safety */

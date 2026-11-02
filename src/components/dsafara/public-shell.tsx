@@ -15,10 +15,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@/components/ui/input-otp";
 import { toast } from "@/hooks/use-toast";
 import {
-  ArrowLeft, Award, BookOpen, Brain, CalendarDays, ChartCandlestick, CheckCircle2, ChevronLeft,
-  Clock, Download, FileText, Globe, GraduationCap, Headphones, Instagram, LayoutDashboard,
-  LineChart, LogIn, Menu, Newspaper, PlayCircle, Plus, Send, ShieldCheck, ShoppingCart,
-  Sparkles, Star, Target, Twitter, Users, Wallet, Youtube, Zap,
+  ArrowLeft, ArrowUpRight, Award, BadgeCheck, BookOpen, Brain, CalendarDays, ChartCandlestick,
+  CheckCircle2, ChevronLeft, Clock, Download, FileText, Globe, GraduationCap, Headphones,
+  Instagram, LayoutDashboard, LineChart, LogIn, Menu, Newspaper, PlayCircle, Plus, Quote, Send,
+  ShieldCheck, ShoppingCart, Sparkles, Star, Target, TrendingUp, Twitter, Users, Wallet, Youtube, Zap,
 } from "lucide-react";
 
 /* ============================================================
@@ -53,7 +53,7 @@ export function Logo({ small, showText }: { small?: boolean; showText?: boolean 
     >
       <span
         className={cn(
-          "relative flex items-center justify-center rounded-xl bg-gradient-to-br from-primary to-emerald-700 text-primary-foreground shadow-[0_6px_20px_-6px_rgba(25,184,135,0.6)] transition-transform duration-300 group-hover:scale-105 group-hover:rotate-3",
+          "relative flex items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-emerald-700 text-primary-foreground shadow-[0_8px_24px_-8px_rgba(25,184,135,0.7)] transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-3",
           small ? "size-9" : "size-11"
         )}
       >
@@ -232,7 +232,7 @@ function CandleChart({
 }
 
 /* ============================================================
-   public header
+   public header — floating glass pill on scroll
 ============================================================ */
 
 const NAV_ITEMS = [
@@ -253,7 +253,7 @@ export function PublicHeader() {
   const goStudent = useApp((s) => s.goStudent);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 18);
+    const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -262,113 +262,117 @@ export function PublicHeader() {
   const isActive = (matches: string[]) => matches.includes(publicPage);
 
   return (
-    <header
-      className={cn(
-        "sticky top-0 z-50 w-full transition-all duration-500",
-        scrolled ? "glass-strong border-b border-border/80" : "border-b border-transparent bg-transparent"
-      )}
-    >
-      <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between gap-4 px-4 md:px-6">
-        <Logo />
-
-        {/* desktop nav */}
-        <nav className="hidden items-center gap-7 lg:flex" aria-label="ناوبری اصلی">
-          {NAV_ITEMS.map((n) => (
-            <button
-              key={n.key}
-              type="button"
-              onClick={() => goPublic(n.key)}
-              data-active={isActive(n.match)}
-              className="nav-link cursor-pointer text-sm font-medium text-foreground/75 transition-colors hover:text-foreground data-[active=true]:text-primary"
-            >
-              {n.label}
-            </button>
-          ))}
-        </nav>
-
-        {/* actions */}
-        <div className="flex items-center gap-2">
-          {/* cart */}
-          <button
-            type="button"
-            onClick={() => goPublic("cart")}
-            className="relative flex size-10 cursor-pointer items-center justify-center rounded-xl border border-border bg-card/60 text-foreground/80 transition-all hover:border-primary/40 hover:text-primary"
-            aria-label="سبد خرید"
-          >
-            <ShoppingCart className="size-[18px]" />
-            {cart.length > 0 && (
-              <span className="absolute -left-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                {faNum(cart.length)}
-              </span>
-            )}
-          </button>
-
-          {user ? (
-            <Button
-              className="hidden gap-2 sm:inline-flex"
-              onClick={() => goStudent(user.role === "ADMIN" ? "overview" : "overview")}
-            >
-              <LayoutDashboard className="size-4" /> داشبورد من
-            </Button>
-          ) : (
-            <>
-              <Button variant="ghost" className="hidden sm:inline-flex" onClick={() => setAuthOpen(true)}>
-                ورود
-              </Button>
-              <Button className="glow-accent hidden gap-1.5 sm:inline-flex" onClick={() => goPublic("courses")}>
-                شروع یادگیری <ArrowLeft className="size-4" />
-              </Button>
-            </>
+    <header className="sticky top-0 z-50 w-full">
+      <div className={cn("mx-auto transition-all duration-500", scrolled ? "max-w-6xl px-3 pt-3" : "max-w-7xl px-4 md:px-6")}>
+        <div
+          className={cn(
+            "flex h-16 items-center justify-between gap-4 transition-all duration-500",
+            scrolled
+              ? "glass-strong rounded-full border-border/70 px-4 shadow-[0_18px_50px_-18px_rgba(0,0,0,0.75)] md:px-6"
+              : "border-b border-transparent px-0"
           )}
+        >
+          <Logo />
 
-          {/* mobile menu */}
-          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-            <SheetTrigger asChild>
+          {/* desktop nav */}
+          <nav className="hidden items-center gap-7 lg:flex" aria-label="ناوبری اصلی">
+            {NAV_ITEMS.map((n) => (
               <button
+                key={n.key}
                 type="button"
-                className="flex size-10 cursor-pointer items-center justify-center rounded-xl border border-border bg-card/60 lg:hidden"
-                aria-label="باز کردن منو"
+                onClick={() => goPublic(n.key)}
+                data-active={isActive(n.match)}
+                className="nav-link cursor-pointer text-sm font-medium text-foreground/75 transition-colors hover:text-foreground data-[active=true]:text-primary"
               >
-                <Menu className="size-5" />
+                {n.label}
               </button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] border-border bg-[#131d30]/95 backdrop-blur-xl p-0">
-              <SheetHeader className="border-b border-border p-5 pb-4 text-right">
-                <SheetTitle className="sr-only">منوی ناوبری</SheetTitle>
-                <Logo showText />
-              </SheetHeader>
-              <nav className="flex flex-col gap-1 p-4" aria-label="ناوبری موبایل">
-                {NAV_ITEMS.map((n) => (
-                  <button
-                    key={n.key}
-                    type="button"
-                    onClick={() => { goPublic(n.key); setMobileOpen(false); }}
-                    className={cn(
-                      "cursor-pointer rounded-xl px-4 py-3 text-right text-sm font-medium transition-colors hover:bg-primary/10 hover:text-primary",
-                      isActive(n.match) ? "bg-primary/10 text-primary" : "text-foreground/80"
-                    )}
-                  >
-                    {n.label}
-                  </button>
-                ))}
-                <div className="my-3 h-px bg-border" />
-                {user ? (
-                  <Button className="w-full gap-2" onClick={() => { goStudent("overview"); setMobileOpen(false); }}>
-                    <LayoutDashboard className="size-4" /> داشبورد من
-                  </Button>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    <Button className="glow-accent w-full" onClick={() => { setAuthOpen(true); setMobileOpen(false); }}>
-                      <LogIn className="size-4" /> ورود | ثبت‌نام
+            ))}
+          </nav>
+
+          {/* actions */}
+          <div className="flex items-center gap-2">
+            {/* cart */}
+            <button
+              type="button"
+              onClick={() => goPublic("cart")}
+              className="relative flex size-10 cursor-pointer items-center justify-center rounded-full border border-border bg-card/60 text-foreground/80 transition-all hover:border-primary/40 hover:text-primary"
+              aria-label="سبد خرید"
+            >
+              <ShoppingCart className="size-[18px]" />
+              {cart.length > 0 && (
+                <span className="absolute -left-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                  {faNum(cart.length)}
+                </span>
+              )}
+            </button>
+
+            {user ? (
+              <Button
+                className="hidden gap-2 rounded-full sm:inline-flex"
+                onClick={() => goStudent(user.role === "ADMIN" ? "overview" : "overview")}
+              >
+                <LayoutDashboard className="size-4" /> داشبورد من
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" className="hidden rounded-full sm:inline-flex" onClick={() => setAuthOpen(true)}>
+                  ورود
+                </Button>
+                <Button className="btn-gradient-lime hidden gap-1.5 rounded-full sm:inline-flex" onClick={() => goPublic("courses")}>
+                  شروع یادگیری <ArrowLeft className="size-4" />
+                </Button>
+              </>
+            )}
+
+            {/* mobile menu */}
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetTrigger asChild>
+                <button
+                  type="button"
+                  className="flex size-10 cursor-pointer items-center justify-center rounded-full border border-border bg-card/60 lg:hidden"
+                  aria-label="باز کردن منو"
+                >
+                  <Menu className="size-5" />
+                </button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[300px] border-border bg-[#131d30]/95 backdrop-blur-xl p-0">
+                <SheetHeader className="border-b border-border p-5 pb-4 text-right">
+                  <SheetTitle className="sr-only">منوی ناوبری</SheetTitle>
+                  <Logo showText />
+                </SheetHeader>
+                <nav className="flex flex-col gap-1 p-4" aria-label="ناوبری موبایل">
+                  {NAV_ITEMS.map((n) => (
+                    <button
+                      key={n.key}
+                      type="button"
+                      onClick={() => { goPublic(n.key); setMobileOpen(false); }}
+                      className={cn(
+                        "cursor-pointer rounded-2xl px-4 py-3 text-right text-sm font-medium transition-colors hover:bg-primary/10 hover:text-primary",
+                        isActive(n.match) ? "bg-primary/10 text-primary" : "text-foreground/80"
+                      )}
+                    >
+                      {n.label}
+                    </button>
+                  ))}
+                  <div className="my-3 h-px bg-border" />
+                  {user ? (
+                    <Button className="w-full gap-2 rounded-full" onClick={() => { goStudent("overview"); setMobileOpen(false); }}>
+                      <LayoutDashboard className="size-4" /> داشبورد من
                     </Button>
-                    <Button variant="outline" className="w-full" onClick={() => { goPublic("courses"); setMobileOpen(false); }}>
-                      مشاهده دوره‌ها
-                    </Button>
-                  </div>
-                )}
-              </nav>
-            </SheetContent>
-          </Sheet>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      <Button className="btn-gradient-lime w-full rounded-full" onClick={() => { setAuthOpen(true); setMobileOpen(false); }}>
+                        <LogIn className="size-4" /> ورود | ثبت‌نام
+                      </Button>
+                      <Button variant="outline" className="w-full rounded-full" onClick={() => { goPublic("courses"); setMobileOpen(false); }}>
+                        مشاهده دوره‌ها
+                      </Button>
+                    </div>
+                  )}
+                </nav>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </div>
     </header>
@@ -376,7 +380,7 @@ export function PublicHeader() {
 }
 
 /* ============================================================
-   public footer
+   public footer — big rounded panel
 ============================================================ */
 
 export function PublicFooter() {
@@ -416,92 +420,98 @@ export function PublicFooter() {
   ];
 
   return (
-    <footer className="relative mt-auto border-t border-border/70 bg-[#0d1522]">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-primary/60 to-transparent" />
-      <div className="mx-auto max-w-7xl px-4 py-14 md:px-6">
-        <div className="grid gap-10 lg:grid-cols-[1.4fr_0.8fr_0.8fr_1fr]">
-          {/* brand */}
-          <div className="space-y-5">
-            <Logo />
-            <p className="max-w-sm text-sm leading-7 text-muted-foreground">
-              دی‌صفارا آکادمی تخصصی آموزش معامله‌گری در بازارهای مالی جهانی است؛ با دوره‌های ساختاریافته، منتورینگ اختصاصی و ورک‌اسپیس معاملاتی، مسیر شما از صفر تا حرفه‌ای طراحی شده است.
-            </p>
-            <div className="flex gap-2.5">
-              {socials.map((s) => (
-                <button
-                  key={s.label}
-                  type="button"
-                  aria-label={s.label}
-                  className="flex size-10 cursor-pointer items-center justify-center rounded-xl border border-border bg-card/50 text-muted-foreground transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary"
-                >
-                  <s.icon className="size-[18px]" />
-                </button>
-              ))}
+    <footer className="relative mt-auto px-3 pb-3 md:px-6 md:pb-4">
+      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-t-[2.5rem] border border-b-0 border-border/70 bg-[#0d1522]">
+        {/* glow hairlines */}
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-primary/60 to-transparent" aria-hidden />
+        <div className="orb -right-24 -top-24 size-64 bg-primary/8" aria-hidden />
+        <div className="orb -left-24 bottom-0 size-64 bg-violet-500/8" aria-hidden style={{ animationDelay: "-7s" }} />
+
+        <div className="relative mx-auto max-w-7xl px-6 py-14 md:px-10">
+          <div className="grid gap-10 lg:grid-cols-[1.4fr_0.8fr_0.8fr_1fr]">
+            {/* brand */}
+            <div className="space-y-5">
+              <Logo />
+              <p className="max-w-sm text-sm leading-7 text-muted-foreground">
+                دی‌صفارا آکادمی تخصصی آموزش معامله‌گری در بازارهای مالی جهانی است؛ با دوره‌های ساختاریافته، منتورینگ اختصاصی و ورک‌اسپیس معاملاتی، مسیر شما از صفر تا حرفه‌ای طراحی شده است.
+              </p>
+              <div className="flex gap-2.5">
+                {socials.map((s) => (
+                  <button
+                    key={s.label}
+                    type="button"
+                    aria-label={s.label}
+                    className="flex size-10 cursor-pointer items-center justify-center rounded-full border border-border bg-card/50 text-muted-foreground transition-all hover:-translate-y-1 hover:border-primary/40 hover:text-primary"
+                  >
+                    <s.icon className="size-[18px]" />
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* links */}
-          <nav aria-label="لینک‌های سریع">
-            <p className="mb-4 text-sm font-bold">لینک‌های سریع</p>
-            <ul className="space-y-2.5">
-              {quickLinks.map((l) => (
-                <li key={l.page}>
-                  <button type="button" onClick={() => goPublic(l.page)} className="cursor-pointer text-sm text-muted-foreground transition-colors hover:text-primary">
-                    {l.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </nav>
-          <nav aria-label="خدمات">
-            <p className="mb-4 text-sm font-bold">خدمات و منابع</p>
-            <ul className="space-y-2.5">
-              {serviceLinks.map((l) => (
-                <li key={l.page}>
-                  <button type="button" onClick={() => goPublic(l.page)} className="cursor-pointer text-sm text-muted-foreground transition-colors hover:text-primary">
-                    {l.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </nav>
+            {/* links */}
+            <nav aria-label="لینک‌های سریع">
+              <p className="mb-4 text-sm font-bold">لینک‌های سریع</p>
+              <ul className="space-y-2.5">
+                {quickLinks.map((l) => (
+                  <li key={l.page}>
+                    <button type="button" onClick={() => goPublic(l.page)} className="cursor-pointer text-sm text-muted-foreground transition-colors hover:text-primary">
+                      {l.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <nav aria-label="خدمات">
+              <p className="mb-4 text-sm font-bold">خدمات و منابع</p>
+              <ul className="space-y-2.5">
+                {serviceLinks.map((l) => (
+                  <li key={l.page}>
+                    <button type="button" onClick={() => goPublic(l.page)} className="cursor-pointer text-sm text-muted-foreground transition-colors hover:text-primary">
+                      {l.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </nav>
 
-          {/* contact + newsletter */}
-          <div className="space-y-5">
-            <p className="text-sm font-bold">در تماس باشیم</p>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>تهران، خیابان ولیعصر، برج نگین، طبقه ۱۲</li>
-              <li dir="ltr" className="text-right">{toFa("021-9100 2233")}</li>
-              <li dir="ltr" className="text-right">support@dsafara.com</li>
-              <li>شنبه تا پنجشنبه، {toFa(9)} تا {toFa(18)}</li>
-            </ul>
-            <div className="space-y-2">
-              <Label htmlFor="newsletter" className="text-xs text-muted-foreground">عضویت در خبرنامه تحلیل‌های هفتگی</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="newsletter" dir="ltr" type="email" placeholder="you@email.com"
-                  value={email} onChange={(e) => setEmail(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && subscribe()}
-                  className="bg-card/60"
-                />
-                <Button size="icon" className="glow-accent shrink-0" onClick={subscribe} aria-label="عضویت">
-                  <Send className="size-4" />
-                </Button>
+            {/* contact + newsletter */}
+            <div className="space-y-5">
+              <p className="text-sm font-bold">در تماس باشیم</p>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>تهران، خیابان ولیعصر، برج نگین، طبقه ۱۲</li>
+                <li dir="ltr" className="text-right">{toFa("021-9100 2233")}</li>
+                <li dir="ltr" className="text-right">support@dsafara.com</li>
+                <li>شنبه تا پنجشنبه، {toFa(9)} تا {toFa(18)}</li>
+              </ul>
+              <div className="space-y-2">
+                <Label htmlFor="newsletter" className="text-xs text-muted-foreground">عضویت در خبرنامه تحلیل‌های هفتگی</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="newsletter" dir="ltr" type="email" placeholder="you@email.com"
+                    value={email} onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && subscribe()}
+                    className="rounded-full bg-card/60"
+                  />
+                  <Button size="icon" className="glow-accent shrink-0 rounded-full" onClick={subscribe} aria-label="عضویت">
+                    <Send className="size-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border/60 pt-6 md:flex-row">
-          <p className="text-xs text-muted-foreground">
-            © {toFa(1403)} دی‌صفارا — تمامی حقوق محفوظ است.
-          </p>
-          <div className="flex items-center gap-5">
-            <button type="button" onClick={() => goPublic("privacy")} className="cursor-pointer text-xs text-muted-foreground transition-colors hover:text-primary">حریم خصوصی</button>
-            <button type="button" onClick={() => goPublic("terms")} className="cursor-pointer text-xs text-muted-foreground transition-colors hover:text-primary">قوانین و مقررات</button>
-            <span className="flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1 text-[11px] text-primary">
-              <span className="live-dot size-1.5 rounded-full bg-primary" /> همه سرویس‌ها فعال
-            </span>
+          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border/60 pt-6 md:flex-row">
+            <p className="text-xs text-muted-foreground">
+              © {toFa(1403)} دی‌صفارا — تمامی حقوق محفوظ است.
+            </p>
+            <div className="flex items-center gap-5">
+              <button type="button" onClick={() => goPublic("privacy")} className="cursor-pointer text-xs text-muted-foreground transition-colors hover:text-primary">حریم خصوصی</button>
+              <button type="button" onClick={() => goPublic("terms")} className="cursor-pointer text-xs text-muted-foreground transition-colors hover:text-primary">قوانین و مقررات</button>
+              <span className="flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1 text-[11px] text-primary">
+                <span className="live-dot size-1.5 rounded-full bg-primary" /> همه سرویس‌ها فعال
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -563,7 +573,7 @@ export function AuthDialog() {
   return (
     <Dialog open={authOpen} onOpenChange={(o) => !o && close()}>
       <DialogContent className="max-w-md overflow-hidden border-border bg-card p-0 sm:rounded-3xl">
-        <div className="h-1.5 w-full bg-gradient-to-l from-primary via-emerald-400 to-sky-400" />
+        <div className="h-1.5 w-full bg-gradient-to-l from-primary via-emerald-400 to-lime-300" />
         <div className="p-6">
           <DialogHeader className="space-y-2 text-right">
             <DialogTitle className="text-xl font-black">
@@ -591,7 +601,7 @@ export function AuthDialog() {
                 />
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
-              <Button className="glow-accent w-full" onClick={requestOtp} disabled={loading || phone.length !== 11}>
+              <Button className="btn-gradient-lime w-full rounded-full" onClick={requestOtp} disabled={loading || phone.length !== 11}>
                 {loading ? "در حال ارسال..." : "دریافت کد تایید"}
               </Button>
               <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3.5 text-xs leading-6 text-muted-foreground">
@@ -619,7 +629,7 @@ export function AuthDialog() {
                 </InputOTP>
               </div>
               {error && <p className="text-center text-sm text-destructive">{error}</p>}
-              <Button className="glow-accent w-full" onClick={verify} disabled={loading || code.length !== 6}>
+              <Button className="btn-gradient-lime w-full rounded-full" onClick={verify} disabled={loading || code.length !== 6}>
                 {loading ? "در حال بررسی..." : "تایید و ورود"}
               </Button>
               <Button variant="ghost" className="w-full" onClick={() => setStep("phone")}>
@@ -634,7 +644,7 @@ export function AuthDialog() {
 }
 
 /* ============================================================
-   course card — color-coded by category & level (palette v3)
+   course card — new template shape (inset media + glass chips)
 ============================================================ */
 
 const CAT_HUES: Record<string, string> = {
@@ -661,24 +671,28 @@ export function CourseCard({ course }: { course: CourseType }) {
       role="link" tabIndex={0}
       onClick={() => goPublic("course", course.slug)}
       onKeyDown={(e) => e.key === "Enter" && goPublic("course", course.slug)}
-      className="card-premium group flex cursor-pointer flex-col overflow-hidden rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="card-premium group flex cursor-pointer flex-col overflow-hidden rounded-[1.75rem] pb-5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <div className="relative">
-        <CourseCover image={course.image} category={course.category?.title} className="h-44 w-full" />
+      {/* inset media */}
+      <div className="relative m-2.5 mb-0 overflow-hidden rounded-2xl">
+        <CourseCover
+          image={course.image} category={course.category?.title}
+          className="h-44 w-full transition-transform duration-700 group-hover:scale-[1.05]"
+        />
         <div className="absolute right-3 top-3 flex gap-2">
-          <span className={cn("rounded-lg border px-2.5 py-1 text-[11px] font-semibold backdrop-blur", LEVEL_HUES[course.level] || "border-border/60 bg-[#101827]/70 text-foreground/90")}>
+          <span className={cn("rounded-full border px-3 py-1 text-[11px] font-semibold backdrop-blur", LEVEL_HUES[course.level] || "border-border/60 bg-[#101827]/70 text-foreground/90")}>
             {levelMap[course.level] || course.level}
           </span>
           {course.isFree && (
-            <span className="rounded-lg bg-gradient-to-l from-amber-300 to-amber-500 px-2.5 py-1 text-[11px] font-black text-amber-950 shadow-[0_4px_16px_-4px_rgba(245,181,68,0.55)]">رایگان</span>
+            <span className="rounded-full bg-gradient-to-l from-amber-300 to-amber-500 px-3 py-1 text-[11px] font-black text-amber-950 shadow-[0_4px_16px_-4px_rgba(245,181,68,0.55)]">رایگان</span>
           )}
         </div>
-        <span className="absolute bottom-3 left-3 flex items-center gap-1 rounded-lg border border-border/60 bg-[#101827]/70 px-2.5 py-1 text-[11px] backdrop-blur">
+        <span className="absolute bottom-3 right-3 flex items-center gap-1 rounded-full border border-border/60 bg-[#101827]/70 px-2.5 py-1 text-[11px] backdrop-blur">
           <Clock className="size-3 text-primary" /> {faNum(course.durationHours)} ساعت
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 p-5">
+      <div className="flex flex-1 flex-col gap-3 px-5 pt-4">
         <div className="flex items-center justify-between text-xs">
           <span className="flex items-center gap-1.5 text-amber-400">
             <Star className="size-3.5 fill-amber-400" />
@@ -695,7 +709,7 @@ export function CourseCard({ course }: { course: CourseType }) {
           </span>
           {course.mentor?.name || "تیم دی‌صفارا"}
           {course.category && (
-            <span className={cn("mr-auto rounded-md border px-2 py-0.5", catHue || "border-border bg-muted text-muted-foreground")}>
+            <span className={cn("mr-auto rounded-full border px-2.5 py-0.5", catHue || "border-border bg-muted text-muted-foreground")}>
               {course.category.title}
             </span>
           )}
@@ -717,7 +731,7 @@ export function CourseCard({ course }: { course: CourseType }) {
 }
 
 /* ============================================================
-   ticker band
+   ticker band — floating glass strip
 ============================================================ */
 
 const TICKER = [
@@ -734,8 +748,8 @@ const TICKER = [
 function TickerBand() {
   const row = [...TICKER, ...TICKER];
   return (
-    <div className="border-y border-border/70 bg-[#0d1522]/80 py-3" dir="ltr">
-      <div className="mask-fade-x overflow-hidden">
+    <div className="relative z-10 mx-auto max-w-7xl px-4 pb-10 md:px-6" dir="ltr">
+      <div className="glass-strong mask-fade-x overflow-hidden rounded-2xl py-3">
         <div className="marquee gap-10" style={{ "--marquee-dur": "42s" } as React.CSSProperties}>
           {[0, 1].map((half) => (
             <div key={half} className="flex shrink-0 items-center gap-10 pl-10">
@@ -757,7 +771,7 @@ function TickerBand() {
 }
 
 /* ============================================================
-   home page
+   home page — template v4
 ============================================================ */
 
 type PublicHomeData = {
@@ -771,6 +785,13 @@ type PublicHomeData = {
   categories: { id: string; title: string; slug: string; description: string }[];
 };
 
+const HOME_STATS = [
+  { icon: Users, value: 12400, suffix: "+", label: "دانشجوی فعال", orb: "bg-primary/12 text-primary", bar: "from-primary to-emerald-300", w: "88%" },
+  { icon: GraduationCap, value: 38, suffix: "", label: "منتور متخصص", orb: "bg-sky-400/12 text-sky-400", bar: "from-sky-400 to-sky-300", w: "64%" },
+  { icon: PlayCircle, value: 960, suffix: "+", label: "ساعت محتوای آموزشی", orb: "bg-violet-400/12 text-violet-400", bar: "from-violet-400 to-violet-300", w: "76%" },
+  { icon: ShieldCheck, value: 97, suffix: "٪", label: "رضایت دانشجویان", orb: "bg-amber-400/12 text-amber-400", bar: "from-amber-400 to-amber-300", w: "95%" },
+];
+
 export function HomePage() {
   const { data, loading } = useFetch<PublicHomeData>("/api/public?section=home");
   const goPublic = useApp((s) => s.goPublic);
@@ -783,11 +804,12 @@ export function HomePage() {
 
   return (
     <main>
-      {/* ================= HERO — full-bleed cinematic ================= */}
+      {/* ================= HERO — cinematic image + floating glass stack ================= */}
       <section className="relative overflow-hidden">
         <HeroBackdrop />
 
-        <div className="relative z-10 mx-auto max-w-7xl px-4 pb-16 pt-20 md:px-6 md:pt-28 lg:min-h-[700px] lg:pb-24 lg:pt-32">
+        <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-12 px-4 pb-14 pt-24 md:px-6 md:pt-28 lg:min-h-[680px] lg:grid-cols-[1.04fr_0.96fr] lg:pb-16 lg:pt-32">
+          {/* copy */}
           <div className="max-w-xl space-y-7 xl:max-w-2xl">
             <Reveal>
               <span className="inline-flex items-center gap-2.5 rounded-full border border-primary/25 bg-[#101827]/60 px-4 py-2 text-xs font-semibold text-primary backdrop-blur">
@@ -797,12 +819,12 @@ export function HomePage() {
             </Reveal>
 
             <Reveal delay={90}>
-              <h1 className="text-[2.5rem] font-black leading-[1.22] md:text-6xl md:leading-[1.18] xl:text-[4.3rem]">
+              <h1 className="text-[2.6rem] font-black leading-[1.2] md:text-6xl md:leading-[1.16] xl:text-[4.4rem]">
                 از صفر تا
                 <br />
                 <span className="text-gradient text-gradient-anim">معامله‌گر حرفه‌ای</span>
                 <br />
-                بازارهای جهانی
+                <span className="text-gradient-gold">بازارهای جهانی</span>
               </h1>
             </Reveal>
 
@@ -815,45 +837,83 @@ export function HomePage() {
             </Reveal>
 
             <Reveal delay={260} className="flex flex-wrap items-center gap-3">
-              <Button size="lg" className="btn-gradient-lime h-13 gap-2 px-7 text-base" onClick={startLearning}>
+              <Button size="lg" className="btn-gradient-lime h-13 gap-2 rounded-full px-7 text-base" onClick={startLearning}>
                 شروع یادگیری رایگان <ArrowLeft className="size-5" />
               </Button>
-              <Button size="lg" variant="outline" className="h-13 gap-2 border-border/80 bg-[#101827]/50 px-7 backdrop-blur" onClick={() => goPublic("paths")}>
+              <Button size="lg" variant="outline" className="h-13 gap-2 rounded-full border-border/80 bg-[#101827]/50 px-7 backdrop-blur" onClick={() => goPublic("paths")}>
                 <GraduationCap className="size-5 text-primary" /> مشاهده مسیرها
               </Button>
             </Reveal>
 
-            <Reveal delay={340} className="flex flex-wrap items-center gap-5 pt-2">
-              <div className="flex -space-x-3 space-x-reverse">
-                {["ع", "م", "س", "ن", "ر"].map((ch, i) => (
-                  <span
-                    key={i}
-                    className="flex size-10 items-center justify-center rounded-full border-2 border-[#101827] bg-gradient-to-br from-slate-600 to-slate-800 text-xs font-bold text-foreground"
-                    style={{ zIndex: 5 - i }}
-                  >
-                    {ch}
-                  </span>
-                ))}
-                <span className="flex size-10 items-center justify-center rounded-full border-2 border-[#101827] bg-primary text-[10px] font-black text-primary-foreground">
-                  +{faNum(12400)}
-                </span>
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="size-3.5 fill-amber-400 text-amber-400" />
+            <Reveal delay={340} className="flex flex-wrap items-center gap-4 pt-1">
+              <div className="flex items-center gap-4">
+                <div className="flex -space-x-3 space-x-reverse">
+                  {["ع", "م", "س", "ن", "ر"].map((ch, i) => (
+                    <span
+                      key={i}
+                      className="flex size-10 items-center justify-center rounded-full border-2 border-[#101827] bg-gradient-to-br from-slate-600 to-slate-800 text-xs font-bold text-foreground"
+                      style={{ zIndex: 5 - i }}
+                    >
+                      {ch}
+                    </span>
                   ))}
-                  <span className="mr-1 text-xs font-bold">{faNum(4.9, 1)}</span>
+                  <span className="flex size-10 items-center justify-center rounded-full border-2 border-[#101827] bg-primary text-[10px] font-black text-primary-foreground">
+                    +{faNum(12400)}
+                  </span>
                 </div>
-                <p className="text-xs text-muted-foreground">رضایت بیش از {faNum(12400)} دانشجوی فعال</p>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="size-3.5 fill-amber-400 text-amber-400" />
+                    ))}
+                    <span className="mr-1 text-xs font-bold">{faNum(4.9, 1)}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">رضایت بیش از {faNum(12400)} دانشجوی فعال</p>
+                </div>
               </div>
+            </Reveal>
+
+            <Reveal delay={400} className="flex flex-wrap gap-2.5">
+              {[
+                { icon: BadgeCheck, text: "دسترسی مادام‌العمر" },
+                { icon: ShieldCheck, text: "ضمانت ۷ روزه بازگشت" },
+                { icon: Headphones, text: "پشتیبانی منتور" },
+              ].map((c) => (
+                <span key={c.text} className="glass flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-medium text-foreground/85">
+                  <c.icon className="size-3.5 text-primary" /> {c.text}
+                </span>
+              ))}
             </Reveal>
           </div>
 
-          {/* قاب لایو طلای جهانی — شناور روی تصویر */}
-          <div className="mt-12 flex justify-center lg:absolute lg:bottom-6 lg:left-6 lg:mt-0 lg:justify-start">
-            <Reveal delay={300} className="w-full max-w-[340px] xl:max-w-sm">
-              <GoldLiveCard className="float-card" />
+          {/* floating glass stack — global gold live */}
+          <div className="relative mx-auto w-full max-w-[360px] lg:max-w-sm">
+            <Reveal delay={280} className="hero-visual-in relative">
+              <div className="relative">
+                <div className="absolute -inset-8 rounded-[3rem] bg-amber-400/8 blur-3xl" aria-hidden />
+                <GoldLiveCard className="float-card relative" />
+
+                {/* floating chips — corners only, never over live numbers */}
+                <div className="float-card-2 absolute -left-8 -top-9 hidden items-center gap-2.5 glass-strong rounded-2xl px-3.5 py-2.5 shadow-xl sm:flex">
+                  <span className="icon-orb size-9 bg-primary/15 text-primary">
+                    <ArrowUpRight className="size-4.5" />
+                  </span>
+                  <span className="leading-tight">
+                    <span className="block text-[10px] text-muted-foreground">دقت سیگنال‌های طلایی</span>
+                    <span className="block text-sm font-black text-primary">+{faNum(84)}٪</span>
+                  </span>
+                </div>
+
+                <div className="float-card absolute -bottom-10 -right-7 hidden items-center gap-2.5 glass-strong rounded-2xl px-3.5 py-2.5 shadow-xl sm:flex" style={{ animationDelay: "-2.4s" }}>
+                  <span className="icon-orb size-9 bg-amber-400/15 text-amber-400">
+                    <Wallet className="size-4.5" />
+                  </span>
+                  <span className="leading-tight">
+                    <span className="block text-[10px] text-muted-foreground">سود میانگین شاگردان</span>
+                    <span className="block text-sm font-black text-gradient-gold">+{faNum(2480)}$</span>
+                  </span>
+                </div>
+              </div>
             </Reveal>
           </div>
         </div>
@@ -861,30 +921,58 @@ export function HomePage() {
         <TickerBand />
       </section>
 
-      {/* ================= STATS — glass strip ================= */}
-      <section className="relative">
-        <div className="mx-auto max-w-7xl px-4 py-8 md:px-6">
-          <div className="glass-strong relative grid grid-cols-2 gap-6 overflow-hidden rounded-3xl px-6 py-8 md:grid-cols-4 md:px-10">
-            <div className="pointer-events-none absolute inset-x-16 top-0 h-px bg-gradient-to-l from-transparent via-primary/70 to-transparent" aria-hidden />
-            {[
-            { icon: Users, value: 12400, suffix: "+", label: "دانشجوی فعال", chip: "border-primary/20 bg-primary/10 text-primary", num: "text-gradient" },
-            { icon: GraduationCap, value: 38, suffix: "", label: "منتور متخصص", chip: "border-sky-400/20 bg-sky-400/10 text-sky-400", num: "text-sky-300" },
-            { icon: PlayCircle, value: 960, suffix: "+", label: "ساعت محتوای آموزشی", chip: "border-violet-400/20 bg-violet-400/10 text-violet-400", num: "text-violet-300" },
-            { icon: ShieldCheck, value: 97, suffix: "٪", label: "رضایت دانشجویان", chip: "border-amber-400/20 bg-amber-400/10 text-amber-400", num: "text-gradient-gold" },
-          ].map((s, i) => (
-            <Reveal key={s.label} delay={i * 90} className="flex items-center gap-4">
-              <span className={cn("flex size-12 shrink-0 items-center justify-center rounded-2xl border", s.chip)}>
-                <s.icon className="size-5.5" />
-              </span>
-              <div>
-                <p className={cn("text-2xl font-black", s.num)}>
-                  <Counter value={s.value} suffix={s.suffix} />
-                </p>
-                <p className="text-xs text-muted-foreground">{s.label}</p>
+      {/* ================= STATS — floating colored cards ================= */}
+      <section className="mx-auto max-w-7xl px-4 py-10 md:px-6">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {HOME_STATS.map((s, i) => (
+            <Reveal key={s.label} delay={i * 90}>
+              <div className="card-premium hairline-top group flex h-full flex-col gap-4 rounded-[1.6rem] p-5">
+                <span className={cn("icon-orb size-12 transition-transform duration-300 group-hover:scale-110", s.orb)}>
+                  <s.icon className="size-5.5" />
+                </span>
+                <div>
+                  <p className="text-3xl font-black">
+                    <Counter value={s.value} suffix={s.suffix} />
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">{s.label}</p>
+                </div>
+                <span className={cn("mt-auto block h-1 rounded-full bg-gradient-to-l opacity-70", s.bar)} style={{ width: s.w }} aria-hidden />
               </div>
             </Reveal>
           ))}
+        </div>
+      </section>
+
+      {/* ================= FEATURED COURSES ================= */}
+      <section className="py-14 md:py-20">
+        <div className="mx-auto max-w-7xl px-4 md:px-6">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <SectionHead
+              kicker="دوره‌های محبوب"
+              title="پرطرفدارترین دوره‌های دی‌صفارا"
+              desc="دسترسی مادام‌العمر، تمرین تعاملی و پشتیبانی منتور — انتخاب اکثر دانشجوهای ما."
+              tone="sky"
+            />
+            <Reveal className="mb-10 hidden md:block">
+              <Button variant="outline" className="gap-1.5 rounded-full" onClick={() => goPublic("courses")}>
+                همه دوره‌ها <ChevronLeft className="size-4" />
+              </Button>
+            </Reveal>
           </div>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {loading
+              ? [...Array(6)].map((_, i) => <div key={i} className="h-80 animate-pulse rounded-[1.75rem] bg-muted/40" />)
+              : (data?.courses || []).slice(0, 6).map((c, i) => (
+                  <Reveal key={c.id} delay={(i % 3) * 90}>
+                    <CourseCard course={c} />
+                  </Reveal>
+                ))}
+          </div>
+          <Reveal className="mt-10 text-center md:hidden">
+            <Button variant="outline" className="gap-1.5 rounded-full" onClick={() => goPublic("courses")}>
+              مشاهده همه دوره‌ها <ChevronLeft className="size-4" />
+            </Button>
+          </Reveal>
         </div>
       </section>
 
@@ -899,7 +987,7 @@ export function HomePage() {
           />
           {loading ? (
             <div className="grid gap-5 md:grid-cols-3">
-              {[...Array(3)].map((_, i) => <div key={i} className="h-56 animate-pulse rounded-2xl bg-muted/40" />)}
+              {[...Array(3)].map((_, i) => <div key={i} className="h-56 animate-pulse rounded-[1.75rem] bg-muted/40" />)}
             </div>
           ) : (
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -916,16 +1004,25 @@ export function HomePage() {
                       role="link" tabIndex={0}
                       onClick={() => goPublic("path", p.slug)}
                       onKeyDown={(e) => e.key === "Enter" && goPublic("path", p.slug)}
-                      className="card-premium group flex h-full cursor-pointer flex-col gap-4 rounded-2xl p-6 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className={cn(
+                        "card-premium group relative flex h-full cursor-pointer flex-col gap-5 rounded-[1.75rem] p-6 outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        featured && "hairline-top"
+                      )}
+                      style={{ "--hairline-color": `${p.color || "#19b887"}88` } as React.CSSProperties}
                     >
+                      {featured && (
+                        <span className="absolute -top-3 right-6 rounded-full bg-gradient-to-l from-primary to-emerald-500 px-3 py-1 text-[10px] font-black text-primary-foreground shadow-lg">
+                          پیشنهاد شروع
+                        </span>
+                      )}
                       <div className="flex items-start justify-between">
                         <span
-                          className="flex size-13 items-center justify-center rounded-2xl text-2xl"
+                          className="icon-orb size-14 text-3xl transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3"
                           style={{ background: `${p.color || "#19b887"}1f`, color: p.color || "#19b887" }}
                         >
                           {p.icon === "Rocket" ? "🚀" : p.icon === "Target" ? "🎯" : p.icon === "Bitcoin" ? "₿" : "📈"}
                         </span>
-                        <span className="rounded-lg bg-muted px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
+                        <span className="rounded-full border border-border/70 bg-card/50 px-3 py-1 text-[11px] font-semibold text-muted-foreground">
                           {faNum(p.courses.length)} دوره · {faNum(hours)} ساعت
                         </span>
                       </div>
@@ -936,15 +1033,20 @@ export function HomePage() {
                       {featured && p.courses.length > 0 && (
                         <div className="flex flex-wrap gap-1.5">
                           {p.courses.slice(0, 3).map((c) => (
-                            <span key={c.course.id} className="rounded-lg border border-border/70 bg-card/60 px-2.5 py-1 text-[11px] text-muted-foreground">
+                            <span key={c.course.id} className="rounded-full border border-border/70 bg-card/60 px-3 py-1 text-[11px] text-muted-foreground">
                               {c.course.title}
                             </span>
                           ))}
                         </div>
                       )}
-                      <span className="mt-auto flex items-center gap-1.5 pt-2 text-sm font-bold text-primary">
-                        شروع مسیر
-                        <ChevronLeft className="size-4 transition-transform duration-300 group-hover:-translate-x-1" />
+                      <span className="mt-auto flex items-center justify-between pt-2">
+                        <span className="flex items-center gap-1.5 text-sm font-bold text-primary">
+                          شروع مسیر
+                          <ChevronLeft className="size-4 transition-transform duration-300 group-hover:-translate-x-1" />
+                        </span>
+                        <span className="flex size-8 items-center justify-center rounded-full border border-border text-muted-foreground transition-all duration-300 group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground">
+                          <ArrowLeft className="size-3.5" />
+                        </span>
                       </span>
                     </article>
                   </Reveal>
@@ -955,40 +1057,7 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* ================= FEATURED COURSES ================= */}
-      <section className="py-20 md:py-24">
-        <div className="mx-auto max-w-7xl px-4 md:px-6">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <SectionHead
-              kicker="دوره‌های محبوب"
-              title="پرطرفدارترین دوره‌های دی‌صفارا"
-              desc="دسترسی مادام‌العمر، تمرین تعاملی و پشتیبانی منتور — انتخاب اکثر دانشجوهای ما."
-              tone="sky"
-            />
-            <Reveal className="mb-10 hidden md:block">
-              <Button variant="outline" className="gap-1.5" onClick={() => goPublic("courses")}>
-                همه دوره‌ها <ChevronLeft className="size-4" />
-              </Button>
-            </Reveal>
-          </div>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {loading
-              ? [...Array(6)].map((_, i) => <div key={i} className="h-80 animate-pulse rounded-2xl bg-muted/40" />)
-              : (data?.courses || []).slice(0, 6).map((c, i) => (
-                  <Reveal key={c.id} delay={(i % 3) * 90}>
-                    <CourseCard course={c} />
-                  </Reveal>
-                ))}
-          </div>
-          <Reveal className="mt-10 text-center md:hidden">
-            <Button variant="outline" className="gap-1.5" onClick={() => goPublic("courses")}>
-              مشاهده همه دوره‌ها <ChevronLeft className="size-4" />
-            </Button>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ================= WHY US (BENTO) ================= */}
+      {/* ================= WHY US — asymmetric bento ================= */}
       <section className="band band-deep py-20 md:py-24">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
           <SectionHead
@@ -998,12 +1067,12 @@ export function HomePage() {
             desc="ما فقط ویدیو نمی‌فروشیم؛ یک اکوسیستم کامل تمرین، منتورینگ و ارزیابی ساخته‌ایم تا یادگیری به نتیجه واقعی برسد."
             tone="violet"
           />
-          <div className="grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-6">
             {/* workspace — wide */}
-            <Reveal className="md:col-span-2">
-              <div className="card-premium flex h-full flex-col justify-between gap-6 overflow-hidden rounded-2xl p-7 md:flex-row md:items-center">
+            <Reveal className="md:col-span-4">
+              <div className="card-premium hairline-top flex h-full flex-col justify-between gap-6 overflow-hidden rounded-[1.75rem] p-7 lg:flex-row lg:items-center">
                 <div className="max-w-xs space-y-3">
-                  <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/12 text-primary">
+                  <span className="icon-orb size-12 bg-primary/12 text-primary">
                     <ChartCandlestick className="size-6" />
                   </span>
                   <h3 className="text-lg font-black">ورک‌اسپیس معاملاتی</h3>
@@ -1011,16 +1080,16 @@ export function HomePage() {
                     تمرین مستقیم روی چارت تعاملی با ابزارهای تحلیل، سناریونویسی و ثبت تمرین برای بررسی منتور.
                   </p>
                 </div>
-                <div className="w-full max-w-[240px] shrink-0 rounded-2xl border border-border/60 bg-[#0d1522]/70 p-3">
+                <div className="w-full max-w-[250px] shrink-0 rounded-2xl border border-border/60 bg-[#0d1522]/70 p-3">
                   <CandleChart data={seededCandles(14, 5, 2180, 8)} height={150} showArea={false} gridLines={2} />
                 </div>
               </div>
             </Reveal>
 
             {/* mentoring */}
-            <Reveal delay={100}>
-              <div className="card-premium flex h-full flex-col gap-3 rounded-2xl p-7">
-                <span className="flex size-12 items-center justify-center rounded-2xl bg-sky-400/12 text-sky-400">
+            <Reveal delay={100} className="md:col-span-2">
+              <div className="card-premium flex h-full flex-col gap-3 rounded-[1.75rem] p-7">
+                <span className="icon-orb size-12 bg-sky-400/12 text-sky-400">
                   <Users className="size-6" />
                 </span>
                 <h3 className="text-lg font-black">منتورینگ اختصاصی</h3>
@@ -1034,16 +1103,16 @@ export function HomePage() {
                     </span>
                   ))}
                   <span className="flex size-8 items-center justify-center rounded-full border-2 border-[#141f32] bg-muted text-[9px] font-bold">
-                    +۳۵
+                    +{toFa(35)}
                   </span>
                 </div>
               </div>
             </Reveal>
 
             {/* journal */}
-            <Reveal>
-              <div className="card-premium flex h-full flex-col gap-3 rounded-2xl p-7">
-                <span className="flex size-12 items-center justify-center rounded-2xl bg-violet-400/12 text-violet-400">
+            <Reveal className="md:col-span-2">
+              <div className="card-premium flex h-full flex-col gap-3 rounded-[1.75rem] p-7">
+                <span className="icon-orb size-12 bg-violet-400/12 text-violet-400">
                   <LineChart className="size-6" />
                 </span>
                 <h3 className="text-lg font-black">ژورنال هوشمند</h3>
@@ -1052,16 +1121,16 @@ export function HomePage() {
                 </p>
                 <div className="mt-auto flex items-end gap-1.5 pt-2" aria-hidden>
                   {[38, 62, 46, 80, 58, 92].map((h, i) => (
-                    <span key={i} className={cn("w-4 rounded-t-md", i % 3 === 2 ? "bg-destructive/50" : "bg-primary/60")} style={{ height: h / 4 + 8 }} />
+                    <span key={i} className={cn("w-4 rounded-t-lg", i % 3 === 2 ? "bg-destructive/50" : "bg-primary/60")} style={{ height: h / 4 + 8 }} />
                   ))}
                 </div>
               </div>
             </Reveal>
 
             {/* certificate */}
-            <Reveal delay={90}>
-              <div className="card-premium flex h-full flex-col gap-3 rounded-2xl p-7">
-                <span className="flex size-12 items-center justify-center rounded-2xl bg-amber-400/12 text-amber-400">
+            <Reveal delay={90} className="md:col-span-2">
+              <div className="card-premium flex h-full flex-col gap-3 rounded-[1.75rem] p-7">
+                <span className="icon-orb size-12 bg-amber-400/12 text-amber-400">
                   <Award className="size-6" />
                 </span>
                 <h3 className="text-lg font-black">آزمون و گواهینامه معتبر</h3>
@@ -1069,17 +1138,17 @@ export function HomePage() {
                   با آزمون‌های پایان دوره، گواهینامه قابل استعلام بگیرید و رزومه‌تان را قوی کنید.
                 </p>
                 <div className="mt-auto pt-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-1.5 text-[11px] font-bold text-amber-300">
-                    <Award className="size-3.5" /> گواهینامه DS-۲۴۰۷
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1.5 text-[11px] font-bold text-amber-300">
+                    <Award className="size-3.5" /> گواهینامه DS-{toFa(2407)}
                   </span>
                 </div>
               </div>
             </Reveal>
 
             {/* support */}
-            <Reveal delay={180}>
-              <div className="card-premium flex h-full flex-col gap-3 rounded-2xl p-7">
-                <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/12 text-primary">
+            <Reveal delay={180} className="md:col-span-2">
+              <div className="card-premium flex h-full flex-col gap-3 rounded-[1.75rem] p-7">
+                <span className="icon-orb size-12 bg-primary/12 text-primary">
                   <Headphones className="size-6" />
                 </span>
                 <h3 className="text-lg font-black">پشتیبانی ۲۴/۷ و جامعه حرفه‌ای</h3>
@@ -1124,21 +1193,21 @@ export function HomePage() {
                       </li>
                     ))}
                   </ul>
-                  <Button size="lg" className="glow-accent gap-2" onClick={startLearning}>
+                  <Button size="lg" className="glow-accent gap-2 rounded-full" onClick={startLearning}>
                     ورود به ورک‌اسپیس <ArrowLeft className="size-4.5" />
                   </Button>
                 </div>
 
-                {/* mock window */}
+                {/* mock window + floating chips */}
                 <div className="relative">
-                  <div className="absolute -inset-4 rounded-3xl bg-primary/8 blur-2xl" aria-hidden />
-                  <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-[#0d1522] shadow-2xl">
+                  <div className="absolute -inset-4 rounded-[2rem] bg-primary/8 blur-2xl" aria-hidden />
+                  <div className="relative overflow-hidden rounded-[1.5rem] border border-border/80 bg-[#0d1522] shadow-2xl">
                     {/* window bar */}
                     <div className="flex items-center gap-2 border-b border-border/60 bg-card/60 px-4 py-2.5" dir="ltr">
                       <span className="size-2.5 rounded-full bg-rose-500/70" />
                       <span className="size-2.5 rounded-full bg-amber-400/70" />
                       <span className="size-2.5 rounded-full bg-primary/70" />
-                      <span className="mx-auto rounded-md bg-muted/70 px-3 py-0.5 text-[10px] font-bold text-muted-foreground" dir="rtl">
+                      <span className="mx-auto rounded-full bg-muted/70 px-3 py-0.5 text-[10px] font-bold text-muted-foreground" dir="rtl">
                         XAUUSD · H1 — ورک‌اسپیس دی‌صفارا
                       </span>
                     </div>
@@ -1146,7 +1215,7 @@ export function HomePage() {
                       {/* tool rail */}
                       <div className="flex flex-col items-center gap-3 border-e border-border/60 py-4" dir="ltr">
                         {[ChartCandlestick, LineChart, Target, Wallet].map((I, i) => (
-                          <span key={i} className={cn("flex size-8 items-center justify-center rounded-lg", i === 0 ? "bg-primary/15 text-primary" : "text-muted-foreground")}>
+                          <span key={i} className={cn("flex size-8 items-center justify-center rounded-xl", i === 0 ? "bg-primary/15 text-primary" : "text-muted-foreground")}>
                             <I className="size-4" />
                           </span>
                         ))}
@@ -1167,6 +1236,16 @@ export function HomePage() {
                       </div>
                     </div>
                   </div>
+
+                  {/* floating result chips */}
+                  <div className="float-card-2 absolute -left-4 -top-4 hidden items-center gap-2 glass-strong rounded-2xl px-3.5 py-2 shadow-xl md:flex">
+                    <span className="icon-orb size-8 bg-primary/15 text-primary"><CheckCircle2 className="size-4" /></span>
+                    <span className="text-xs font-bold">تمرین ثبت شد ✓</span>
+                  </div>
+                  <div className="float-card absolute -bottom-5 -right-3 hidden items-center gap-2 glass-strong rounded-2xl px-3.5 py-2 shadow-xl md:flex" style={{ animationDelay: "-3s" }}>
+                    <span className="icon-orb size-8 bg-amber-400/15 text-amber-400"><TrendingUp className="size-4" /></span>
+                    <span className="text-xs font-bold">+{toFa(32)} پیپ سود تمرینی</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1186,28 +1265,39 @@ export function HomePage() {
               tone="amber"
             />
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {(data?.mentors || []).slice(0, 4).map((m, i) => (
-                <Reveal key={m.id} delay={i * 90}>
-                  <div className="card-premium group flex h-full flex-col items-center gap-3 rounded-2xl p-6 text-center">
-                    <span className="relative flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-primary/30 to-emerald-900/60 text-2xl font-black text-primary ring-2 ring-primary/30 ring-offset-4 ring-offset-[#101827] transition-transform duration-300 group-hover:scale-105">
-                      {m.name?.charAt(0)}
-                      <span className="absolute bottom-1 left-1 size-3.5 rounded-full border-2 border-[#141f32] bg-primary" />
-                    </span>
-                    <div>
-                      <p className="font-black">{m.name}</p>
-                      <p className="mt-0.5 text-xs text-primary">منتور دی‌صفارا</p>
+              {(data?.mentors || []).slice(0, 4).map((m, i) => {
+                const stat = [
+                  { v: `${toFa(240)}+`, l: "دانشجو" },
+                  { v: `${toFa(180)}+`, l: "دانشجو" },
+                  { v: `${toFa(310)}+`, l: "دانشجو" },
+                  { v: `${toFa(150)}+`, l: "دانشجو" },
+                ][i % 4];
+                return (
+                  <Reveal key={m.id} delay={i * 90}>
+                    <div className="card-premium group flex h-full flex-col items-center gap-3 rounded-[1.75rem] p-6 text-center">
+                      <span className="relative flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-primary/30 to-emerald-900/60 text-2xl font-black text-primary ring-2 ring-primary/30 ring-offset-4 ring-offset-[#101827] transition-transform duration-300 group-hover:scale-105">
+                        {m.name?.charAt(0)}
+                        <span className="absolute bottom-1 left-1 size-3.5 rounded-full border-2 border-[#141f32] bg-primary" />
+                      </span>
+                      <div>
+                        <p className="font-black">{m.name}</p>
+                        <p className="mt-0.5 text-xs text-primary">منتور دی‌صفارا</p>
+                      </div>
+                      <p className="line-clamp-3 text-xs leading-6 text-muted-foreground">{m.bio}</p>
+                      <span className="rounded-full border border-border/70 bg-card/50 px-3 py-1 text-[11px] font-bold text-foreground/85">
+                        {stat.v} {stat.l}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => goPublic("mentors")}
+                        className="mt-auto inline-flex cursor-pointer items-center gap-1 text-xs font-bold text-primary hover:underline"
+                      >
+                        پلن‌های منتورینگ <ChevronLeft className="size-3.5" />
+                      </button>
                     </div>
-                    <p className="line-clamp-3 text-xs leading-6 text-muted-foreground">{m.bio}</p>
-                    <button
-                      type="button"
-                      onClick={() => goPublic("mentors")}
-                      className="mt-auto inline-flex cursor-pointer items-center gap-1 text-xs font-bold text-primary hover:underline"
-                    >
-                      پلن‌های منتورینگ <ChevronLeft className="size-3.5" />
-                    </button>
-                  </div>
-                </Reveal>
-              ))}
+                  </Reveal>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -1243,8 +1333,9 @@ export function HomePage() {
                             {doubled.map((q, i) => (
                               <figure
                                 key={`${halfIdx}-${i}`}
-                                className="glass w-[320px] shrink-0 rounded-2xl p-5 md:w-[380px]"
+                                className="glass relative w-[320px] shrink-0 overflow-hidden rounded-[1.5rem] p-5 md:w-[380px]"
                               >
+                                <Quote className="absolute -top-1 left-4 size-16 text-primary/8" aria-hidden />
                                 <div className="mb-3 flex gap-1">
                                   {[...Array(q.rating)].map((_, si) => (
                                     <Star key={si} className="size-3.5 fill-amber-400 text-amber-400" />
@@ -1281,7 +1372,7 @@ export function HomePage() {
             <div className="flex flex-wrap items-end justify-between gap-4">
               <SectionHead kicker="بلاگ دی‌صفارا" title="آخرین مقالات آموزشی" tone="violet" />
               <Reveal className="mb-10 hidden md:block">
-                <Button variant="outline" className="gap-1.5" onClick={() => goPublic("blog")}>
+                <Button variant="outline" className="gap-1.5 rounded-full" onClick={() => goPublic("blog")}>
                   همه مقالات <ChevronLeft className="size-4" />
                 </Button>
               </Reveal>
@@ -1293,15 +1384,19 @@ export function HomePage() {
                     role="link" tabIndex={0}
                     onClick={() => goPublic("post", p.slug)}
                     onKeyDown={(e) => e.key === "Enter" && goPublic("post", p.slug)}
-                    className="card-premium group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="card-premium group flex h-full cursor-pointer flex-col overflow-hidden rounded-[1.75rem] pb-5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <div className="relative h-36">
-                      <CourseCover category={p.category} className="h-full w-full" icon={<Newspaper className="size-10 text-foreground/25" strokeWidth={1.4} />} />
-                      <span className="absolute right-3 top-3 rounded-lg bg-[#101827]/75 px-2.5 py-1 text-[11px] font-semibold text-primary backdrop-blur">
+                    <div className="relative m-2.5 mb-0 h-36 overflow-hidden rounded-2xl">
+                      <CourseCover
+                        category={p.category}
+                        className="h-full w-full transition-transform duration-700 group-hover:scale-[1.05]"
+                        icon={<Newspaper className="size-10 text-foreground/25" strokeWidth={1.4} />}
+                      />
+                      <span className="absolute right-3 top-3 rounded-full bg-[#101827]/75 px-3 py-1 text-[11px] font-semibold text-primary backdrop-blur">
                         {p.category}
                       </span>
                     </div>
-                    <div className="flex flex-1 flex-col gap-2.5 p-5">
+                    <div className="flex flex-1 flex-col gap-2.5 px-5 pt-4">
                       <h3 className="line-clamp-2 font-bold leading-7 transition-colors group-hover:text-primary">{p.title}</h3>
                       <p className="line-clamp-2 text-xs leading-6 text-muted-foreground">{p.excerpt}</p>
                       <div className="mt-auto flex items-center gap-4 pt-3 text-[11px] text-muted-foreground">
@@ -1324,7 +1419,7 @@ export function HomePage() {
             <div className="flex flex-wrap items-end justify-between gap-4">
               <SectionHead kicker="منابع رایگان" title="قبل از خرید، رایگان شروع کن" tone="amber" />
               <Reveal className="mb-10 hidden md:block">
-                <Button variant="outline" className="gap-1.5" onClick={() => goPublic("resources")}>
+                <Button variant="outline" className="gap-1.5 rounded-full" onClick={() => goPublic("resources")}>
                   همه منابع <ChevronLeft className="size-4" />
                 </Button>
               </Reveal>
@@ -1332,6 +1427,7 @@ export function HomePage() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {(data?.resources || []).slice(0, 4).map((r, i) => {
                 const Icon = r.type === "VIDEO" ? PlayCircle : r.type === "PDF" ? FileText : BookOpen;
+                const hue = r.type === "VIDEO" ? "bg-violet-400/12 text-violet-400" : r.type === "PDF" ? "bg-amber-400/12 text-amber-400" : "bg-sky-400/12 text-sky-400";
                 return (
                   <Reveal key={r.id} delay={i * 80}>
                     <button
@@ -1341,16 +1437,18 @@ export function HomePage() {
                           .then(() => toast({ title: "درخواست شما ثبت شد 📥", description: "لینک دانلود برایتان ارسال می‌شود." }))
                           .catch(() => toast({ title: "خطا در دریافت", variant: "destructive" }))
                       }
-                      className="card-premium group flex w-full cursor-pointer items-center gap-3.5 rounded-2xl p-4 text-right outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="card-premium group flex w-full cursor-pointer items-center gap-3.5 rounded-[1.5rem] p-4 text-right outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <span className={cn("icon-orb size-11 transition-transform duration-300 group-hover:scale-110", hue)}>
                         <Icon className="size-5" />
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-bold">{r.title}</span>
                         <span className="block text-[11px] text-muted-foreground">{faNum(r.downloads)} دانلود · {r.size}</span>
                       </span>
-                      <Download className="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" />
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition-all group-hover:border-primary group-hover:text-primary">
+                        <Download className="size-4" />
+                      </span>
                     </button>
                   </Reveal>
                 );
@@ -1370,7 +1468,7 @@ export function HomePage() {
                 const open = openFaq === f.id;
                 return (
                   <Reveal key={f.id} delay={i * 60}>
-                    <div className={cn("overflow-hidden rounded-2xl border bg-card transition-colors", open ? "border-primary/40" : "border-border")}>
+                    <div className={cn("overflow-hidden rounded-2xl border bg-card/70 transition-all", open ? "border-primary/40 shadow-[0_0_36px_-14px_rgba(25,184,135,0.4)]" : "border-border")}>
                       <button
                         type="button"
                         onClick={() => setOpenFaq(open ? null : f.id)}
@@ -1378,7 +1476,7 @@ export function HomePage() {
                         aria-expanded={open}
                       >
                         <span className="text-sm font-bold leading-7">{f.question}</span>
-                        <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg border border-border transition-all duration-300", open && "rotate-45 border-primary/40 bg-primary/10 text-primary")}>
+                        <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-full border border-border transition-all duration-300", open && "rotate-45 border-primary/40 bg-primary/10 text-primary")}>
                           <Plus className="size-4" />
                         </span>
                       </button>
@@ -1407,7 +1505,9 @@ export function HomePage() {
       {/* ================= FINAL CTA ================= */}
       <section className="px-4 pb-24 pt-4 md:px-6">
         <Reveal className="mx-auto max-w-5xl">
-          <div className="cta-deep noise relative overflow-hidden rounded-[2.5rem] px-6 py-14 text-center md:px-14 md:py-20">
+          <div className="cta-deep noise dots-pattern relative overflow-hidden rounded-[2.5rem] px-6 py-14 text-center md:px-14 md:py-20">
+            <div className="orb -left-16 -top-16 size-64 bg-lime-400/10" aria-hidden />
+            <div className="orb -bottom-20 -right-10 size-72 bg-violet-500/10" aria-hidden style={{ animationDelay: "-8s" }} />
             <div className="relative space-y-6">
               <span className="inline-flex items-center gap-2 rounded-full border border-lime-300/30 bg-lime-300/10 px-4 py-1.5 text-xs font-bold text-lime-200">
                 <Sparkles className="size-3.5" /> همین امروز شروع کن
@@ -1420,10 +1520,10 @@ export function HomePage() {
                 اولین قدم رایگان است. ثبت‌نام کن، منابع رایگان را دریافت کن و با منتورهای حرفه‌ای مسیرت را بساز.
               </p>
               <div className="flex flex-wrap justify-center gap-3 pt-2">
-                <Button size="lg" className="btn-gradient-lime h-13 gap-2 px-8 text-base" onClick={startLearning}>
+                <Button size="lg" className="btn-gradient-lime h-13 gap-2 rounded-full px-8 text-base" onClick={startLearning}>
                   ثبت‌نام رایگان <ArrowLeft className="size-5" />
                 </Button>
-                <Button size="lg" variant="outline" className="h-13 border-border/80 bg-card/40 px-8" onClick={() => goPublic("contact")}>
+                <Button size="lg" variant="outline" className="h-13 rounded-full border-border/80 bg-card/40 px-8" onClick={() => goPublic("contact")}>
                   مشاوره رایگان
                 </Button>
               </div>
