@@ -52,3 +52,10 @@ prompt
 server.log
 # Skills directory
 /skills/
+# sandbox artifacts (not part of the app)
+/download/
+/upload/
+/tool-results/
+/tests/
+/db/
+*.db

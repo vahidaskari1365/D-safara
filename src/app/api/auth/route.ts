@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import { db, provisionDemoData } from "@/lib/db";
 import { getSessionUser, SESSION_COOKIE } from "@/lib/session";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -60,6 +60,8 @@ export async function POST(req: NextRequest) {
       await db.notification.create({
         data: { userId: user.id, title: "به دی‌صفارا خوش آمدید 🎉", body: "مسیر یادگیری خود را شروع کنید؛ اولین درس هر دوره رایگان است." },
       });
+      // Demo mode: seed a lively starter dataset for the new user (journal, exercises, session…)
+      provisionDemoData(user.id);
     }
 
     const res = NextResponse.json({
