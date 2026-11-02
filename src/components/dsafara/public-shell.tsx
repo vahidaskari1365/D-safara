@@ -6,6 +6,7 @@ import { apiGet, apiPost } from "@/lib/api";
 import { faDate, faNum, faToman, toFa } from "@/lib/fa";
 import { cn } from "@/lib/utils";
 import { Reveal, Counter, SectionHead, useFetch } from "./shared";
+import { HeroMotionVisual } from "./hero-visual";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +18,7 @@ import {
   ArrowLeft, Award, BookOpen, Brain, CalendarDays, ChartCandlestick, CheckCircle2, ChevronLeft,
   Clock, Download, FileText, Globe, GraduationCap, Headphones, Instagram, LayoutDashboard,
   LineChart, LogIn, Menu, Newspaper, PlayCircle, Plus, Send, ShieldCheck, ShoppingCart,
-  Sparkles, Star, Target, TrendingUp, Twitter, Users, Wallet, Youtube, Zap,
+  Sparkles, Star, Target, Twitter, Users, Wallet, Youtube, Zap,
 } from "lucide-react";
 
 /* ============================================================
@@ -696,163 +697,6 @@ export function CourseCard({ course }: { course: CourseType }) {
 }
 
 /* ============================================================
-   hero — live chart
-============================================================ */
-
-const PAIRS = [
-  { sym: "XAUUSD", label: "طلا / دلار", base: 2332, vol: 9, decimals: 1, seed: 7 },
-  { sym: "BTCUSD", label: "بیت‌کوین / دلار", base: 61240, vol: 320, decimals: 0, seed: 13 },
-  { sym: "EURUSD", label: "یورو / دلار", base: 1.0842, vol: 0.004, decimals: 4, seed: 21 },
-];
-
-function LiveChart() {
-  const [pairIdx, setPairIdx] = useState(0);
-  const [tf, setTf] = useState(0);
-  const pair = PAIRS[pairIdx];
-  const [candles, setCandles] = useState<Candle[]>(() => seededCandles(26, pair.seed, pair.base, pair.vol));
-  const [price, setPrice] = useState(pair.base);
-  const [dir, setDir] = useState<"up" | "down">("up");
-  const [prevKey, setPrevKey] = useState({ p: pairIdx, t: tf });
-
-  // regenerate when pair/tf changes (adjust state during render pattern)
-  if (prevKey.p !== pairIdx || prevKey.t !== tf) {
-    setPrevKey({ p: pairIdx, t: tf });
-    const fresh = seededCandles(26, pair.seed + tf * 101, pair.base, pair.vol);
-    setCandles(fresh);
-    setPrice(fresh[fresh.length - 1].c);
-    setDir("up");
-  }
-
-  // live tick
-  useEffect(() => {
-    const id = setInterval(() => {
-      setCandles((cs) => {
-        const last = cs[cs.length - 1];
-        const drift = (Math.random() - 0.47) * pair.vol * 0.9;
-        const nc = last.c + drift;
-        const next = cs.slice(0, -1).concat({ o: last.o, h: Math.max(last.h, nc), l: Math.min(last.l, nc), c: nc });
-        if (Math.random() < 0.35) {
-          const nnc = nc + (Math.random() - 0.46) * pair.vol * 0.8;
-          next.push({ o: nc, h: Math.max(nc, nnc), l: Math.min(nc, nnc), c: nnc });
-          if (next.length > 30) next.shift();
-        }
-        setPrice(nc);
-        setDir(nc >= last.c ? "up" : "down");
-        return next;
-      });
-    }, 1100);
-    return () => clearInterval(id);
-  }, [pair.vol]);
-
-  const first = candles[0]?.c ?? pair.base;
-  const changePct = ((price - first) / first) * 100;
-
-  return (
-    <div className="relative">
-      {/* glow */}
-      <div className="absolute -inset-8 rounded-[2.5rem] bg-primary/10 blur-3xl" aria-hidden />
-
-      <div className="glass-strong relative rounded-3xl p-5 md:p-6">
-        {/* header */}
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="flex size-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
-              <ChartCandlestick className="size-5" />
-            </span>
-            <div className="leading-tight">
-              <p className="text-sm font-black">{pair.sym}</p>
-              <p className="text-[11px] text-muted-foreground">{pair.label} · بازار جهانی</p>
-            </div>
-          </div>
-          <div className="text-left">
-            <p key={price} className={cn("price-flash rounded-lg px-2 py-0.5 text-xl font-black tabular-nums", dir === "up" ? "text-primary" : "text-destructive")}>
-              {faNum(price, pair.decimals)}
-            </p>
-            <p className={cn("flex items-center justify-end gap-1 text-xs font-bold", changePct >= 0 ? "text-primary" : "text-destructive")}>
-              {changePct >= 0 ? <TrendingUp className="size-3.5" /> : <TrendingUp className="size-3.5 rotate-180" />}
-              {faNum(Math.abs(changePct), 2)}٪
-            </p>
-          </div>
-        </div>
-
-        {/* pair chips */}
-        <div className="mb-3 flex gap-2">
-          {PAIRS.map((p, i) => (
-            <button
-              key={p.sym}
-              type="button"
-              onClick={() => setPairIdx(i)}
-              className={cn(
-                "cursor-pointer rounded-lg border px-3 py-1.5 text-[11px] font-bold transition-all",
-                i === pairIdx
-                  ? "border-primary/50 bg-primary/15 text-primary"
-                  : "border-border bg-card/50 text-muted-foreground hover:border-primary/30 hover:text-foreground"
-              )}
-            >
-              {p.sym}
-            </button>
-          ))}
-          <div className="mr-auto flex gap-1">
-            {["H1", "H4", "D1", "W1"].map((t, i) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => setTf(i)}
-                className={cn(
-                  "cursor-pointer rounded-md px-2 py-1 text-[10px] font-bold transition-colors",
-                  i === tf ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* chart */}
-        <div className="rounded-2xl border border-border/60 bg-[#0d1522]/60 p-2">
-          <CandleChart data={candles} height={220} decimals={pair.decimals} />
-        </div>
-
-        {/* footer meta */}
-        <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-          {[
-            { l: "وین‌ریت این ماه", v: `${faNum(68)}٪`, c: "text-primary" },
-            { l: "R:R میانگین", v: toFa("1:2.8"), c: "text-sky-400" },
-            { l: "معاملات فعال", v: faNum(12), c: "text-foreground" },
-          ].map((s) => (
-            <div key={s.l} className="rounded-xl border border-border/60 bg-card/50 p-3">
-              <p className="text-[10px] text-muted-foreground">{s.l}</p>
-              <p className={cn("mt-1 text-base font-black", s.c)}>{s.v}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* floating badges */}
-      <div className="float-card glass absolute -right-4 -top-5 hidden items-center gap-2.5 rounded-2xl px-4 py-3 md:flex">
-        <span className="flex size-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
-          <Target className="size-4.5" />
-        </span>
-        <div className="leading-tight">
-          <p className="text-[10px] text-muted-foreground">سیگنال موفق</p>
-          <p className="text-sm font-black text-primary">+{faNum(84)}٪</p>
-        </div>
-      </div>
-      <div className="float-card-2 glass absolute -bottom-6 -left-4 hidden items-center gap-2.5 rounded-2xl px-4 py-3 md:flex">
-        <span className="flex size-9 items-center justify-center rounded-xl bg-sky-400/15 text-sky-400">
-          <Wallet className="size-4.5" />
-        </span>
-        <div className="leading-tight">
-          <p className="text-[10px] text-muted-foreground">سود ثبت‌شده دانشجویان</p>
-          <p className="text-sm font-black text-sky-300">+{faNum(2480)}$</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ============================================================
    ticker band
 ============================================================ */
 
@@ -989,9 +833,9 @@ export function HomePage() {
               </Reveal>
             </div>
 
-            {/* chart */}
-            <Reveal delay={200} className="relative mx-auto w-full max-w-lg lg:max-w-none">
-              <LiveChart />
+            {/* hero motion visual */}
+            <Reveal delay={200} className="relative mx-auto w-full max-w-xl lg:max-w-none">
+              <HeroMotionVisual />
             </Reveal>
           </div>
         </div>
