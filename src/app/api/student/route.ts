@@ -13,6 +13,17 @@ export async function GET(req: NextRequest) {
   const view = req.nextUrl.searchParams.get("view") || "dashboard";
   const uid = me.id;
 
+  // Mentor data is scoped to the authenticated mentor, never to arbitrary user IDs.
+  if (view === "mentor-dashboard") {
+    if (me.role !== "MENTOR") return NextResponse.json({ error: "دسترسی غیرمجاز" }, { status: 403 });
+    const [enrollments, sessions, courses] = await Promise.all([
+      db.mentoringPlanEnrollment.findMany({ where: { mentorId: uid, status: "ACCEPTED" }, include: { user: includeUser, plan: true } }),
+      db.mentorSession.findMany({ where: { mentorId: uid }, include: { student: includeUser }, orderBy: { startTime: "asc" } }),
+      db.course.findMany({ where: { mentorId: uid } }),
+    ]);
+    return NextResponse.json({ enrollments, sessions, courses });
+  }
+
   if (view === "dashboard") {
     const [enrollments, journal, exercises, submissions, attempts, sessions, notifications, mentorEnrollment, wallet, certificates] =
       await Promise.all([
@@ -53,7 +64,7 @@ export async function GET(req: NextRequest) {
       include: { course: true },
     });
 
-    const weeklyActivity = [];
+    const weeklyActivity: { date: string; trades: number }[] = [];
     for (let i = 6; i >= 0; i--) {
       const day = new Date(Date.now() - i * 86400000);
       const next = new Date(day.getTime() + 86400000);

@@ -734,37 +734,14 @@ export function CourseCard({ course }: { course: CourseType }) {
    ticker band — floating glass strip
 ============================================================ */
 
-const TICKER = [
-  { sym: "XAUUSD", price: 2348.5, chg: +0.84, d: 2 },
-  { sym: "EURUSD", price: 1.0842, chg: -0.12, d: 4 },
-  { sym: "BTCUSD", price: 61240, chg: +2.31, d: 0 },
-  { sym: "GBPUSD", price: 1.2715, chg: +0.09, d: 4 },
-  { sym: "US30", price: 38450, chg: +0.52, d: 0 },
-  { sym: "USOIL", price: 78.24, chg: -1.05, d: 2 },
-  { sym: "ETHUSD", price: 3342, chg: +1.72, d: 0 },
-  { sym: "SP500", price: 5128, chg: +0.34, d: 0 },
-];
-
 function TickerBand() {
-  const row = [...TICKER, ...TICKER];
   return (
-    <div className="relative z-10 mx-auto max-w-7xl px-4 pb-10 md:px-6" dir="ltr">
-      <div className="glass-strong mask-fade-x overflow-hidden rounded-2xl py-3">
-        <div className="marquee gap-10" style={{ "--marquee-dur": "42s" } as React.CSSProperties}>
-          {[0, 1].map((half) => (
-            <div key={half} className="flex shrink-0 items-center gap-10 pl-10">
-              {row.map((t, i) => (
-                <div key={`${half}-${i}`} className="flex shrink-0 items-center gap-2.5 text-xs">
-                  <span className="font-black tracking-wide text-foreground">{t.sym}</span>
-                  <span className="text-muted-foreground tabular-nums">{faNum(t.price, t.d)}</span>
-                  <span className={cn("rounded-md px-1.5 py-0.5 font-bold tabular-nums", t.chg >= 0 ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive")}>
-                    {t.chg >= 0 ? "▲" : "▼"} {faNum(Math.abs(t.chg), 2)}%
-                  </span>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
+    <div className="relative z-10 mx-auto max-w-7xl px-4 pb-10 md:px-6">
+      <div className="glass-strong flex flex-wrap items-center justify-center gap-x-10 gap-y-3 rounded-2xl px-5 py-4 text-xs text-muted-foreground">
+        <span><b className="text-primary">●</b> آموزش ساختاریافته</span>
+        <span><b className="text-primary">●</b> تمرین در کنار منتور</span>
+        <span><b className="text-primary">●</b> ژورنال و گزارش عملکرد</span>
+        <span><b className="text-primary">●</b> نمودار بازار با TradingView</span>
       </div>
     </div>
   );
@@ -805,7 +782,7 @@ export function HomePage() {
   return (
     <main>
       {/* ================= HERO — cinematic image + floating glass stack ================= */}
-      <section className="relative overflow-hidden">
+      <section className="hero-cinematic relative overflow-hidden">
         <HeroBackdrop />
 
         <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-12 px-4 pb-14 pt-24 md:px-6 md:pt-28 lg:min-h-[680px] lg:grid-cols-[1.04fr_0.96fr] lg:pb-16 lg:pt-32">
@@ -899,8 +876,8 @@ export function HomePage() {
                     <ArrowUpRight className="size-4.5" />
                   </span>
                   <span className="leading-tight">
-                    <span className="block text-[10px] text-muted-foreground">دقت سیگنال‌های طلایی</span>
-                    <span className="block text-sm font-black text-primary">+{faNum(84)}٪</span>
+                    <span className="block text-[10px] text-muted-foreground">آموزش، تمرین، پیشرفت</span>
+                    <span className="block text-sm font-black text-primary">مسیر حرفه‌ای</span>
                   </span>
                 </div>
 
@@ -909,8 +886,8 @@ export function HomePage() {
                     <Wallet className="size-4.5" />
                   </span>
                   <span className="leading-tight">
-                    <span className="block text-[10px] text-muted-foreground">سود میانگین شاگردان</span>
-                    <span className="block text-sm font-black text-gradient-gold">+{faNum(2480)}$</span>
+                    <span className="block text-[10px] text-muted-foreground">کنار شما در مسیر یادگیری</span>
+                    <span className="block text-sm font-black text-gradient-gold">منتورینگ اختصاصی</span>
                   </span>
                 </div>
               </div>

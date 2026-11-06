@@ -100,7 +100,7 @@ export function StudentApp() {
   const nav = studentPage;
 
   return (
-    <div className="flex min-h-screen">
+    <div className="dashboard-shell flex min-h-screen">
       {/* sidebar */}
       <aside className={cn(
         "fixed inset-y-0 right-0 z-50 flex w-72 flex-col border-l border-border bg-sidebar transition-transform lg:sticky lg:top-0 lg:h-screen lg:translate-x-0",
@@ -186,7 +186,7 @@ export function StudentApp() {
 
 function StudentView({ page }: { page: string }) {
   switch (page) {
-    case "overview": return <OverviewView />;
+    case "overview": return <RoleOverview />;
     case "courses": return <MyCoursesView />;
     case "paths": return <StudentPathsView />;
     case "assignments": return <AssignmentsView />;
@@ -207,6 +207,46 @@ function StudentView({ page }: { page: string }) {
   }
 }
 
+function RoleOverview() {
+  const role = useApp((s) => s.user?.role);
+  return role === "MENTOR" ? <MentorOverview /> : <OverviewView />;
+}
+
+type MentorDashboardData = {
+  enrollments: { id: string; user: { id: string; name: string } | null; plan: { title: string } | null }[];
+  sessions: { id: string; title: string; startTime: string; status: string; student: { name: string } | null }[];
+  courses: { id: string; title: string }[];
+};
+function MentorOverview() {
+  const { data, loading, error, refetch } = useFetch<MentorDashboardData>("/api/student?view=mentor-dashboard");
+  const user = useApp((s) => s.user);
+  const goStudent = useApp((s) => s.goStudent);
+  if (loading) return <GridSkeleton cols={2} count={4} />;
+  if (error || !data) return <div className="rounded-2xl border border-border p-6"><p>گزارش منتور در دسترس نیست.</p><Button variant="outline" className="mt-4" onClick={refetch}>تلاش دوباره</Button></div>;
+  const upcoming = data.sessions.filter((s) => s.status === "SCHEDULED" && new Date(s.startTime).getTime() >= Date.now());
+  const completed = data.sessions.filter((s) => s.status === "COMPLETED");
+  return <div className="space-y-6">
+    <div className="dashboard-welcome rounded-2xl p-6 md:p-8">
+      <p className="text-xs font-bold text-primary">داشبورد منتورینگ / نمای کلی</p>
+      <h1 className="mt-3 text-2xl font-black">خوش آمدید، {user?.name}</h1>
+      <p className="mt-2 text-sm text-muted-foreground">نگاهی به دانشجویان و جلسات منتورینگ شما</p>
+    </div>
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <StatCard title="دانشجویان منتورینگ" value={faNum(new Set(data.enrollments.map((e) => e.user?.id).filter(Boolean)).size)} icon={<Users className="size-5" />} sub="پلن‌های پذیرفته‌شده" />
+      <StatCard title="جلسات پیش‌رو" value={faNum(upcoming.length)} icon={<CalendarDays className="size-5" />} sub="جلسات برنامه‌ریزی‌شده" />
+      <StatCard title="جلسات تکمیل‌شده" value={faNum(completed.length)} icon={<CheckCircle2 className="size-5" />} sub="در تمام زمان‌ها" />
+      <StatCard title="دوره‌های من" value={faNum(data.courses.length)} icon={<BookOpen className="size-5" />} sub="دوره‌های منتور" />
+    </div>
+    <div className="grid gap-5 xl:grid-cols-3">
+      <Card className="xl:col-span-2"><CardContent className="space-y-4 p-6"><div className="flex items-center justify-between"><div><p className="font-bold">جلسات پیش‌رو</p><p className="mt-1 text-xs text-muted-foreground">برنامه منتورینگ شما</p></div></div>
+        {upcoming.length ? upcoming.slice(0, 5).map((s) => <div key={s.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-muted/40 p-4"><div><p className="text-sm font-bold">{s.title}</p><p className="mt-1 text-xs text-muted-foreground">{s.student?.name || "دانشجو"}</p></div><span className="text-xs text-primary">{faDateTime(s.startTime)}</span></div>) : <p className="py-8 text-center text-sm text-muted-foreground">جلسه‌ای در آینده برنامه‌ریزی نشده است.</p>}
+      </CardContent></Card>
+      <Card><CardContent className="space-y-4 p-6"><p className="font-bold">دانشجویان من</p>{data.enrollments.length ? data.enrollments.slice(0, 6).map((e) => <div key={e.id} className="flex items-center gap-3 rounded-xl bg-muted/40 p-3"><Avatar className="size-9"><AvatarFallback className="bg-primary/15 text-primary">{e.user?.name?.charAt(0) || "د"}</AvatarFallback></Avatar><div><p className="text-sm font-bold">{e.user?.name || "دانشجو"}</p><p className="text-xs text-muted-foreground">{e.plan?.title}</p></div></div>) : <p className="py-8 text-center text-sm text-muted-foreground">هنوز دانشجویی به شما اختصاص نیافته است.</p>}</CardContent></Card>
+    </div>
+    <Button variant="outline" onClick={() => goStudent("messages")}>مشاهده پیام‌ها</Button>
+  </div>;
+}
+
 /* ================= overview ================= */
 
 function OverviewView() {
@@ -223,7 +263,7 @@ function OverviewView() {
   return (
     <div className="space-y-6">
       {/* welcome */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-gradient-to-l from-primary/10 to-transparent p-6">
+      <div className="dashboard-welcome flex flex-wrap items-center justify-between gap-4 rounded-2xl p-6">
         <div>
           <p className="text-xl font-extrabold">{greeting}، {user?.name} 👋</p>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -239,7 +279,7 @@ function OverviewView() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard title="دوره‌های فعال" value={faNum(activeCourses.length)} icon={<BookOpen className="size-5" />} sub={`${faNum(data.enrollments.length)} ثبت‌نام کل`} />
         <StatCard title="وین‌ریت معاملات" value={`${faNum(data.stats.winRate)}٪`} accent="text-primary" icon={<PieChart className="size-5" />} sub={`${faNum(data.stats.totalTrades)} معامله ثبت‌شده`} />
-        <StatCard title="سود/ضرر کل (دلار)" value={<PnlText value={data.stats.totalPnl} /> && `${data.stats.totalPnl >= 0 ? "+" : "−"}${faNum(Math.abs(data.stats.totalPnl))}$`} accent={data.stats.totalPnl >= 0 ? "text-primary" : "text-destructive"} icon={<Trophy className="size-5" />} />
+        <StatCard title="سود/ضرر کل (دلار)" value={`${data.stats.totalPnl >= 0 ? "+" : "−"}${faNum(Math.abs(data.stats.totalPnl))}$`} accent={data.stats.totalPnl >= 0 ? "text-primary" : "text-destructive"} icon={<Trophy className="size-5" />} />
         <StatCard title="کیف پول" value={faToman(data.wallet?.balance || 0)} icon={<Wallet className="size-5" />} sub="موجودی قابل استفاده" />
       </div>
 
@@ -292,7 +332,7 @@ function OverviewView() {
           <CardContent className="space-y-3 p-6">
             <p className="font-bold">فعالیت معاملاتی هفته اخیر</p>
             <TradesBarChart
-              data={data.weeklyActivity.map((w) => ({ label: ["ش", "ی", "د", "س", "چ", "پ", "ج"][new Date(w.date).getDay() % 7], value: w.trades }))}
+              data={data.weeklyActivity.map((w) => ({ label: ["ی", "د", "س", "چ", "پ", "ج", "ش"][new Date(w.date).getUTCDay()], value: w.trades }))}
               height={220}
             />
           </CardContent>

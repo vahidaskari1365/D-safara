@@ -52,7 +52,7 @@ export function AdminApp() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen">
+    <div className="dashboard-shell flex min-h-screen">
       <aside className={cn(
         "fixed inset-y-0 right-0 z-50 flex w-72 flex-col border-l border-border bg-sidebar transition-transform lg:sticky lg:top-0 lg:h-screen lg:translate-x-0",
         sidebarOpen ? "translate-x-0" : "translate-x-full"
@@ -151,8 +151,13 @@ function AdminOverview() {
 
   return (
     <div className="space-y-6">
+      <div className="dashboard-welcome rounded-2xl p-6 md:p-8">
+        <p className="text-xs font-bold text-primary">مرکز مدیریت / نمای کلی</p>
+        <h1 className="mt-3 text-2xl font-black">تصویر روشن‌تری از کسب‌وکار</h1>
+        <p className="mt-2 text-sm text-muted-foreground">عملکرد فروش، کاربران و فعالیت‌های آکادمی در یک نگاه</p>
+      </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard title="درآمد کل" value={faCompact(s.revenue) + " تومان"} accent="text-primary" icon={<Landmark className="size-5" />} trend={12} sub="نسبت به ماه قبل" />
+        <StatCard title="درآمد کل" value={faCompact(s.revenue) + " تومان"} accent="text-primary" icon={<Landmark className="size-5" />} sub="مجموع سفارش‌های موفق" />
         <StatCard title="درآمد این ماه" value={faToman(s.monthRevenue)} icon={<CreditCard className="size-5" />} sub={`${faNum(s.totalOrders)} سفارش موفق`} />
         <StatCard title="کاربران" value={faNum(s.totalUsers)} icon={<Users className="size-5" />} sub={`${faNum(s.totalStudents)} دانشجو • ${faNum(s.totalMentors)} منتور`} />
         <StatCard title="ثبت‌نام دوره‌ها" value={faNum(s.totalEnrollments)} icon={<BookOpen className="size-5" />} sub={`${faNum(s.totalTrades)} معامله ثبت‌شده`} />
