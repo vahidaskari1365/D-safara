@@ -6,7 +6,7 @@ import { apiGet, apiPost } from "@/lib/api";
 import { faDate, faNum, faToman, toFa } from "@/lib/fa";
 import { cn } from "@/lib/utils";
 import { Reveal, Counter, SectionHead, useFetch } from "./shared";
-import { HeroBackdrop, GoldLiveCard } from "./hero-visual";
+import { GannCinematic } from "./gann-cinematic";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -309,7 +309,7 @@ export function PublicHeader() {
             {user ? (
               <Button
                 className="hidden gap-2 rounded-full sm:inline-flex"
-                onClick={() => goStudent(user.role === "ADMIN" ? "overview" : "overview")}
+                onClick={() => user.role === "ADMIN" ? useApp.getState().goAdmin("overview") : goStudent("overview")}
               >
                 <LayoutDashboard className="size-4" /> داشبورد من
               </Button>
@@ -356,7 +356,7 @@ export function PublicHeader() {
                   ))}
                   <div className="my-3 h-px bg-border" />
                   {user ? (
-                    <Button className="w-full gap-2 rounded-full" onClick={() => { goStudent("overview"); setMobileOpen(false); }}>
+                    <Button className="w-full gap-2 rounded-full" onClick={() => { user.role === "ADMIN" ? useApp.getState().goAdmin("overview") : goStudent("overview"); setMobileOpen(false); }}>
                       <LayoutDashboard className="size-4" /> داشبورد من
                     </Button>
                   ) : (
@@ -777,24 +777,23 @@ export function HomePage() {
   const user = useApp((s) => s.user);
   const [openFaq, setOpenFaq] = useState<string | null>(null);
 
-  const startLearning = () => (user ? setMode("student") : setAuthOpen(true));
+  const startLearning = () => (user ? setMode(user.role === "ADMIN" ? "admin" : "student") : setAuthOpen(true));
 
   return (
     <main>
-      {/* Cinematic landing, inspired by the dark fintech reference */}
-      <section className="landing-hero relative overflow-hidden">
-        <HeroBackdrop />
-        <div className="landing-grid relative z-10 mx-auto max-w-7xl px-4 pb-12 pt-20 text-center md:px-6 md:pt-28">
-          <Reveal><span className="landing-kicker"><Sparkles className="size-3.5" /> آکادمی هوشمند معامله‌گری</span></Reveal>
-          <Reveal delay={80}><h1 className="mx-auto mt-6 max-w-4xl text-[2.65rem] font-black leading-[1.35] md:text-6xl md:leading-[1.3] xl:text-7xl">مسیر حرفه‌ای تو در<br /><span className="landing-gradient">بازارهای جهانی</span> از اینجاست</h1></Reveal>
-          <Reveal delay={160}><p className="mx-auto mt-6 max-w-2xl text-sm leading-8 text-slate-300/80 md:text-base">آموزش عمیق، تمرین روی چارت و همراهی منتور؛ همه ابزارهایی که برای ساختن مسیر معامله‌گری خود نیاز داری، در یک فضای یکپارچه.</p></Reveal>
-          <Reveal delay={240} className="mt-8 flex flex-wrap justify-center gap-3"><Button size="lg" className="landing-primary h-12 rounded-full px-8 font-bold" onClick={startLearning}>شروع مسیر یادگیری <ArrowLeft className="size-4" /></Button><Button size="lg" variant="outline" className="h-12 rounded-full border-white/15 bg-black/30 px-7" onClick={() => goPublic("paths")}><PlayCircle className="size-4" /> آشنایی با مسیرها</Button></Reveal>
-          <Reveal delay={320} className="mt-9 flex flex-wrap justify-center gap-x-8 gap-y-3 text-xs text-slate-300"><span>✦ آموزش گام‌به‌گام</span><span>✦ تمرین و تحلیل چارت</span><span>✦ همراهی منتور</span></Reveal>
-          <Reveal delay={400} className="landing-preview mx-auto mt-16 max-w-5xl text-right">
-            <div className="preview-top"><span className="preview-brand"><span className="preview-mark">✳</span> D.SAFARA</span><div className="hidden gap-8 text-[11px] text-slate-400 md:flex"><span className="text-white">نمای کلی</span><span>دوره‌ها</span><span>ژورنال</span><span>منتورینگ</span></div><span className="preview-demo">نمایش نمونه پنل</span></div>
-            <div className="preview-body"><div className="preview-side"><div className="preview-side-title">فضای شخصی شما</div><div className="preview-side-link active"><LayoutDashboard className="size-4" /> داشبورد</div><div className="preview-side-link"><BookOpen className="size-4" /> آموزش‌ها</div><div className="preview-side-link"><ChartCandlestick className="size-4" /> فضای تحلیل</div><div className="preview-side-link"><Users className="size-4" /> منتور من</div></div><div className="preview-content"><div className="preview-heading"><div><small>خوش آمدید به دی‌صفارا</small><strong>یک قدم نزدیک‌تر به هدف</strong></div><span className="preview-demo">داشبورد آموزشی</span></div><div className="preview-cards"><div><span>مسیر یادگیری</span><b>آموزش هدفمند</b><i /></div><div><span>عملکرد معاملاتی</span><b>تحلیل و پیشرفت</b><i /></div><div><span>منتورینگ</span><b>همراهی مستمر</b><i /></div></div><div className="preview-chart"><div className="flex items-center justify-between"><strong>نمای کلی فعالیت</strong><span>گزارش تصویری</span></div><svg viewBox="0 0 700 140" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="landingChartFill" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#a4ff51" stopOpacity=".3"/><stop offset="1" stopColor="#a4ff51" stopOpacity="0"/></linearGradient></defs><path d="M0 115 L50 105 L95 110 L145 78 L195 89 L245 70 L295 80 L345 43 L395 56 L445 33 L495 48 L545 20 L595 35 L650 13 L700 22 L700 140 L0 140 Z" fill="url(#landingChartFill)"/><path d="M0 115 L50 105 L95 110 L145 78 L195 89 L245 70 L295 80 L345 43 L395 56 L445 33 L495 48 L545 20 L595 35 L650 13 L700 22" fill="none" stroke="#a4ff51" strokeWidth="2"/></svg></div></div></div>
-          </Reveal>
+      <section className="gann-hero relative overflow-hidden">
+        <div className="gann-hero-noise" aria-hidden="true" />
+        <div className="gann-hero-inner mx-auto grid max-w-7xl items-center gap-8 px-5 pb-12 pt-16 md:px-8 lg:grid-cols-[.9fr_1.1fr] lg:gap-4 lg:pb-20 lg:pt-24">
+          <div className="relative z-10 max-w-xl text-right">
+            <Reveal><span className="gann-kicker"><span /> آکادمی تخصصی معامله‌گری دی‌صفارا</span></Reveal>
+            <Reveal delay={80}><h1 className="gann-headline mt-7 text-4xl font-black leading-[1.45] md:text-6xl md:leading-[1.45]">بازار را از زاویه‌ای<br /><span>دیگر ببین.</span></h1></Reveal>
+            <Reveal delay={160}><p className="mt-5 max-w-lg text-sm leading-8 text-slate-300/80 md:text-base">از هندسه‌ی گن تا مهارت معامله‌گری؛ آموزش عمیق، تمرین روی چارت و همراهی منتور، در یک مسیر منسجم.</p></Reveal>
+            <Reveal delay={240} className="mt-8 flex flex-wrap gap-3"><Button size="lg" className="gann-primary h-12 rounded-lg px-7 font-bold" onClick={startLearning}>شروع مسیر یادگیری <ArrowLeft className="size-4" /></Button><Button size="lg" variant="outline" className="h-12 rounded-lg border-white/15 bg-white/[.03] px-6" onClick={() => goPublic("paths")}>کشف مسیرها <ChevronLeft className="size-4" /></Button></Reveal>
+            <Reveal delay={320} className="gann-hero-foot mt-10 flex flex-wrap items-center gap-5"><span>آموزش ساختاریافته</span><span>تحلیل و تمرین</span><span>منتورینگ اختصاصی</span></Reveal>
+          </div>
+          <Reveal delay={160} className="gann-visual-wrap"><GannCinematic /></Reveal>
         </div>
+        <div className="gann-bottom-line"><span>THE ART OF MARKET GEOMETRY</span><span>آموزش · تحلیل · پیشرفت</span><span>DS / 01</span></div>
       </section>
       <section className="landing-features mx-auto grid max-w-7xl gap-4 px-4 py-12 md:grid-cols-3 md:px-6 md:py-16">
         {[{ icon: BookOpen, title: "یادگیری با مسیر مشخص", text: "از مبانی تا استراتژی، با دوره‌هایی که قدم به قدم همراه تو هستند." }, { icon: ChartCandlestick, title: "تمرین در فضای واقعی بازار", text: "تحلیل، ژورنال و بررسی عملکرد خود را یک‌جا دنبال کن." }, { icon: Users, title: "همراهی منتور", text: "از تجربه منتورها برای ساختن یک مسیر شخصی استفاده کن." }].map((item) => <div key={item.title} className="landing-feature"><item.icon className="size-5 text-[#b6ff5a]" /><h3 className="mt-5 font-bold">{item.title}</h3><p className="mt-2 text-xs leading-6 text-slate-400">{item.text}</p></div>)}
