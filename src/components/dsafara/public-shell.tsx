@@ -509,7 +509,7 @@ export function PublicFooter() {
               <button type="button" onClick={() => goPublic("privacy")} className="cursor-pointer text-xs text-muted-foreground transition-colors hover:text-primary">حریم خصوصی</button>
               <button type="button" onClick={() => goPublic("terms")} className="cursor-pointer text-xs text-muted-foreground transition-colors hover:text-primary">قوانین و مقررات</button>
               <span className="flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1 text-[11px] text-primary">
-                <span className="live-dot size-1.5 rounded-full bg-primary" /> همه سرویس‌ها فعال
+                <span className="live-dot size-1.5 rounded-full bg-primary" /> محیط آزمایشی
               </span>
             </div>
           </div>
@@ -532,6 +532,10 @@ export function AuthDialog() {
   const [devCode, setDevCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [demoMode, setDemoMode] = useState(false);
+  useEffect(() => {
+    if (authOpen) apiGet<{ demoMode: boolean }>("/api/auth").then((result) => setDemoMode(result.demoMode)).catch(() => setDemoMode(false));
+  }, [authOpen]);
 
   const close = () => {
     setAuthOpen(false);
@@ -544,6 +548,23 @@ export function AuthDialog() {
       const res = await apiPost<{ devCode: string }>("/api/auth", { action: "request-otp", phone });
       setDevCode(res.devCode);
       setStep("otp");
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const demoLogin = async (role: "student" | "mentor" | "admin") => {
+    setLoading(true); setError("");
+    try {
+      const res = await apiPost<{ user: { id: string; name: string; phone: string; role: string; avatar: string | null; email?: string | null; bio?: string | null } }>("/api/auth", { action: "demo-login", role });
+      const me = await apiGet<{ unreadNotifications: number; unreadMessages: number }>("/api/auth");
+      setUser(res.user, me.unreadNotifications || 0, me.unreadMessages || 0);
+      close();
+      if (res.user.role === "ADMIN") useApp.getState().goAdmin("overview");
+      else useApp.getState().goStudent("overview");
+      toast({ title: "ورود به محیط نمایشی", description: "اطلاعات آزمایشی و موقتی هستند." });
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -572,7 +593,7 @@ export function AuthDialog() {
 
   return (
     <Dialog open={authOpen} onOpenChange={(o) => !o && close()}>
-      <DialogContent className="max-w-md overflow-hidden border-border bg-card p-0 sm:rounded-3xl">
+      <DialogContent className="max-h-[90dvh] max-w-md overflow-y-auto border-border bg-card p-0 sm:rounded-3xl">
         <div className="h-1.5 w-full bg-gradient-to-l from-primary via-emerald-400 to-lime-300" />
         <div className="p-6">
           <DialogHeader className="space-y-2 text-right">
@@ -581,13 +602,22 @@ export function AuthDialog() {
             </DialogTitle>
             <DialogDescription className="leading-6">
               {step === "phone"
-                ? "با شماره موبایل وارد شوید یا حساب جدید بسازید؛ کمتر از ۳۰ ثانیه."
-                : `کد ۶ رقمی ارسال‌شده به ${toFa(phone)} را وارد کنید.`}
+                ? (demoMode ? "برای بررسی پنل‌ها، یک نقش نمایشی انتخاب کنید یا با شماره آزمایشی وارد شوید." : "ورود واقعی هنوز پیکربندی نشده است.")
+                : `کد آزمایشی نمایش‌داده‌شده را وارد کنید؛ پیامکی ارسال نشده است.`}
             </DialogDescription>
           </DialogHeader>
 
           {step === "phone" ? (
             <div className="mt-5 space-y-4">
+              {demoMode && <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-xs leading-6 text-muted-foreground">
+                <p className="mb-1 flex items-center gap-1.5 font-bold text-primary"><Sparkles className="size-3.5" /> ورود سریع نمایشی</p>
+                <p className="mb-3">بدون دیتابیس و پیامک؛ حساب‌ها و داده‌ها مشترک و موقتی‌اند.</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <Button type="button" variant="outline" size="sm" disabled={loading} onClick={() => demoLogin("student")}>دانشجو</Button>
+                  <Button type="button" variant="outline" size="sm" disabled={loading} onClick={() => demoLogin("mentor")}>منتور</Button>
+                  <Button type="button" variant="outline" size="sm" disabled={loading} onClick={() => demoLogin("admin")}>مدیر</Button>
+                </div>
+              </div>}
               <div className="space-y-2">
                 <Label htmlFor="auth-name">نام و نام خانوادگی (اختیاری)</Label>
                 <Input id="auth-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="مثلاً علی کریمی" className="bg-card/60" />
@@ -604,10 +634,7 @@ export function AuthDialog() {
               <Button className="btn-gradient-lime w-full rounded-full" onClick={requestOtp} disabled={loading || phone.length !== 11}>
                 {loading ? "در حال ارسال..." : "دریافت کد تایید"}
               </Button>
-              <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3.5 text-xs leading-6 text-muted-foreground">
-                <p className="mb-1 flex items-center gap-1.5 font-semibold text-primary"><Sparkles className="size-3.5" /> حساب‌های نمایشی:</p>
-                <p>دانشجو: <span dir="ltr" className="font-medium">09123333333</span> | مدیر: <span dir="ltr" className="font-medium">09120000000</span> | منتور: <span dir="ltr" className="font-medium">09121111111</span></p>
-              </div>
+
             </div>
           ) : (
             <div className="mt-5 space-y-4">

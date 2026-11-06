@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
+import { isDemoMode } from "@/lib/demo-mode";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -17,8 +18,8 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const action = body.action as string;
 
-  // No real payment/ledger provider is configured. Never simulate money in production.
-  if (process.env.NODE_ENV === "production" && ["create-order", "pay", "deposit"].includes(action)) {
+  // Simulations are only available in the explicitly enabled demo environment.
+  if (!isDemoMode() && ["create-order", "pay", "deposit"].includes(action)) {
     return NextResponse.json({ error: "پرداخت و شارژ واقعی هنوز پیکربندی نشده است." }, { status: 503 });
   }
 
