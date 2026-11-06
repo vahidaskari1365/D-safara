@@ -44,7 +44,13 @@ export async function GET(req: NextRequest) {
       const k = o.paidAt.toISOString().slice(0, 7);
       revenueByMonth[k] = (revenueByMonth[k] || 0) + o.totalAmount;
     });
-    const months = Object.keys(revenueByMonth).sort().slice(-6);
+    // Include empty months so the selected period represents calendar months,
+    // rather than only the most recent months that happened to have sales.
+    const current = new Date();
+    const months = Array.from({ length: 6 }, (_, i) => {
+      const month = new Date(Date.UTC(current.getUTCFullYear(), current.getUTCMonth() - 5 + i, 1));
+      return month.toISOString().slice(0, 7);
+    });
 
     const coursePerf = courses
       .map((c) => ({ id: c.id, title: c.title, students: c._count.enrollments, price: c.price, rating: c.rating, category: c.category?.title }))
@@ -61,7 +67,7 @@ export async function GET(req: NextRequest) {
         totalEnrollments: enrollments.length,
         totalTrades: journal.length,
       },
-      revenueByMonth: months.map((m) => ({ month: m, revenue: revenueByMonth[m] })),
+      revenueByMonth: months.map((m) => ({ month: m, revenue: revenueByMonth[m] || 0 })),
       recentOrders: paidOrders.slice(0, 8),
       coursePerf,
       tickets: tickets.slice(-6).reverse(),
