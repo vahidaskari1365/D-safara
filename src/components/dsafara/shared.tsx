@@ -171,11 +171,11 @@ export function StatCard({
   trend?: number; accent?: string;
 }) {
   return (
-    <Card className="card-hover border-border bg-card">
+    <Card className="dashboard-stat card-hover border-border bg-card">
       <CardContent className="flex items-start justify-between gap-3 p-5">
         <div className="space-y-1">
-          <p className="text-xs text-muted-foreground">{title}</p>
-          <p className={cn("text-2xl font-extrabold tracking-tight", accent || "text-foreground")}>{value}</p>
+          <p className="dashboard-stat-title text-xs text-muted-foreground">{title}</p>
+          <p className={cn("dashboard-stat-value text-2xl font-extrabold tracking-tight", accent || "text-foreground")}>{value}</p>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             {typeof trend === "number" && (
               <span className={cn("flex items-center gap-0.5 font-medium", trend >= 0 ? "text-primary" : "text-destructive")}>

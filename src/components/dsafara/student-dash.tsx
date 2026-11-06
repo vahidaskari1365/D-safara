@@ -100,7 +100,7 @@ export function StudentApp() {
   const nav = studentPage;
 
   return (
-    <div className="dashboard-shell flex min-h-screen">
+    <div className={cn("dashboard-shell flex min-h-screen", user?.role === "MENTOR" ? "dashboard-mentor" : "dashboard-student")}>
       {/* sidebar */}
       <aside className={cn(
         "fixed inset-y-0 right-0 z-50 flex w-72 flex-col border-l border-border bg-sidebar transition-transform lg:sticky lg:top-0 lg:h-screen lg:translate-x-0",
@@ -114,7 +114,7 @@ export function StudentApp() {
         </div>
 
         {/* profile block */}
-        <div className="border-b border-border p-4">
+        <div className="dashboard-sidebar-profile border-b border-border p-4">
           <div className="flex items-center gap-3">
             <Avatar className="size-11 ring-2 ring-primary/40">
               <AvatarFallback className="bg-primary/15 font-bold text-primary">{user?.name?.charAt(0) || "د"}</AvatarFallback>
@@ -128,6 +128,7 @@ export function StudentApp() {
 
         <ScrollArea className="flex-1 p-3">
           <nav className="space-y-1" aria-label="منوی داشبورد">
+            <p className="dashboard-nav-label">فضای کاری</p>
             {studentNav.map((n) => (
               <button
                 key={n.key}
@@ -171,9 +172,7 @@ export function StudentApp() {
             </Button>
             <p className="font-bold">{studentNav.find((n) => n.key === nav)?.label || "داشبورد"}</p>
           </div>
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => useApp.getState().goPublic("home")}>
-            <Globe className="size-4" /> مشاهده سایت
-          </Button>
+          <div className="flex items-center gap-2"><button className="dashboard-header-icon" onClick={() => goStudent("notifications")} aria-label="اعلان‌ها"><Bell className="size-4" />{(me?.unreadNotifications || 0) > 0 && <span />}</button><button className="dashboard-header-user" onClick={() => goStudent("profile")}><Avatar className="size-8"><AvatarFallback className="bg-primary/15 text-xs font-bold text-primary">{user?.name?.charAt(0) || "د"}</AvatarFallback></Avatar><span className="hidden text-right sm:block"><b>{user?.name}</b><small>{user?.role === "MENTOR" ? "منتور" : "دانشجو"}</small></span></button></div>
         </header>
 
         <main className="p-4 pb-16 md:p-6">
@@ -226,11 +225,8 @@ function MentorOverview() {
   const upcoming = data.sessions.filter((s) => s.status === "SCHEDULED" && new Date(s.startTime).getTime() >= Date.now());
   const completed = data.sessions.filter((s) => s.status === "COMPLETED");
   return <div className="space-y-6">
-    <div className="dashboard-welcome rounded-2xl p-6 md:p-8">
-      <p className="text-xs font-bold text-primary">داشبورد منتورینگ / نمای کلی</p>
-      <h1 className="mt-3 text-2xl font-black">خوش آمدید، {user?.name}</h1>
-      <p className="mt-2 text-sm text-muted-foreground">نگاهی به دانشجویان و جلسات منتورینگ شما</p>
-    </div>
+    <div className="dashboard-title-row"><div><p className="dashboard-eyebrow">فضای منتورینگ / نمای کلی</p><h1 className="mt-2 text-2xl font-black md:text-3xl">خوش آمدید، {user?.name} 👋</h1><p className="mt-2 text-sm text-muted-foreground">جلسات، دانشجویان و عملکرد خود را یک‌جا ببینید.</p></div><Button variant="outline" onClick={() => goStudent("profile")}><User className="size-4" /> پروفایل</Button></div>
+    <div className="mentor-command-banner"><div><span className="command-overline"><span /> مرکز منتورینگ</span><h2>آموزش بهتر، مسیر روشن‌تر.</h2><p>دانشجویان و جلسات خود را با تمرکز بیشتری دنبال کنید.</p></div><div className="mentor-banner-summary"><span>جلسات پیش‌رو</span><strong>{faNum(upcoming.length)}</strong><small>جلسه برنامه‌ریزی‌شده</small></div></div>
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <StatCard title="دانشجویان منتورینگ" value={faNum(new Set(data.enrollments.map((e) => e.user?.id).filter(Boolean)).size)} icon={<Users className="size-5" />} sub="پلن‌های پذیرفته‌شده" />
       <StatCard title="جلسات پیش‌رو" value={faNum(upcoming.length)} icon={<CalendarDays className="size-5" />} sub="جلسات برنامه‌ریزی‌شده" />
@@ -252,11 +248,12 @@ function MentorOverview() {
 /* ================= overview ================= */
 
 function OverviewView() {
-  const { data, loading } = useFetch<DashData>("/api/student?view=dashboard");
+  const { data, loading, error, refetch } = useFetch<DashData>("/api/student?view=dashboard");
   const user = useApp((s) => s.user);
   const goStudent = useApp((s) => s.goStudent);
 
-  if (loading || !data) return <GridSkeleton cols={2} count={4} />;
+  if (loading) return <GridSkeleton cols={2} count={4} />;
+  if (error || !data) return <div className="rounded-xl border border-border p-6"><p>دریافت اطلاعات داشبورد ممکن نشد.</p><Button variant="outline" className="mt-4" onClick={refetch}>تلاش دوباره</Button></div>;
 
   const activeCourses = data.enrollments.filter((e) => e.progress < 100);
   const hour = new Date().getHours();
@@ -267,10 +264,8 @@ function OverviewView() {
 
   return (
     <div className="overview-layout space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div><p className="dashboard-eyebrow">فضای یادگیری / نمای کلی</p><h1 className="mt-2 text-2xl font-black md:text-3xl">{greeting}، {user?.name} 👋</h1><p className="mt-2 text-sm text-muted-foreground">به فضای یادگیری و معامله‌گری خود خوش آمدید.</p></div>
-        <Button variant="outline" className="rounded-lg" onClick={() => goStudent("profile")}><User className="size-4" /> مشاهده پروفایل</Button>
-      </div>
+      <div className="dashboard-title-row"><div><p className="dashboard-eyebrow">داشبورد / نمای کلی</p><h1 className="mt-2 text-2xl font-black md:text-3xl">{greeting}، {user?.name} 👋</h1><p className="mt-2 text-sm text-muted-foreground">مسیر پیشرفت خود را در یک نگاه دنبال کنید.</p></div><Button variant="outline" className="rounded-lg" onClick={() => goStudent("profile")}><User className="size-4" /> مشاهده پروفایل</Button></div>
+      <div className="student-command-banner"><div><span className="command-overline"><span /> فضای یادگیری شما</span><h2>هر روز، یک قدم جلوتر.</h2><p>{activeCourses.length ? `شما ${faNum(activeCourses.length)} دوره در حال یادگیری دارید؛ از جایی که بودید ادامه دهید.` : "مسیر یادگیری خود را انتخاب کنید و اولین قدم را بردارید."}</p><div className="mt-5 flex flex-wrap gap-2"><Button size="sm" onClick={() => activeCourses.length ? goStudent("courses") : useApp.getState().goPublic("courses")}>{activeCourses.length ? "ادامه یادگیری" : "مشاهده دوره‌ها"} <ChevronLeft className="size-4" /></Button><Button size="sm" variant="outline" onClick={() => goStudent("workspace")}><CandlestickChart className="size-4" /> فضای تحلیل</Button></div></div><div className="command-geometry" aria-hidden="true"><div className="command-circle"><span>DS</span></div></div></div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard title="دوره‌های فعال" value={faNum(activeCourses.length)} icon={<BookOpen className="size-5" />} sub={`${faNum(data.enrollments.length)} ثبت‌نام کل`} />
         <StatCard title="دوره‌های تکمیل‌شده" value={faNum(completed)} icon={<Award className="size-5" />} sub="مسیر یادگیری شما" />
@@ -292,6 +287,8 @@ function OverviewView() {
           {upcoming.length ? <div className="space-y-3">{upcoming.slice(0, 3).map((session) => <div key={session.id} className="session-tile"><p className="text-sm font-bold">{session.title}</p><p className="mt-1 text-xs text-muted-foreground">با {session.mentor.name}</p><p className="mt-3 text-xs text-primary">{faDateTime(session.startTime)}</p></div>)}</div> : <p className="py-8 text-center text-sm text-muted-foreground">جلسه‌ای برنامه‌ریزی نشده است.</p>}
           <Button variant="outline" className="mt-4 w-full" onClick={() => goStudent("sessions")}>تقویم جلسات</Button>
         </CardContent></Card>
+        <Card className="xl:col-span-2"><CardContent className="p-5 md:p-6"><div className="mb-5 flex items-center justify-between"><div><p className="font-bold">عملکرد معاملات اخیر</p><p className="mt-1 text-xs text-muted-foreground">سود و زیان آخرین معاملات ثبت‌شده · دلار</p></div><Button variant="ghost" size="sm" onClick={() => goStudent("journal")}>ژورنال <ChevronLeft className="size-4" /></Button></div>{data.journal.length ? <PnlBarChart data={[...data.journal].reverse().map((j) => ({ label: j.symbol, pnl: j.pnl }))} height={190} /> : <p className="py-12 text-center text-sm text-muted-foreground">هنوز معامله‌ای در ژورنال ثبت نشده است.</p>}</CardContent></Card>
+        <Card><CardContent className="p-5 md:p-6"><div className="mb-5 flex items-center justify-between"><div><p className="font-bold">وضعیت حساب</p><p className="mt-1 text-xs text-muted-foreground">خلاصه فضای شخصی</p></div><Wallet className="size-4 text-primary" /></div><div className="account-summary"><span>موجودی کیف پول</span><strong>{faToman(data.wallet?.balance || 0)}</strong></div><div className="dashboard-list-row mt-3"><Award className="size-4 text-amber-300" /><span className="flex-1 text-xs">گواهینامه‌ها</span><b className="text-sm">{faNum(data.certificates.length)}</b></div><Button variant="outline" className="mt-4 w-full" onClick={() => goStudent("orders")}>سفارش‌ها و پرداخت‌ها</Button></CardContent></Card>
         {data.report && <Card className="xl:col-span-3"><CardContent className="flex flex-wrap items-center gap-4 p-5"><span className="dashboard-list-icon"><Users className="size-4" /></span><div className="min-w-0 flex-1"><p className="text-sm font-bold">گزارش منتور · {data.report.weekLabel}</p><p className="mt-1 text-xs leading-6 text-muted-foreground">{data.report.summary}</p></div><span className="dashboard-pill">پیشرفت {faNum(data.report.progress)}٪</span></CardContent></Card>}
       </div>
     </div>

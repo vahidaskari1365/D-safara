@@ -52,7 +52,7 @@ export function AdminApp() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="dashboard-shell flex min-h-screen">
+    <div className="dashboard-shell dashboard-admin flex min-h-screen">
       <aside className={cn(
         "fixed inset-y-0 right-0 z-50 flex w-72 flex-col border-l border-border bg-sidebar transition-transform lg:sticky lg:top-0 lg:h-screen lg:translate-x-0",
         sidebarOpen ? "translate-x-0" : "translate-x-full"
@@ -63,6 +63,7 @@ export function AdminApp() {
         </div>
         <ScrollArea className="flex-1 p-3">
           <nav className="space-y-1" aria-label="منوی مدیریت">
+            <p className="dashboard-nav-label">مدیریت آکادمی</p>
             {adminNav.map((n) => (
               <button
                 key={n.key}
@@ -141,15 +142,16 @@ type OverviewData = {
 };
 
 function AdminOverview() {
-  const { data, loading } = useFetch<OverviewData>("/api/admin?view=overview");
+  const { data, loading, error, refetch } = useFetch<OverviewData>("/api/admin?view=overview");
   const goAdmin = useApp((s) => s.goAdmin);
   const [period, setPeriod] = useState<3 | 6>(6);
-  if (loading || !data) return <GridSkeleton cols={2} count={4} />;
+  if (loading) return <GridSkeleton cols={2} count={4} />;
+  if (error || !data) return <div className="rounded-xl border border-border p-6"><p>دریافت گزارش مدیریت ممکن نشد.</p><Button variant="outline" className="mt-4" onClick={refetch}>تلاش دوباره</Button></div>;
   const s = data.stats;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="dashboard-eyebrow">داشبورد / مدیریت آکادمی</p><h1 className="mt-2 text-2xl font-black md:text-3xl">نمای کلی کسب‌وکار</h1><p className="mt-2 text-sm text-muted-foreground">عملکرد فروش، کاربران و فعالیت‌های آکادمی در یک نگاه</p></div><span className="dashboard-pill">اطلاعات ثبت‌شده در سیستم</span></div>
+      <div className="dashboard-title-row"><div><p className="dashboard-eyebrow">داشبورد / مدیریت آکادمی</p><h1 className="mt-2 text-2xl font-black md:text-3xl">مرکز فرماندهی آکادمی</h1><p className="mt-2 text-sm text-muted-foreground">عملکرد فروش، کاربران و فعالیت‌های آکادمی در یک نگاه</p></div><span className="dashboard-pill"><span className="dashboard-status-dot" /> اطلاعات ثبت‌شده در سیستم</span></div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard title="درآمد کل" value={faCompact(s.revenue) + " تومان"} accent="text-primary" icon={<Landmark className="size-5" />} sub="مجموع سفارش‌های موفق" />
         <StatCard title="درآمد این ماه" value={faToman(s.monthRevenue)} icon={<CreditCard className="size-5" />} sub={`${faNum(s.totalOrders)} سفارش موفق`} />
@@ -161,14 +163,14 @@ function AdminOverview() {
         <ActionCard title="تیکت‌های باز" value={faNum(s.openTickets)} onClick={() => goAdmin("support")} icon={<MessageSquare className="size-5" />} />
         <ActionCard title="درخواست همکاری" value={faNum(s.pendingApplications)} onClick={() => goAdmin("recruitment")} icon={<Briefcase className="size-5" />} />
         <ActionCard title="کمیسیون پرداخت‌نشده" value={faToman(data.commissions.filter((c) => c.status === "PENDING").reduce((a, c) => a + c.amount, 0))} onClick={() => goAdmin("mentors")} icon={<Wallet className="size-5" />} />
-        <ActionCard title="پرفروش‌ترین دوره" value={data.coursePerf[0]?.title.slice(0, 22) + "…"} onClick={() => goAdmin("courses")} icon={<Star className="size-5" />} />
+        <ActionCard title="پرفروش‌ترین دوره" value={data.coursePerf[0] ? data.coursePerf[0].title : "دوره‌ای ثبت نشده"} onClick={() => goAdmin("courses")} icon={<Star className="size-5" />} />
       </div>
 
       <div className="grid gap-5 xl:grid-cols-3">
         <Card className="border-border bg-card xl:col-span-2">
           <CardContent className="space-y-3 p-6">
             <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-bold">روند درآمد</p><p className="mt-1 text-xs text-muted-foreground">سفارش‌های پرداخت‌شده · تومان</p></div><div className="flex gap-1 rounded-lg border border-white/10 p-1">{([3, 6] as const).map((n) => <button key={n} onClick={() => setPeriod(n)} className={cn("rounded-md px-3 py-1 text-xs", period === n ? "bg-primary/15 text-primary" : "text-muted-foreground")}>{faNum(n)} ماه</button>)}</div></div>
-            {data.revenueByMonth.length ? <RevenueAreaChart color="#35d4a4" data={data.revenueByMonth.slice(-period).map((r) => ({ label: faMonthLabel(r.month), value: r.revenue }))} /> : <p className="py-20 text-center text-sm text-muted-foreground">هنوز سفارشی پرداخت نشده است.</p>}
+            {data.revenueByMonth.length ? <RevenueAreaChart color="#f2a65a" data={data.revenueByMonth.slice(-period).map((r) => ({ label: faMonthLabel(r.month), value: r.revenue }))} /> : <p className="py-20 text-center text-sm text-muted-foreground">هنوز سفارشی پرداخت نشده است.</p>}
           </CardContent>
         </Card>
         <Card className="border-border bg-card">
@@ -180,9 +182,9 @@ function AdminOverview() {
                   <span className={cn("flex size-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold", i === 0 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>{toFa(i + 1)}</span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-xs font-medium">{c.title}</p>
-                    <p className="text-[10px] text-muted-foreground">{faNum(c.students)} دانشجو</p>
+                    <div className="admin-course-meter mt-2"><span style={{ width: `${Math.max(0, Math.min(100, data.coursePerf[0]?.students ? c.students / data.coursePerf[0].students * 100 : 0))}%` }} /></div>
                   </div>
-                  <RatingStars rating={c.rating} showValue={false} />
+                  <span className="text-xs font-bold text-primary">{faNum(c.students)} <span className="font-normal text-muted-foreground">دانشجو</span></span>
                 </div>
               ))}
             </div>

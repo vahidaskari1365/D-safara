@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
           where: { userId: uid },
           include: { course: { include: { mentor: includeUser, category: true, chapters: { include: { lessons: true } } } } },
         }),
-        db.tradeJournalEntry.findMany({ where: { userId: uid }, orderBy: { tradeDate: "desc" }, take: 60 }),
+        db.tradeJournalEntry.findMany({ where: { userId: uid }, orderBy: { tradeDate: "desc" } }),
         db.tradingExercise.findMany({ where: { userId: uid }, orderBy: { createdAt: "desc" } }),
         db.submission.findMany({ where: { userId: uid }, include: { assignment: { include: { course: true } } }, orderBy: { createdAt: "desc" } }),
         db.examAttempt.findMany({ where: { userId: uid }, include: { exam: { include: { course: true } } }, orderBy: { createdAt: "desc" } }),
@@ -66,7 +66,8 @@ export async function GET(req: NextRequest) {
 
     const weeklyActivity: { date: string; trades: number }[] = [];
     for (let i = 6; i >= 0; i--) {
-      const day = new Date(Date.now() - i * 86400000);
+      const now = new Date();
+      const day = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - i));
       const next = new Date(day.getTime() + 86400000);
       const trades = journal.filter((j) => j.tradeDate >= day && j.tradeDate < next).length;
       weeklyActivity.push({ date: day.toISOString().slice(0, 10), trades });
