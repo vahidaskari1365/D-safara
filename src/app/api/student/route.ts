@@ -5,6 +5,13 @@ import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 const includeUser = { select: { id: true, name: true, avatar: true, role: true } };
+async function hasCourseAccess(userId: string, courseId: string) {
+  return !!(await db.enrollment.findFirst({ where: { userId, courseId } }));
+}
+const examForStudent = (exam: Record<string, any>) => ({
+  ...exam,
+  questions: (exam.questions || []).map(({ answer: _answer, ...question }: Record<string, any>) => question),
+});
 
 /** GET /api/student?view=... */
 export async function GET(req: NextRequest) {
@@ -94,6 +101,7 @@ export async function GET(req: NextRequest) {
     const enrollment = await db.enrollment.findUnique({
       where: { userId_courseId: { userId: uid, courseId: course.id } },
     });
+    if (!enrollment) return NextResponse.json({ error: "برای دسترسی به دوره ابتدا ثبت‌نام کنید" }, { status: 403 });
     const progressRecords = await db.lessonProgress.findMany({ where: { userId: uid, lessonId: { in: course.chapters.flatMap((c) => c.lessons.map((l) => l.id)) } } });
     return NextResponse.json({ course, enrollment, progressRecords });
   }
@@ -152,14 +160,15 @@ export async function GET(req: NextRequest) {
       where: { isPublished: true, course: { enrollments: { some: { userId: uid } } } },
       include: { course: true, questions: true, attempts: { where: { userId: uid }, orderBy: { createdAt: "desc" } } },
     });
-    return NextResponse.json({ exams });
+    return NextResponse.json({ exams: exams.map(examForStudent) });
   }
 
   if (view === "exam") {
     const id = req.nextUrl.searchParams.get("id") || "";
     const exam = await db.exam.findUnique({ where: { id }, include: { questions: true, course: true } });
-    if (!exam) return NextResponse.json({ error: "آزمون یافت نشد" }, { status: 404 });
-    return NextResponse.json({ exam });
+    if (!exam || !exam.isPublished) return NextResponse.json({ error: "آزمون یافت نشد" }, { status: 404 });
+    if (!(await hasCourseAccess(uid, exam.courseId))) return NextResponse.json({ error: "دسترسی به این آزمون ندارید" }, { status: 403 });
+    return NextResponse.json({ exam: examForStudent(exam) });
   }
 
   if (view === "sessions") {
@@ -283,33 +292,17 @@ export async function POST(req: NextRequest) {
   const uid = me.id;
 
   if (action === "complete-lesson") {
-    const lessonId = body.lessonId as string;
-    await db.lessonProgress.upsert({
-      where: { userId_lessonId: { userId: uid, lessonId } },
-      update: { completed: true, watchedAt: new Date() },
-      create: { userId: uid, lessonId, completed: true },
-    });
-    const lesson = await db.lesson.findUnique({
-      where: { id: lessonId },
-      include: { chapter: { include: { course: { include: { chapters: { include: { lessons: true } } } } } } },
-    });
-    if (lesson) {
-      const allLessons = lesson.chapter.course.chapters.flatMap((c) => c.lessons);
-      const done = await db.lessonProgress.count({ where: { userId: uid, lessonId: { in: allLessons.map((l) => l.id) }, completed: true } });
-      const progress = Math.round((done / Math.max(allLessons.length, 1)) * 100);
-      await db.enrollment.updateMany({ where: { userId: uid, courseId: lesson.chapter.courseId }, data: { progress, lastLessonId: lessonId } });
-      if (progress === 100) {
-        await db.notification.create({
-          data: { userId: uid, title: "🎉 دوره را کامل کردید!", body: `دوره «${lesson.chapter.course.title}» با موفقیت به پایان رسید. گواهینامه شما صادر شد.` },
-        });
-        const cert = await db.certificate.create({
-          data: { serial: `DS-CERT-${Date.now().toString().slice(-8)}`, userId: uid, courseId: lesson.chapter.courseId, title: `گواهینامه ${lesson.chapter.course.title}` },
-        });
-        return NextResponse.json({ ok: true, progress, certificate: cert });
-      }
-      return NextResponse.json({ ok: true, progress });
-    }
-    return NextResponse.json({ ok: true });
+    const lessonId = typeof body.lessonId === "string" ? body.lessonId : "";
+    const lesson = await db.lesson.findUnique({ where: { id: lessonId }, include: { chapter: { include: { course: { include: { chapters: { include: { lessons: true } } } } } } } });
+    if (!lesson?.chapter?.course) return NextResponse.json({ error: "درس یافت نشد" }, { status: 404 });
+    if (!(await hasCourseAccess(uid, lesson.chapter.courseId))) return NextResponse.json({ error: "دسترسی به این درس ندارید" }, { status: 403 });
+    await db.lessonProgress.upsert({ where: { userId_lessonId: { userId: uid, lessonId } }, update: { completed: true, watchedAt: new Date() }, create: { userId: uid, lessonId, completed: true } });
+    const allLessons = lesson.chapter.course.chapters.flatMap((c) => c.lessons);
+    const done = await db.lessonProgress.count({ where: { userId: uid, lessonId: { in: allLessons.map((l) => l.id) }, completed: true } });
+    const progress = Math.round((done / Math.max(allLessons.length, 1)) * 100);
+    await db.enrollment.updateMany({ where: { userId: uid, courseId: lesson.chapter.courseId }, data: { progress, lastLessonId: lessonId } });
+    // A manual click is not verified video evidence and must not issue a certificate.
+    return NextResponse.json({ ok: true, progress });
   }
 
   if (action === "add-journal") {
@@ -350,6 +343,9 @@ export async function POST(req: NextRequest) {
     const { assignmentId, content } = body;
     if (!content || String(content).trim().length < 10)
       return NextResponse.json({ error: "متن پاسخ باید حداقل ۱۰ کاراکتر باشد" }, { status: 400 });
+    const assignment = await db.assignment.findUnique({ where: { id: assignmentId } });
+    if (!assignment) return NextResponse.json({ error: "تمرین یافت نشد" }, { status: 404 });
+    if (!(await hasCourseAccess(uid, assignment.courseId))) return NextResponse.json({ error: "دسترسی به این تمرین ندارید" }, { status: 403 });
     const existing = await db.submission.findFirst({ where: { assignmentId, userId: uid } });
     if (existing) {
       await db.submission.update({
@@ -372,7 +368,9 @@ export async function POST(req: NextRequest) {
   if (action === "submit-exam") {
     const { examId, answers } = body as { examId: string; answers: Record<string, number> };
     const exam = await db.exam.findUnique({ where: { id: examId }, include: { questions: true } });
-    if (!exam) return NextResponse.json({ error: "آزمون یافت نشد" }, { status: 404 });
+    if (!exam || !exam.isPublished) return NextResponse.json({ error: "آزمون یافت نشد" }, { status: 404 });
+    if (!(await hasCourseAccess(uid, exam.courseId))) return NextResponse.json({ error: "دسترسی به این آزمون ندارید" }, { status: 403 });
+    if (!answers || typeof answers !== "object" || Array.isArray(answers)) return NextResponse.json({ error: "پاسخ‌های آزمون معتبر نیست" }, { status: 400 });
     let score = 0;
     const detail: Record<string, boolean> = {};
     for (const q of exam.questions) {
@@ -383,14 +381,7 @@ export async function POST(req: NextRequest) {
     const attempt = await db.examAttempt.create({
       data: { examId, userId: uid, score, maxScore: exam.questions.reduce((s, q) => s + q.score, 0), answers: JSON.stringify({ detail, answers }) },
     });
-    if (exam.questions.length && score >= exam.questions.reduce((s, q) => s + q.score, 0) * 0.7) {
-      const exists = await db.certificate.findFirst({ where: { userId: uid, courseId: exam.courseId } });
-      if (!exists) {
-        await db.certificate.create({
-          data: { serial: `DS-CERT-${Date.now().toString().slice(-8)}`, userId: uid, courseId: exam.courseId, title: `گواهینامه ${exam.title}` },
-        });
-      }
-    }
+    // A passing practice attempt alone is not evidence for issuing a certificate.
     return NextResponse.json({ ok: true, attempt, detail });
   }
 
@@ -456,7 +447,7 @@ export async function POST(req: NextRequest) {
 
   if (action === "enroll-free") {
     const course = await db.course.findUnique({ where: { slug: body.slug } });
-    if (!course) return NextResponse.json({ error: "دوره یافت نشد" }, { status: 404 });
+    if (!course || !course.isPublished) return NextResponse.json({ error: "دوره یافت نشد" }, { status: 404 });
     if (course.price > 0)
       return NextResponse.json({ error: "این دوره پرداختی است؛ از دکمه ثبت‌نام و پرداخت استفاده کنید." }, { status: 400 });
     await db.enrollment.upsert({

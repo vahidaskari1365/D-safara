@@ -702,7 +702,7 @@ function MentorsAdmin() {
   const { data, loading, refetch } = useFetch<{
     mentors: { id: string; name: string; bio?: string; coursesTaught: { title: string }[]; planMentorEnrollments: { plan: { title: string }; user?: { name: string | null } | null }[]; wallet?: { balance: number } | null }[];
     plans: { id: string; title: string; price: number; sessionsPerWeek: number }[];
-    planRequests: { id: string; status: string; plan: { title: string }; mentor?: { name: string } | null; user?: { name?: string | null } | null; createdAt: string }[];
+    planRequests: { id: string; status: string; plan: { title: string }; mentor?: { name: string } | null; user?: { name?: string | null } | null; applicantName?: string; applicantPhone?: string; experience?: string; createdAt: string }[];
   }>("/api/admin?view=mentors");
   if (loading || !data) return <GridSkeleton />;
   return (
@@ -732,7 +732,7 @@ function MentorsAdmin() {
             <div key={r.id} className="flex items-center justify-between gap-3 rounded-xl bg-muted/40 p-3.5 text-sm">
               <div>
                 <p className="font-medium">{r.plan.title}</p>
-                <p className="text-xs text-muted-foreground">منتور: {r.mentor?.name || "—"} • متقاضی: {r.user?.name || "مهمان"} • {faAgo(r.createdAt)}</p>
+                <p className="text-xs text-muted-foreground">منتور: {r.mentor?.name || "—"} • متقاضی: {r.user?.name || r.applicantName || "مهمان"} • {faAgo(r.createdAt)}</p>{r.applicantPhone && <p className="mt-1 text-xs text-muted-foreground" dir="ltr">{toFa(r.applicantPhone)}</p>}{r.experience && <p className="mt-1 text-xs text-muted-foreground">{r.experience}</p>}
               </div>
               <StatusBadge status={r.status} label={faStatus(r.status)} />
             </div>

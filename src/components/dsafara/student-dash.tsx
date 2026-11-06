@@ -431,7 +431,7 @@ function CoursePlayer({ slug, onBack }: { slug: string; onBack: () => void }) {
               </div>
               <p className="text-xs text-muted-foreground">{toFa(doneCount)} از {toFa(allLessons.length)} درس تکمیل شده</p>
               {pct >= 100 && (
-                <div className="rounded-xl bg-primary/10 p-3 text-center text-xs font-medium text-primary">🎉 تبریک! دوره کامل شد و گواهینامه شما صادر شد.</div>
+                <div className="rounded-xl bg-primary/10 p-3 text-center text-xs font-medium text-primary">پیشرفت ثبت شد؛ صدور گواهینامه منوط به احراز شرایط آموزشی است.</div>
               )}
             </CardContent>
           </Card>
@@ -1390,7 +1390,7 @@ function OrdersView() {
     setCharging(true);
     try {
       const res = await apiPost<{ message: string }>("/api/checkout", { action: "deposit", amount: Number(amount) });
-      toast({ title: "شارژ شد ✅", description: res.message });
+      toast({ title: "شارژ آزمایشی", description: res.message });
       setAmount(""); refetch();
     } catch (e) {
       toast({ title: "خطا", description: (e as Error).message, variant: "destructive" });

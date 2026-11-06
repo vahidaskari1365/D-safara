@@ -81,12 +81,12 @@ export async function GET(req: NextRequest) {
       include: {
         category: true,
         mentor: { select: mentorSelect },
-        chapters: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" } } } },
+        chapters: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" }, select: { id: true, title: true, durationMin: true, isFree: true } } } },
       },
     });
-    if (!course) return NextResponse.json({ error: "دوره یافت نشد" }, { status: 404 });
+    if (!course || !course.isPublished) return NextResponse.json({ error: "دوره یافت نشد" }, { status: 404 });
     const related = await db.course.findMany({
-      where: { categoryId: course.categoryId, id: { not: course.id } },
+      where: { categoryId: course.categoryId, isPublished: true, id: { not: course.id } },
       take: 3,
       include: { category: true, mentor: { select: mentorSelect } },
     });
@@ -111,6 +111,8 @@ export async function GET(req: NextRequest) {
 
 /** POST /api/public — public forms: contact, mentoring application, job application, resource download */
 export async function POST(req: NextRequest) {
+  // Public submissions cannot be safely acknowledged while storage is volatile.
+  if (process.env.NODE_ENV === "production") return NextResponse.json({ error: "ثبت درخواست واقعی هنوز پیکربندی نشده است." }, { status: 503 });
   const body = await req.json().catch(() => ({}));
   const action = body.action as string;
 
@@ -128,13 +130,12 @@ export async function POST(req: NextRequest) {
 
   if (action === "apply-mentoring") {
     const { planSlug, name, phone, experience } = body;
-    if (!planSlug || !name || !phone)
-      return NextResponse.json({ error: "نام و شماره تماس الزامی است" }, { status: 400 });
+    if (typeof name !== "string" || !name.trim() || name.trim().length > 120 || typeof phone !== "string" || !/^09\d{9}$/.test(phone.trim()) || typeof planSlug !== "string")
+      return NextResponse.json({ error: "نام و شماره موبایل معتبر الزامی است" }, { status: 400 });
     const plan = await db.mentoringPlan.findUnique({ where: { slug: planSlug } });
-    if (!plan) return NextResponse.json({ error: "پلن یافت نشد" }, { status: 404 });
-    const mentor = await db.user.findFirst({ where: { role: "MENTOR" } });
+    if (!plan || !plan.isActive) return NextResponse.json({ error: "پلن یافت نشد" }, { status: 404 });
     await db.mentoringPlanEnrollment.create({
-      data: { planId: plan.id, mentorId: mentor?.id || "", status: "PENDING" },
+      data: { planId: plan.id, mentorId: null, userId: null, applicantName: name.trim(), applicantPhone: phone.trim(), experience: typeof experience === "string" ? experience.slice(0, 2000) : "", status: "PENDING" },
     });
     return NextResponse.json({ ok: true, message: "درخواست منتورینگ شما ثبت شد؛ برای هماهنگی جلسه تماس می‌گیریم." });
   }

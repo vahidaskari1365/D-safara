@@ -5,6 +5,10 @@ import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 type CartItem = { type: "course" | "product"; slug: string };
+// Prevent duplicate simulation effects within this single-process prototype.
+// Real payments require transactional idempotency in durable storage.
+const globalLocks = globalThis as typeof globalThis & { __dsPaymentLocks?: Set<string> };
+const paymentLocks = globalLocks.__dsPaymentLocks ?? (globalLocks.__dsPaymentLocks = new Set());
 
 /** POST /api/checkout — create order from cart & simulate payment */
 export async function POST(req: NextRequest) {
@@ -13,10 +17,16 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const action = body.action as string;
 
+  // No real payment/ledger provider is configured. Never simulate money in production.
+  if (process.env.NODE_ENV === "production" && ["create-order", "pay", "deposit"].includes(action)) {
+    return NextResponse.json({ error: "پرداخت و شارژ واقعی هنوز پیکربندی نشده است." }, { status: 503 });
+  }
+
   if (action === "create-order") {
-    const items: CartItem[] = body.items || [];
-    const couponCode: string | null = body.couponCode || null;
-    if (!items.length) return NextResponse.json({ error: "سبد خرید خالی است" }, { status: 400 });
+    const items: CartItem[] = Array.isArray(body.items) ? body.items : [];
+    const couponCode: string | null = typeof body.couponCode === "string" ? body.couponCode : null;
+    if (!items.length || items.length > 50) return NextResponse.json({ error: "سبد خرید معتبر نیست" }, { status: 400 });
+    if (items.some((item) => !item || !["course", "product"].includes(item.type) || typeof item.slug !== "string") || new Set(items.map((item) => `${item.type}:${item.slug}`)).size !== items.length) return NextResponse.json({ error: "اقلام سبد خرید معتبر نیستند" }, { status: 400 });
 
     let total = 0;
     const orderItems: { courseId?: string; productId?: string; title: string; price: number }[] = [];
@@ -24,12 +34,12 @@ export async function POST(req: NextRequest) {
     for (const item of items) {
       if (item.type === "course") {
         const c = await db.course.findUnique({ where: { slug: item.slug } });
-        if (!c) continue;
+        if (!c || !c.isPublished) return NextResponse.json({ error: "دوره در دسترس نیست" }, { status: 400 });
         total += c.price;
         orderItems.push({ courseId: c.id, title: c.title, price: c.price });
       } else {
         const p = await db.product.findUnique({ where: { slug: item.slug } });
-        if (!p) continue;
+        if (!p || !p.isActive) return NextResponse.json({ error: "محصول در دسترس نیست" }, { status: 400 });
         total += p.price;
         orderItems.push({ productId: p.id, title: p.title, price: p.price });
       }
@@ -70,17 +80,16 @@ export async function POST(req: NextRequest) {
   }
 
   if (action === "pay") {
-    const orderId = body.orderId as string;
+    const orderId = typeof body.orderId === "string" ? body.orderId : "";
+    if (!orderId) return NextResponse.json({ error: "سفارش نامعتبر است" }, { status: 400 });
+    if (paymentLocks.has(orderId)) return NextResponse.json({ error: "پرداخت در حال پردازش است" }, { status: 409 });
+    paymentLocks.add(orderId);
+    try {
     const order = await db.order.findFirst({ where: { id: orderId, userId: me.id }, include: { items: true } });
     if (!order) return NextResponse.json({ error: "سفارش یافت نشد" }, { status: 404 });
 
-    // Simulate gateway: 92% success
-    const success = Math.random() > 0.08;
-    if (!success) {
-      await db.order.update({ where: { id: order.id }, data: { status: "FAILED" } });
-      return NextResponse.json({ ok: false, message: "پرداخت ناموفق بود. لطفاً دوباره تلاش کنید." });
-    }
-
+    if (order.status === "PAID") return NextResponse.json({ ok: true, refId: order.refId, orderNo: order.orderNo, message: "این سفارش قبلاً در محیط آزمایشی پرداخت شده است.", demo: true });
+    // This payment is an isolated development simulation, never a provider confirmation.
     const refId = String(Math.floor(100000 + Math.random() * 900000));
     await db.order.update({
       where: { id: order.id },
@@ -122,7 +131,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ ok: true, refId, orderNo: order.orderNo, message: "پرداخت با موفقیت انجام شد و دسترسی شما فعال گردید." });
+    return NextResponse.json({ ok: true, refId, orderNo: order.orderNo, message: "پرداخت آزمایشی انجام شد؛ پولی جابه‌جا نشده است.", demo: true });
+    } finally {
+      paymentLocks.delete(orderId);
+    }
   }
 
   if (action === "validate-coupon") {
@@ -145,7 +157,7 @@ export async function POST(req: NextRequest) {
     await db.financialTransaction.create({
       data: { userId: me.id, type: "DEPOSIT", amount, description: "شارژ کیف پول (درگاه نمایشی)" },
     });
-    return NextResponse.json({ ok: true, message: "کیف پول شما شارژ شد." });
+    return NextResponse.json({ ok: true, message: "شارژ آزمایشی ثبت شد؛ پولی جابه‌جا نشده است.", demo: true });
   }
 
   return NextResponse.json({ error: "action نامعتبر" }, { status: 400 });
