@@ -107,7 +107,7 @@ export function StudentApp() {
         sidebarOpen ? "translate-x-0" : "translate-x-full"
       )}>
         <div className="flex items-center justify-between border-b border-border p-4">
-          <Logo small />
+          <Logo small showText />
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(false)} aria-label="بستن منو">
             ✕
           </Button>
@@ -238,6 +238,8 @@ function MentorOverview() {
       <StatCard title="دوره‌های من" value={faNum(data.courses.length)} icon={<BookOpen className="size-5" />} sub="دوره‌های منتور" />
     </div>
     <div className="grid gap-5 xl:grid-cols-3">
+      <Card className="xl:col-span-2"><CardContent className="space-y-4 p-6"><div className="flex items-center justify-between"><div><p className="font-bold">فعالیت منتورینگ</p><p className="mt-1 text-xs text-muted-foreground">جلسات ثبت‌شده در شش ماه اخیر</p></div><span className="dashboard-pill">۶ ماه اخیر</span></div><TradesBarChart height={200} data={Array.from({ length: 6 }, (_, i) => { const now = new Date(); const date = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1); const count = data.sessions.filter((session) => { const d = new Date(session.startTime); return d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth(); }).length; return { label: date.toLocaleDateString("fa-IR", { month: "short" }), value: count }; })} /></CardContent></Card>
+      <Card><CardContent className="space-y-4 p-6"><p className="font-bold">دوره‌های من</p>{data.courses.length ? data.courses.slice(0, 5).map((course) => <div key={course.id} className="dashboard-list-row"><span className="dashboard-list-icon"><BookOpen className="size-4" /></span><p className="text-sm font-bold">{course.title}</p></div>) : <p className="py-8 text-center text-sm text-muted-foreground">دوره‌ای ثبت نشده است.</p>}</CardContent></Card>
       <Card className="xl:col-span-2"><CardContent className="space-y-4 p-6"><div className="flex items-center justify-between"><div><p className="font-bold">جلسات پیش‌رو</p><p className="mt-1 text-xs text-muted-foreground">برنامه منتورینگ شما</p></div></div>
         {upcoming.length ? upcoming.slice(0, 5).map((s) => <div key={s.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-muted/40 p-4"><div><p className="text-sm font-bold">{s.title}</p><p className="mt-1 text-xs text-muted-foreground">{s.student?.name || "دانشجو"}</p></div><span className="text-xs text-primary">{faDateTime(s.startTime)}</span></div>) : <p className="py-8 text-center text-sm text-muted-foreground">جلسه‌ای در آینده برنامه‌ریزی نشده است.</p>}
       </CardContent></Card>
@@ -260,148 +262,37 @@ function OverviewView() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "صبح بخیر" : hour < 18 ? "ظهر بخیر" : "شب بخیر";
 
-  return (
-    <div className="space-y-6">
-      {/* welcome */}
-      <div className="dashboard-welcome flex flex-wrap items-center justify-between gap-4 rounded-2xl p-6">
-        <div>
-          <p className="text-xl font-extrabold">{greeting}، {user?.name} 👋</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {data.mentorEnrollment ? `منتور شما: ${data.mentorEnrollment.mentor.name} — پلن ${data.mentorEnrollment.plan.title}` : "برای پیشرفت سریع‌تر، پلن منتورینگ را فعال کنید."}
-          </p>
-        </div>
-        <Button className="gap-1.5" onClick={() => goStudent(activeCourses[0] ? "courses" : "workspace")}>
-          {activeCourses[0] ? "ادامه یادگیری" : "شروع تمرین"} <ChevronLeft className="size-4" />
-        </Button>
-      </div>
+  const upcoming = data.sessions.filter((session) => session.status === "SCHEDULED" && new Date(session.startTime).getTime() >= Date.now());
+  const completed = data.enrollments.filter((e) => e.progress >= 100).length;
 
-      {/* stats */}
+  return (
+    <div className="overview-layout space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div><p className="dashboard-eyebrow">فضای یادگیری / نمای کلی</p><h1 className="mt-2 text-2xl font-black md:text-3xl">{greeting}، {user?.name} 👋</h1><p className="mt-2 text-sm text-muted-foreground">به فضای یادگیری و معامله‌گری خود خوش آمدید.</p></div>
+        <Button variant="outline" className="rounded-lg" onClick={() => goStudent("profile")}><User className="size-4" /> مشاهده پروفایل</Button>
+      </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard title="دوره‌های فعال" value={faNum(activeCourses.length)} icon={<BookOpen className="size-5" />} sub={`${faNum(data.enrollments.length)} ثبت‌نام کل`} />
-        <StatCard title="وین‌ریت معاملات" value={`${faNum(data.stats.winRate)}٪`} accent="text-primary" icon={<PieChart className="size-5" />} sub={`${faNum(data.stats.totalTrades)} معامله ثبت‌شده`} />
-        <StatCard title="سود/ضرر کل (دلار)" value={`${data.stats.totalPnl >= 0 ? "+" : "−"}${faNum(Math.abs(data.stats.totalPnl))}$`} accent={data.stats.totalPnl >= 0 ? "text-primary" : "text-destructive"} icon={<Trophy className="size-5" />} />
-        <StatCard title="کیف پول" value={faToman(data.wallet?.balance || 0)} icon={<Wallet className="size-5" />} sub="موجودی قابل استفاده" />
+        <StatCard title="دوره‌های تکمیل‌شده" value={faNum(completed)} icon={<Award className="size-5" />} sub="مسیر یادگیری شما" />
+        <StatCard title="وین‌ریت معاملات" value={`${faNum(data.stats.winRate)}٪`} icon={<PieChart className="size-5" />} sub={`${faNum(data.stats.totalTrades)} معامله ثبت‌شده`} />
+        <StatCard title="سود/ضرر کل" value={`${data.stats.totalPnl >= 0 ? "+" : "−"}${faNum(Math.abs(data.stats.totalPnl))}$`} icon={<LineChart className="size-5" />} sub="بر اساس ژورنال معاملات" />
       </div>
-
-      <div className="grid gap-5 xl:grid-cols-3">
-        {/* courses progress */}
-        <Card className="border-border bg-card xl:col-span-2">
-          <CardContent className="space-y-4 p-6">
-            <div className="flex items-center justify-between">
-              <p className="font-bold">پیشرفت دوره‌های من</p>
-              <Button variant="ghost" size="sm" onClick={() => goStudent("courses")}>همه</Button>
-            </div>
-            {activeCourses.length === 0 ? (
-              <EmptyState icon={<BookOpen className="size-6" />} title="دوره فعالی ندارید" desc="از فروشگاه دوره‌ها را ببینید و شروع کنید." action={<Button size="sm" onClick={() => useApp.getState().goPublic("courses")}>مشاهده دوره‌ها</Button>} />
-            ) : (
-              <div className="space-y-4">
-                {activeCourses.slice(0, 4).map((e) => (
-                  <div key={e.id} className="space-y-2">
-                    <div className="flex items-center justify-between gap-3 text-sm">
-                      <button className="truncate font-medium hover:text-primary" onClick={() => goStudent("courses")}>{e.course.title}</button>
-                      <span className="shrink-0 text-xs font-bold text-primary">{faNum(e.progress)}٪</span>
-                    </div>
-                    <Progress value={e.progress} className="h-2" />
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* upcoming session */}
-        <Card className="border-border bg-card">
-          <CardContent className="space-y-4 p-6">
-            <p className="font-bold">جلسات پیش‌رو</p>
-            {data.sessions.filter((s) => s.status === "SCHEDULED").length === 0 ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">جلسه‌ای برنامه‌ریزی نشده است.</p>
-            ) : (
-              data.sessions.filter((s) => s.status === "SCHEDULED").slice(0, 3).map((s) => (
-                <div key={s.id} className="space-y-1 rounded-xl bg-muted/60 p-4">
-                  <p className="text-sm font-semibold">{s.title}</p>
-                  <p className="text-xs text-muted-foreground">با {s.mentor.name}</p>
-                  <p className="text-xs text-primary">{faDateTime(s.startTime)}</p>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-
-        {/* activity chart */}
-        <Card className="border-border bg-card xl:col-span-2">
-          <CardContent className="space-y-3 p-6">
-            <p className="font-bold">فعالیت معاملاتی هفته اخیر</p>
-            <TradesBarChart
-              data={data.weeklyActivity.map((w) => ({ label: ["ی", "د", "س", "چ", "پ", "ج", "ش"][new Date(w.date).getUTCDay()], value: w.trades }))}
-              height={220}
-            />
-          </CardContent>
-        </Card>
-
-        {/* notifications */}
-        <Card className="border-border bg-card">
-          <CardContent className="space-y-3 p-6">
-            <div className="flex items-center justify-between">
-              <p className="font-bold">اعلان‌های اخیر</p>
-              <Button variant="ghost" size="sm" onClick={() => goStudent("notifications")}>همه</Button>
-            </div>
-            <div className="space-y-2.5">
-              {data.notifications.slice(0, 5).map((n) => (
-                <div key={n.id} className={cn("rounded-xl p-3", n.isRead ? "bg-muted/40" : "bg-primary/5")}>
-                  <p className="text-xs font-semibold">{n.title}</p>
-                  {n.body && <p className="mt-1 line-clamp-2 text-[11px] leading-5 text-muted-foreground">{n.body}</p>}
-                  <p className="mt-1 text-[10px] text-muted-foreground">{faAgo(n.createdAt)}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* pending tasks */}
-        <Card className="border-border bg-card xl:col-span-2">
-          <CardContent className="space-y-3 p-6">
-            <p className="font-bold">کارهای در انتظار</p>
-            {data.pendingAssignments.length === 0 && data.exercises.filter((e) => e.status === "PENDING").length === 0 ? (
-              <p className="py-4 text-center text-sm text-muted-foreground">همه‌چیز انجام شده! 🎉</p>
-            ) : (
-              <div className="space-y-2">
-                {data.pendingAssignments.slice(0, 3).map((a) => (
-                  <div key={a.id} className="flex items-center justify-between gap-3 rounded-xl bg-amber-500/10 p-3.5 text-sm">
-                    <div>
-                      <p className="font-medium">{a.title}</p>
-                      <p className="text-xs text-muted-foreground">{a.course.title} {a.dueDate && `• مهلت: ${faDate(a.dueDate)}`}</p>
-                    </div>
-                    <Button size="sm" variant="outline" onClick={() => goStudent("assignments")}>ارسال پاسخ</Button>
-                  </div>
-                ))}
-                {data.exercises.filter((e) => e.status === "PENDING").slice(0, 2).map((ex) => (
-                  <div key={ex.id} className="flex items-center justify-between gap-3 rounded-xl bg-sky-500/10 p-3.5 text-sm">
-                    <div>
-                      <p className="font-medium">{ex.taskTitle}</p>
-                      <p className="text-xs text-muted-foreground">در انتظار بررسی منتور</p>
-                    </div>
-                    <Button size="sm" variant="outline" onClick={() => goStudent("workspace")}>مشاهده</Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* mentor report */}
-        {data.report && (
-          <Card className="border-primary/30 bg-primary/5">
-            <CardContent className="space-y-3 p-6">
-              <p className="flex items-center gap-2 font-bold"><Users className="size-4 text-primary" /> گزارش هفتگی منتور</p>
-              <p className="text-xs text-muted-foreground">{data.report.weekLabel}</p>
-              <p className="text-sm leading-7">{data.report.summary}</p>
-              <div className="flex items-center gap-3">
-                <Progress value={data.report.progress} className="h-2 flex-1" />
-                <span className="text-xs font-bold text-primary">{faNum(data.report.progress)}٪</span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+      <div className="grid gap-4 xl:grid-cols-3">
+        <Card className="xl:col-span-2"><CardContent className="p-5 md:p-6">
+          <div className="mb-6 flex items-center justify-between"><div><p className="font-bold">فعالیت معاملاتی</p><p className="mt-1 text-xs text-muted-foreground">تعداد معاملات ثبت‌شده در ۷ روز اخیر</p></div><span className="dashboard-pill">هفتگی</span></div>
+          <TradesBarChart data={data.weeklyActivity.map((w) => ({ label: ["ی", "د", "س", "چ", "پ", "ج", "ش"][new Date(w.date).getUTCDay()], value: w.trades }))} height={220} />
+        </CardContent></Card>
+        <Card><CardContent className="p-5 md:p-6"><div className="mb-5 flex items-center justify-between"><div><p className="font-bold">مسیر یادگیری</p><p className="mt-1 text-xs text-muted-foreground">دوره‌های در حال پیشرفت</p></div><Button variant="ghost" size="sm" onClick={() => goStudent("courses")}>همه <ChevronLeft className="size-4" /></Button></div>
+          {activeCourses.length ? <div className="space-y-4">{activeCourses.slice(0, 3).map((e) => <button key={e.id} onClick={() => goStudent("courses")} className="course-progress-row w-full text-right"><div className="min-w-0 flex-1"><p className="truncate text-sm font-bold">{e.course.title}</p><p className="mt-2 text-xs text-muted-foreground">ادامه یادگیری</p><Progress value={e.progress} className="mt-3 h-1.5" /></div><span className="progress-ring" style={{ "--progress": `${Math.max(0, Math.min(100, e.progress))}%` } as React.CSSProperties}><span>{faNum(e.progress)}٪</span></span></button>)}</div> : <EmptyState icon={<BookOpen className="size-6" />} title="دوره فعالی ندارید" action={<Button size="sm" onClick={() => useApp.getState().goPublic("courses")}>مشاهده دوره‌ها</Button>} />}
+        </CardContent></Card>
+        <Card className="xl:col-span-2"><CardContent className="p-5 md:p-6"><div className="mb-5 flex items-center justify-between"><div><p className="font-bold">کارهای در انتظار</p><p className="mt-1 text-xs text-muted-foreground">تمرین‌ها و مراحل بعدی شما</p></div><Button variant="ghost" size="sm" onClick={() => goStudent("assignments")}>مشاهده همه</Button></div>
+          {data.pendingAssignments.length || data.exercises.some((e) => e.status === "PENDING") ? <div className="space-y-2">{data.pendingAssignments.slice(0, 3).map((a) => <div key={a.id} className="dashboard-list-row"><span className="dashboard-list-icon"><ClipboardCheck className="size-4" /></span><div className="min-w-0 flex-1"><p className="truncate text-sm font-bold">{a.title}</p><p className="mt-1 text-xs text-muted-foreground">{a.course.title}{a.dueDate && ` · ${faDate(a.dueDate)}`}</p></div><Button size="sm" variant="outline" onClick={() => goStudent("assignments")}>مشاهده</Button></div>)}{data.exercises.filter((e) => e.status === "PENDING").slice(0, 2).map((e) => <div key={e.id} className="dashboard-list-row"><span className="dashboard-list-icon"><CandlestickChart className="size-4" /></span><div className="min-w-0 flex-1"><p className="truncate text-sm font-bold">{e.taskTitle}</p><p className="mt-1 text-xs text-muted-foreground">در انتظار بررسی منتور</p></div><Button size="sm" variant="outline" onClick={() => goStudent("workspace")}>مشاهده</Button></div>)}</div> : <p className="py-8 text-center text-sm text-muted-foreground">کاری در انتظار ندارید.</p>}
+        </CardContent></Card>
+        <Card><CardContent className="p-5 md:p-6"><div className="mb-5 flex items-center justify-between"><div><p className="font-bold">جلسات پیش‌رو</p><p className="mt-1 text-xs text-muted-foreground">همراه منتور شما</p></div><CalendarDays className="size-4 text-primary" /></div>
+          {upcoming.length ? <div className="space-y-3">{upcoming.slice(0, 3).map((session) => <div key={session.id} className="session-tile"><p className="text-sm font-bold">{session.title}</p><p className="mt-1 text-xs text-muted-foreground">با {session.mentor.name}</p><p className="mt-3 text-xs text-primary">{faDateTime(session.startTime)}</p></div>)}</div> : <p className="py-8 text-center text-sm text-muted-foreground">جلسه‌ای برنامه‌ریزی نشده است.</p>}
+          <Button variant="outline" className="mt-4 w-full" onClick={() => goStudent("sessions")}>تقویم جلسات</Button>
+        </CardContent></Card>
+        {data.report && <Card className="xl:col-span-3"><CardContent className="flex flex-wrap items-center gap-4 p-5"><span className="dashboard-list-icon"><Users className="size-4" /></span><div className="min-w-0 flex-1"><p className="text-sm font-bold">گزارش منتور · {data.report.weekLabel}</p><p className="mt-1 text-xs leading-6 text-muted-foreground">{data.report.summary}</p></div><span className="dashboard-pill">پیشرفت {faNum(data.report.progress)}٪</span></CardContent></Card>}
       </div>
     </div>
   );
@@ -1610,6 +1501,7 @@ function CertificatesView() {
 
 function ProfileView() {
   const user = useApp((s) => s.user);
+  const setUser = useApp((s) => s.setUser);
   const { data, loading } = useFetch<DashData>("/api/student?view=dashboard");
   const { toast } = useToast();
   const [form, setForm] = useState({ name: user?.name || "", email: user?.email || "", bio: user?.bio || "" });
@@ -1618,7 +1510,8 @@ function ProfileView() {
   const save = async () => {
     setSaving(true);
     try {
-      await apiPost("/api/auth", { action: "update-profile", ...form });
+      const result = await apiPost<{ user: NonNullable<typeof user> }>("/api/auth", { action: "update-profile", ...form });
+      setUser(result.user, useApp.getState().unreadNotifications, useApp.getState().unreadMessages);
       toast({ title: "پروفایل به‌روزرسانی شد ✅" });
     } catch (e) {
       toast({ title: "خطا", description: (e as Error).message, variant: "destructive" });
@@ -1631,22 +1524,14 @@ function ProfileView() {
 
   return (
     <div className="space-y-6">
-      <Card className="border-border bg-card">
-        <CardContent className="flex flex-wrap items-center gap-6 p-6">
-          <Avatar className="size-20 ring-4 ring-primary/30">
-            <AvatarFallback className="bg-primary/15 text-2xl font-extrabold text-primary">{user?.name?.charAt(0)}</AvatarFallback>
-          </Avatar>
-          <div className="space-y-1">
-            <p className="text-xl font-extrabold">{user?.name}</p>
-            <p dir="ltr" className="text-sm text-muted-foreground">{toFa(user?.phone)}</p>
-            <div className="flex gap-4 pt-2 text-xs text-muted-foreground">
-              <span>📚 {faNum(data.enrollments.length)} دوره</span>
-              <span>📈 {faNum(data.stats.totalTrades)} معامله</span>
-              <span>🏆 {faNum(data.certificates.length)} گواهینامه</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="profile-cover overflow-hidden rounded-2xl border border-white/10">
+        <div className="profile-banner"><span>MY PROFILE <span className="text-primary">/</span> D.SAFARA</span></div>
+        <div className="flex flex-wrap items-end justify-between gap-5 px-6 pb-6">
+          <div className="flex items-end gap-4"><Avatar className="-mt-10 size-24 border-4 border-[#101820] ring-1 ring-primary/40"><AvatarFallback className="bg-[#1c3d37] text-3xl font-black text-primary">{user?.name?.charAt(0)}</AvatarFallback></Avatar><div><p className="text-xl font-black">{user?.name}</p><p className="mt-1 text-xs text-muted-foreground">{user?.role === "MENTOR" ? "منتور آکادمی" : "دانشجوی آکادمی"} · <span dir="ltr">{toFa(user?.phone)}</span></p></div></div>
+          <span className="dashboard-pill">حساب کاربری فعال</span>
+        </div>
+        <div className="grid grid-cols-3 border-t border-white/5 text-center"><div className="p-4"><p className="text-xl font-black">{faNum(data.enrollments.length)}</p><p className="mt-1 text-xs text-muted-foreground">دوره‌ها</p></div><div className="border-x border-white/5 p-4"><p className="text-xl font-black">{faNum(data.stats.totalTrades)}</p><p className="mt-1 text-xs text-muted-foreground">معاملات</p></div><div className="p-4"><p className="text-xl font-black">{faNum(data.certificates.length)}</p><p className="mt-1 text-xs text-muted-foreground">گواهینامه‌ها</p></div></div>
+      </div>
 
       <Card className="border-border bg-card">
         <CardContent className="space-y-4 p-6">

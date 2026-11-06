@@ -781,143 +781,23 @@ export function HomePage() {
 
   return (
     <main>
-      {/* ================= HERO — cinematic image + floating glass stack ================= */}
-      <section className="hero-cinematic relative overflow-hidden">
+      {/* Cinematic landing, inspired by the dark fintech reference */}
+      <section className="landing-hero relative overflow-hidden">
         <HeroBackdrop />
-
-        <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-12 px-4 pb-14 pt-24 md:px-6 md:pt-28 lg:min-h-[680px] lg:grid-cols-[1.04fr_0.96fr] lg:pb-16 lg:pt-32">
-          {/* copy */}
-          <div className="max-w-xl space-y-7 xl:max-w-2xl">
-            <Reveal>
-              <span className="inline-flex items-center gap-2.5 rounded-full border border-primary/25 bg-[#101827]/60 px-4 py-2 text-xs font-semibold text-primary backdrop-blur">
-                <span className="live-dot size-2 rounded-full bg-primary" />
-                آکادمی دی‌صفارا — نسل جدید آموزش معامله‌گری
-              </span>
-            </Reveal>
-
-            <Reveal delay={90}>
-              <h1 className="text-[2.6rem] font-black leading-[1.2] md:text-6xl md:leading-[1.16] xl:text-[4.4rem]">
-                از صفر تا
-                <br />
-                <span className="text-gradient text-gradient-anim">معامله‌گر حرفه‌ای</span>
-                <br />
-                <span className="text-gradient-gold">بازارهای جهانی</span>
-              </h1>
-            </Reveal>
-
-            <Reveal delay={180}>
-              <p className="max-w-xl text-[15px] leading-8 text-foreground/75 md:text-base">
-                آموزش ساختاریافته پرایس اکشن و اسمارت مانی، منتورینگ اختصاصی با معامله‌گران واقعی،
-                ورک‌اسپیس تمرین چارت و ژورنال هوشمند معاملات — همه در یک پلتفرم.
-                نقشه راه را ما می‌چینیم؛ اجرا با شماست.
-              </p>
-            </Reveal>
-
-            <Reveal delay={260} className="flex flex-wrap items-center gap-3">
-              <Button size="lg" className="btn-gradient-lime h-13 gap-2 rounded-full px-7 text-base" onClick={startLearning}>
-                شروع یادگیری رایگان <ArrowLeft className="size-5" />
-              </Button>
-              <Button size="lg" variant="outline" className="h-13 gap-2 rounded-full border-border/80 bg-[#101827]/50 px-7 backdrop-blur" onClick={() => goPublic("paths")}>
-                <GraduationCap className="size-5 text-primary" /> مشاهده مسیرها
-              </Button>
-            </Reveal>
-
-            <Reveal delay={340} className="flex flex-wrap items-center gap-4 pt-1">
-              <div className="flex items-center gap-4">
-                <div className="flex -space-x-3 space-x-reverse">
-                  {["ع", "م", "س", "ن", "ر"].map((ch, i) => (
-                    <span
-                      key={i}
-                      className="flex size-10 items-center justify-center rounded-full border-2 border-[#101827] bg-gradient-to-br from-slate-600 to-slate-800 text-xs font-bold text-foreground"
-                      style={{ zIndex: 5 - i }}
-                    >
-                      {ch}
-                    </span>
-                  ))}
-                  <span className="flex size-10 items-center justify-center rounded-full border-2 border-[#101827] bg-primary text-[10px] font-black text-primary-foreground">
-                    +{faNum(12400)}
-                  </span>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="size-3.5 fill-amber-400 text-amber-400" />
-                    ))}
-                    <span className="mr-1 text-xs font-bold">{faNum(4.9, 1)}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">رضایت بیش از {faNum(12400)} دانشجوی فعال</p>
-                </div>
-              </div>
-            </Reveal>
-
-            <Reveal delay={400} className="flex flex-wrap gap-2.5">
-              {[
-                { icon: BadgeCheck, text: "دسترسی مادام‌العمر" },
-                { icon: ShieldCheck, text: "ضمانت ۷ روزه بازگشت" },
-                { icon: Headphones, text: "پشتیبانی منتور" },
-              ].map((c) => (
-                <span key={c.text} className="glass flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-medium text-foreground/85">
-                  <c.icon className="size-3.5 text-primary" /> {c.text}
-                </span>
-              ))}
-            </Reveal>
-          </div>
-
-          {/* floating glass stack — global gold live */}
-          <div className="relative mx-auto w-full max-w-[360px] lg:max-w-sm">
-            <Reveal delay={280} className="hero-visual-in relative">
-              <div className="relative">
-                <div className="absolute -inset-8 rounded-[3rem] bg-amber-400/8 blur-3xl" aria-hidden />
-                <GoldLiveCard className="float-card relative" />
-
-                {/* floating chips — corners only, never over live numbers */}
-                <div className="float-card-2 absolute -left-8 -top-9 hidden items-center gap-2.5 glass-strong rounded-2xl px-3.5 py-2.5 shadow-xl sm:flex">
-                  <span className="icon-orb size-9 bg-primary/15 text-primary">
-                    <ArrowUpRight className="size-4.5" />
-                  </span>
-                  <span className="leading-tight">
-                    <span className="block text-[10px] text-muted-foreground">آموزش، تمرین، پیشرفت</span>
-                    <span className="block text-sm font-black text-primary">مسیر حرفه‌ای</span>
-                  </span>
-                </div>
-
-                <div className="float-card absolute -bottom-10 -right-7 hidden items-center gap-2.5 glass-strong rounded-2xl px-3.5 py-2.5 shadow-xl sm:flex" style={{ animationDelay: "-2.4s" }}>
-                  <span className="icon-orb size-9 bg-amber-400/15 text-amber-400">
-                    <Wallet className="size-4.5" />
-                  </span>
-                  <span className="leading-tight">
-                    <span className="block text-[10px] text-muted-foreground">کنار شما در مسیر یادگیری</span>
-                    <span className="block text-sm font-black text-gradient-gold">منتورینگ اختصاصی</span>
-                  </span>
-                </div>
-              </div>
-            </Reveal>
-          </div>
+        <div className="landing-grid relative z-10 mx-auto max-w-7xl px-4 pb-12 pt-20 text-center md:px-6 md:pt-28">
+          <Reveal><span className="landing-kicker"><Sparkles className="size-3.5" /> آکادمی هوشمند معامله‌گری</span></Reveal>
+          <Reveal delay={80}><h1 className="mx-auto mt-6 max-w-4xl text-[2.65rem] font-black leading-[1.35] md:text-6xl md:leading-[1.3] xl:text-7xl">مسیر حرفه‌ای تو در<br /><span className="landing-gradient">بازارهای جهانی</span> از اینجاست</h1></Reveal>
+          <Reveal delay={160}><p className="mx-auto mt-6 max-w-2xl text-sm leading-8 text-slate-300/80 md:text-base">آموزش عمیق، تمرین روی چارت و همراهی منتور؛ همه ابزارهایی که برای ساختن مسیر معامله‌گری خود نیاز داری، در یک فضای یکپارچه.</p></Reveal>
+          <Reveal delay={240} className="mt-8 flex flex-wrap justify-center gap-3"><Button size="lg" className="landing-primary h-12 rounded-full px-8 font-bold" onClick={startLearning}>شروع مسیر یادگیری <ArrowLeft className="size-4" /></Button><Button size="lg" variant="outline" className="h-12 rounded-full border-white/15 bg-black/30 px-7" onClick={() => goPublic("paths")}><PlayCircle className="size-4" /> آشنایی با مسیرها</Button></Reveal>
+          <Reveal delay={320} className="mt-9 flex flex-wrap justify-center gap-x-8 gap-y-3 text-xs text-slate-300"><span>✦ آموزش گام‌به‌گام</span><span>✦ تمرین و تحلیل چارت</span><span>✦ همراهی منتور</span></Reveal>
+          <Reveal delay={400} className="landing-preview mx-auto mt-16 max-w-5xl text-right">
+            <div className="preview-top"><span className="preview-brand"><span className="preview-mark">✳</span> D.SAFARA</span><div className="hidden gap-8 text-[11px] text-slate-400 md:flex"><span className="text-white">نمای کلی</span><span>دوره‌ها</span><span>ژورنال</span><span>منتورینگ</span></div><span className="preview-demo">نمایش نمونه پنل</span></div>
+            <div className="preview-body"><div className="preview-side"><div className="preview-side-title">فضای شخصی شما</div><div className="preview-side-link active"><LayoutDashboard className="size-4" /> داشبورد</div><div className="preview-side-link"><BookOpen className="size-4" /> آموزش‌ها</div><div className="preview-side-link"><ChartCandlestick className="size-4" /> فضای تحلیل</div><div className="preview-side-link"><Users className="size-4" /> منتور من</div></div><div className="preview-content"><div className="preview-heading"><div><small>خوش آمدید به دی‌صفارا</small><strong>یک قدم نزدیک‌تر به هدف</strong></div><span className="preview-demo">داشبورد آموزشی</span></div><div className="preview-cards"><div><span>مسیر یادگیری</span><b>آموزش هدفمند</b><i /></div><div><span>عملکرد معاملاتی</span><b>تحلیل و پیشرفت</b><i /></div><div><span>منتورینگ</span><b>همراهی مستمر</b><i /></div></div><div className="preview-chart"><div className="flex items-center justify-between"><strong>نمای کلی فعالیت</strong><span>گزارش تصویری</span></div><svg viewBox="0 0 700 140" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="landingChartFill" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#a4ff51" stopOpacity=".3"/><stop offset="1" stopColor="#a4ff51" stopOpacity="0"/></linearGradient></defs><path d="M0 115 L50 105 L95 110 L145 78 L195 89 L245 70 L295 80 L345 43 L395 56 L445 33 L495 48 L545 20 L595 35 L650 13 L700 22 L700 140 L0 140 Z" fill="url(#landingChartFill)"/><path d="M0 115 L50 105 L95 110 L145 78 L195 89 L245 70 L295 80 L345 43 L395 56 L445 33 L495 48 L545 20 L595 35 L650 13 L700 22" fill="none" stroke="#a4ff51" strokeWidth="2"/></svg></div></div></div>
+          </Reveal>
         </div>
-
-        <TickerBand />
       </section>
-
-      {/* ================= STATS — floating colored cards ================= */}
-      <section className="mx-auto max-w-7xl px-4 py-10 md:px-6">
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {HOME_STATS.map((s, i) => (
-            <Reveal key={s.label} delay={i * 90}>
-              <div className="card-premium hairline-top group flex h-full flex-col gap-4 rounded-[1.6rem] p-5">
-                <span className={cn("icon-orb size-12 transition-transform duration-300 group-hover:scale-110", s.orb)}>
-                  <s.icon className="size-5.5" />
-                </span>
-                <div>
-                  <p className="text-3xl font-black">
-                    <Counter value={s.value} suffix={s.suffix} />
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">{s.label}</p>
-                </div>
-                <span className={cn("mt-auto block h-1 rounded-full bg-gradient-to-l opacity-70", s.bar)} style={{ width: s.w }} aria-hidden />
-              </div>
-            </Reveal>
-          ))}
-        </div>
+      <section className="landing-features mx-auto grid max-w-7xl gap-4 px-4 py-12 md:grid-cols-3 md:px-6 md:py-16">
+        {[{ icon: BookOpen, title: "یادگیری با مسیر مشخص", text: "از مبانی تا استراتژی، با دوره‌هایی که قدم به قدم همراه تو هستند." }, { icon: ChartCandlestick, title: "تمرین در فضای واقعی بازار", text: "تحلیل، ژورنال و بررسی عملکرد خود را یک‌جا دنبال کن." }, { icon: Users, title: "همراهی منتور", text: "از تجربه منتورها برای ساختن یک مسیر شخصی استفاده کن." }].map((item) => <div key={item.title} className="landing-feature"><item.icon className="size-5 text-[#b6ff5a]" /><h3 className="mt-5 font-bold">{item.title}</h3><p className="mt-2 text-xs leading-6 text-slate-400">{item.text}</p></div>)}
       </section>
 
       {/* ================= FEATURED COURSES ================= */}

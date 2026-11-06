@@ -58,10 +58,7 @@ export function AdminApp() {
         sidebarOpen ? "translate-x-0" : "translate-x-full"
       )}>
         <div className="flex items-center justify-between border-b border-border p-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-destructive/15 text-sm font-extrabold text-destructive ring-1 ring-destructive/40">ادمین</div>
-            <div className="leading-tight"><p className="text-sm font-extrabold">پنل مدیریت</p><p className="text-[10px] text-muted-foreground">D.SAFARA ADMIN</p></div>
-          </div>
+          <Logo small showText />
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(false)} aria-label="بستن">✕</Button>
         </div>
         <ScrollArea className="flex-1 p-3">
@@ -146,16 +143,13 @@ type OverviewData = {
 function AdminOverview() {
   const { data, loading } = useFetch<OverviewData>("/api/admin?view=overview");
   const goAdmin = useApp((s) => s.goAdmin);
+  const [period, setPeriod] = useState<3 | 6>(6);
   if (loading || !data) return <GridSkeleton cols={2} count={4} />;
   const s = data.stats;
 
   return (
     <div className="space-y-6">
-      <div className="dashboard-welcome rounded-2xl p-6 md:p-8">
-        <p className="text-xs font-bold text-primary">مرکز مدیریت / نمای کلی</p>
-        <h1 className="mt-3 text-2xl font-black">تصویر روشن‌تری از کسب‌وکار</h1>
-        <p className="mt-2 text-sm text-muted-foreground">عملکرد فروش، کاربران و فعالیت‌های آکادمی در یک نگاه</p>
-      </div>
+      <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="dashboard-eyebrow">داشبورد / مدیریت آکادمی</p><h1 className="mt-2 text-2xl font-black md:text-3xl">نمای کلی کسب‌وکار</h1><p className="mt-2 text-sm text-muted-foreground">عملکرد فروش، کاربران و فعالیت‌های آکادمی در یک نگاه</p></div><span className="dashboard-pill">اطلاعات ثبت‌شده در سیستم</span></div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard title="درآمد کل" value={faCompact(s.revenue) + " تومان"} accent="text-primary" icon={<Landmark className="size-5" />} sub="مجموع سفارش‌های موفق" />
         <StatCard title="درآمد این ماه" value={faToman(s.monthRevenue)} icon={<CreditCard className="size-5" />} sub={`${faNum(s.totalOrders)} سفارش موفق`} />
@@ -173,8 +167,8 @@ function AdminOverview() {
       <div className="grid gap-5 xl:grid-cols-3">
         <Card className="border-border bg-card xl:col-span-2">
           <CardContent className="space-y-3 p-6">
-            <p className="font-bold">روند درآمد ۶ ماه اخیر (تومان)</p>
-            <RevenueAreaChart data={data.revenueByMonth.map((r) => ({ label: faMonthLabel(r.month), value: r.revenue }))} />
+            <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-bold">روند درآمد</p><p className="mt-1 text-xs text-muted-foreground">سفارش‌های پرداخت‌شده · تومان</p></div><div className="flex gap-1 rounded-lg border border-white/10 p-1">{([3, 6] as const).map((n) => <button key={n} onClick={() => setPeriod(n)} className={cn("rounded-md px-3 py-1 text-xs", period === n ? "bg-primary/15 text-primary" : "text-muted-foreground")}>{faNum(n)} ماه</button>)}</div></div>
+            {data.revenueByMonth.length ? <RevenueAreaChart color="#35d4a4" data={data.revenueByMonth.slice(-period).map((r) => ({ label: faMonthLabel(r.month), value: r.revenue }))} /> : <p className="py-20 text-center text-sm text-muted-foreground">هنوز سفارشی پرداخت نشده است.</p>}
           </CardContent>
         </Card>
         <Card className="border-border bg-card">
