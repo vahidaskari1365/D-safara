@@ -687,3 +687,21 @@
 }
 
 /* palette refresh v2 */
+
+/* Dashboard surfaces inspired by modern trading terminals */
+.dashboard-shell { background: #090f18; }
+.dashboard-shell aside { background: #0b121d; }
+.dashboard-shell main { max-width: 1700px; margin-inline: auto; }
+.dashboard-shell main [data-slot="card"] {
+  background: linear-gradient(145deg, #121d2b, #0e1723);
+  border-color: rgba(151, 180, 205, .12);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, .14);
+}
+.dashboard-welcome {
+  border: 1px solid rgba(62, 216, 164, .2);
+  background: radial-gradient(ellipse at 85% 0%, rgba(28, 178, 132, .16), transparent 55%), linear-gradient(120deg, #111d2a, #101925);
+}
+.hero-cinematic { background: #071019; }
+.hero-cinematic::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 23% 50%, rgba(43, 191, 137, .1), transparent 42%); }
+.hero-market-card { background: linear-gradient(145deg, rgba(20, 33, 46, .95), rgba(8, 17, 27, .94)); border: 1px solid rgba(189, 224, 208, .18); box-shadow: 0 35px 90px rgba(0,0,0,.45), 0 0 80px rgba(27, 177, 126, .1); backdrop-filter: blur(18px); }
+@media (prefers-reduced-motion: reduce) { .hero-cinematic *, .hero-cinematic *::before, .hero-cinematic *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }
