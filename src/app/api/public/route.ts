@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { isDemoMode } from "@/lib/demo-mode";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -111,8 +112,8 @@ export async function GET(req: NextRequest) {
 
 /** POST /api/public — public forms: contact, mentoring application, job application, resource download */
 export async function POST(req: NextRequest) {
-  // Public submissions cannot be safely acknowledged while storage is volatile.
-  if (process.env.NODE_ENV === "production") return NextResponse.json({ error: "ثبت درخواست واقعی هنوز پیکربندی نشده است." }, { status: 503 });
+  // Volatile submissions are allowed only in the explicitly labelled demo.
+  if (!isDemoMode()) return NextResponse.json({ error: "ثبت درخواست واقعی هنوز پیکربندی نشده است." }, { status: 503 });
   const body = await req.json().catch(() => ({}));
   const action = body.action as string;
 

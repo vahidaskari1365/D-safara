@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { createSession, getSessionUser, revokeSession, SESSION_COOKIE, SESSION_MAX_AGE } from "@/lib/session";
 import { randomInt } from "node:crypto";
+import { isDemoMode } from "@/lib/demo-mode";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -8,14 +9,14 @@ export const dynamic = "force-dynamic";
 /** GET /api/auth -> current session user */
 export async function GET() {
   const user = await getSessionUser();
-  if (!user) return NextResponse.json({ user: null });
+  if (!user) return NextResponse.json({ user: null, demoMode: isDemoMode() });
   const unreadNotifications = await db.notification.count({
     where: { userId: user.id, isRead: false },
   });
   const unreadMessages = await db.message.count({
     where: { receiverId: user.id, readAt: null },
   });
-  return NextResponse.json({ user, unreadNotifications, unreadMessages });
+  return NextResponse.json({ user, unreadNotifications, unreadMessages, demoMode: isDemoMode() });
 }
 
 /**
@@ -26,8 +27,21 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const action = body.action as string;
 
-  if ((action === "request-otp" || action === "verify-otp") && process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "ورود واقعی هنوز پیکربندی نشده است؛ کد نمایشی در محیط عملیاتی غیرفعال است." }, { status: 503 });
+  if (["request-otp", "verify-otp", "demo-login"].includes(action) && !isDemoMode()) {
+    return NextResponse.json({ error: "ورود واقعی هنوز پیکربندی نشده و حالت نمایشی فعال نیست." }, { status: 503 });
+  }
+
+  if (action === "demo-login") {
+    const demoUsers = new Map([["student", "u_student"], ["mentor", "u_mentor1"], ["admin", "u_admin"]]);
+    const id = typeof body.role === "string" ? demoUsers.get(body.role) : undefined;
+    if (!id) return NextResponse.json({ error: "نقش نمایشی معتبر نیست" }, { status: 400 });
+    const user = await db.user.findUnique({ where: { id }, select: { id: true, name: true, phone: true, role: true, avatar: true, email: true, bio: true, isActive: true } });
+    if (!user || !user.isActive) return NextResponse.json({ error: "حساب نمایشی در دسترس نیست" }, { status: 404 });
+    revokeSession(req.cookies.get(SESSION_COOKIE)?.value);
+    const { isActive: _isActive, ...publicUser } = user;
+    const res = NextResponse.json({ ok: true, user: publicUser, demo: true });
+    res.cookies.set(SESSION_COOKIE, createSession(user.id), { httpOnly: true, sameSite: "lax", path: "/", maxAge: SESSION_MAX_AGE, secure: process.env.NODE_ENV === "production" });
+    return res;
   }
 
   if (action === "request-otp") {
