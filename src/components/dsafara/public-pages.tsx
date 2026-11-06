@@ -1159,7 +1159,7 @@ export function CartPage() {
                     </div>
                   </div>
                   <Button className="w-full glow-accent" size="lg" onClick={checkout}>ادامه و پرداخت</Button>
-                  <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground"><ShieldCheck className="size-4 shrink-0 text-primary" /> پرداخت امن از طریق درگاه بانکی</p>
+                  <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground"><ShieldCheck className="size-4 shrink-0 text-primary" /> پرداخت واقعی هنوز فعال نیست؛ این بخش در محیط توسعه آزمایشی است</p>
                 </div>
               </Reveal>
             </div>
@@ -1208,7 +1208,7 @@ export function CheckoutPage({ orderId }: { orderId: string }) {
           <div className={cn("mx-auto flex size-20 items-center justify-center rounded-full", result.ok ? "glow-ring bg-primary/15 text-primary" : "bg-destructive/15 text-destructive")}>
             {result.ok ? <CheckCircle2 className="size-10" /> : <XCircle className="size-10" />}
           </div>
-          <h1 className="text-2xl font-black">{result.ok ? "پرداخت با موفقیت انجام شد" : "پرداخت ناموفق بود"}</h1>
+          <h1 className="text-2xl font-black">{result.ok ? "پرداخت آزمایشی ثبت شد" : "پرداخت ناموفق بود"}</h1>
           <p className="text-sm leading-7 text-muted-foreground">{result.message}</p>
           {result.refId && <p className="mx-auto w-fit rounded-xl bg-muted px-4 py-2 text-sm">شماره پیگیری: <span dir="ltr" className="font-black">{toFa(result.refId)}</span></p>}
           <div className="flex flex-col justify-center gap-3 sm:flex-row">
@@ -1236,7 +1236,7 @@ export function CheckoutPage({ orderId }: { orderId: string }) {
                 <div className="space-y-3">
                   <p className="font-black">درگاه پرداخت</p>
                   <div className="flex items-center justify-between gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-4">
-                    <span className="flex items-center gap-2 text-sm"><Wallet className="size-5 shrink-0 text-primary" /> درگاه بانکی (زرین‌پال)</span>
+                    <span className="flex items-center gap-2 text-sm"><Wallet className="size-5 shrink-0 text-primary" /> درگاه آزمایشی (بدون پرداخت واقعی)</span>
                     <span className="flex items-center gap-1.5 rounded-lg bg-primary/15 px-2 py-1 text-xs font-bold text-primary">
                       <span className="live-dot size-1.5 rounded-full bg-primary" aria-hidden /> فعال
                     </span>
@@ -1269,7 +1269,7 @@ export function CheckoutPage({ orderId }: { orderId: string }) {
                   <span>مبلغ قابل پرداخت</span>
                   <span className="text-primary">{faToman(total)}</span>
                 </div>
-                <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground"><ShieldCheck className="size-4 shrink-0 text-primary" /> پرداخت امن از طریق درگاه بانکی</p>
+                <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground"><ShieldCheck className="size-4 shrink-0 text-primary" /> پرداخت واقعی هنوز فعال نیست؛ این بخش در محیط توسعه آزمایشی است</p>
               </div>
             </Reveal>
           </div>

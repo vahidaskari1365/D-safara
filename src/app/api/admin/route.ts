@@ -154,7 +154,7 @@ export async function GET(req: NextRequest) {
     const commissions = await db.commission.findMany({ include: { mentor: userBrief }, orderBy: { createdAt: "desc" } });
     const plans = await db.mentoringPlan.findMany();
     const planRequests = await db.mentoringPlanEnrollment.findMany({
-      include: { plan: true, mentor: userBrief }, orderBy: { createdAt: "desc" },
+      include: { plan: true, mentor: userBrief, user: userBrief }, orderBy: { createdAt: "desc" },
     });
     return NextResponse.json({ mentors, commissions, plans, planRequests });
   }

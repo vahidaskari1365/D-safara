@@ -1,5 +1,6 @@
-import { db, provisionDemoData } from "@/lib/db";
-import { getSessionUser, SESSION_COOKIE } from "@/lib/session";
+import { db } from "@/lib/db";
+import { createSession, getSessionUser, revokeSession, SESSION_COOKIE, SESSION_MAX_AGE } from "@/lib/session";
+import { randomInt } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -25,27 +26,34 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const action = body.action as string;
 
+  if ((action === "request-otp" || action === "verify-otp") && process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "ورود واقعی هنوز پیکربندی نشده است؛ کد نمایشی در محیط عملیاتی غیرفعال است." }, { status: 503 });
+  }
+
   if (action === "request-otp") {
-    const phone: string = (body.phone || "").replace(/\s/g, "");
+    const phone: string = typeof body.phone === "string" ? body.phone.replace(/\s/g, "") : "";
     if (!/^09\d{9}$/.test(phone)) {
       return NextResponse.json({ error: "شماره موبایل معتبر نیست (مثال: 09123456789)" }, { status: 400 });
     }
-    const code = String(Math.floor(100000 + Math.random() * 900000));
+    const recent = await db.otpCode.findFirst({ where: { phone }, orderBy: { createdAt: "desc" } });
+    if (recent && Date.now() - recent.createdAt.getTime() < 30_000) return NextResponse.json({ error: "برای درخواست مجدد کمی صبر کنید." }, { status: 429 });
+    await db.otpCode.updateMany({ where: { phone, used: false }, data: { used: true } });
+    const code = String(randomInt(100000, 1000000));
     await db.otpCode.create({
       data: { phone, code, expiresAt: new Date(Date.now() + 3 * 60000) },
     });
     // Demo mode: return the code so it can be shown in the UI (no SMS gateway in sandbox)
-    return NextResponse.json({ ok: true, devCode: code, message: "کد تایید ارسال شد" });
+    return NextResponse.json({ ok: true, devCode: code, message: "کد آزمایشی تولید شد؛ پیامکی ارسال نشده است." });
   }
 
   if (action === "verify-otp") {
-    const phone: string = (body.phone || "").replace(/\s/g, "");
-    const code: string = String(body.code || "");
-    const otp = await db.otpCode.findFirst({
-      where: { phone, code, used: false, expiresAt: { gt: new Date() } },
-      orderBy: { createdAt: "desc" },
-    });
-    if (!otp) {
+    const phone = typeof body.phone === "string" ? body.phone.replace(/\s/g, "") : "";
+    const code = String(body.code || "");
+    if (!/^09\d{9}$/.test(phone) || !/^\d{6}$/.test(code)) return NextResponse.json({ error: "شماره یا کد معتبر نیست" }, { status: 400 });
+    const otp = await db.otpCode.findFirst({ where: { phone, used: false, expiresAt: { gt: new Date() } }, orderBy: { createdAt: "desc" } });
+    if (!otp || (otp.attempts || 0) >= 5) return NextResponse.json({ error: "کد وارد شده اشتباه یا منقضی شده است" }, { status: 400 });
+    if (otp.code !== code) {
+      await db.otpCode.update({ where: { id: otp.id }, data: { attempts: { increment: 1 } } });
       return NextResponse.json({ error: "کد وارد شده اشتباه یا منقضی شده است" }, { status: 400 });
     }
     await db.otpCode.update({ where: { id: otp.id }, data: { used: true } });
@@ -60,8 +68,6 @@ export async function POST(req: NextRequest) {
       await db.notification.create({
         data: { userId: user.id, title: "به دی‌صفارا خوش آمدید 🎉", body: "مسیر یادگیری خود را شروع کنید؛ اولین درس هر دوره رایگان است." },
       });
-      // Demo mode: seed a lively starter dataset for the new user (journal, exercises, session…)
-      provisionDemoData(user.id);
     }
 
     const res = NextResponse.json({
@@ -69,18 +75,20 @@ export async function POST(req: NextRequest) {
       isNew,
       user: { id: user.id, name: user.name, phone: user.phone, role: user.role, avatar: user.avatar },
     });
-    res.cookies.set(SESSION_COOKIE, user.id, {
+    res.cookies.set(SESSION_COOKIE, createSession(user.id), {
       httpOnly: true,
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 30,
+      maxAge: SESSION_MAX_AGE,
+      secure: process.env.NODE_ENV === "production",
     });
     return res;
   }
 
   if (action === "logout") {
+    revokeSession(req.cookies.get(SESSION_COOKIE)?.value);
     const res = NextResponse.json({ ok: true });
-    res.cookies.set(SESSION_COOKIE, "", { httpOnly: true, path: "/", maxAge: 0 });
+    res.cookies.set(SESSION_COOKIE, "", { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 0 });
     return res;
   }
 
