@@ -229,8 +229,13 @@ export async function POST(req: NextRequest) {
   if (!admin) return NextResponse.json({ error: "دسترسی فقط برای مدیر سیستم" }, { status: 403 });
   const body = await req.json().catch(() => ({}));
   const action = body.action as string;
-  const log = (act: string, entity: string, detail?: string) =>
-    db.auditLog.create({ data: { actorName: admin.name || "مدیر", action: act, entity, detail: detail || null } }).catch(() => null);
+  const log = async (act: string, entity: string, detail?: string) => {
+    try {
+      await Promise.resolve(db.auditLog.create({ data: { actorName: admin.name || "مدیر", action: act, entity, detail: detail || null } }));
+    } catch {
+      /* audit log must never break the request */
+    }
+  };
 
   if (action === "create-course") {
     const slug = `course-${Date.now().toString().slice(-6)}`;

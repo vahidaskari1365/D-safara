@@ -150,7 +150,11 @@ export async function POST(req: NextRequest) {
 
   if (action === "download-resource") {
     const id = body.id as string;
-    await db.freeResource.update({ where: { id }, data: { downloads: { increment: 1 } } }).catch(() => null);
+    try {
+      await Promise.resolve(db.freeResource.update({ where: { id }, data: { downloads: { increment: 1 } } }));
+    } catch {
+      /* demo download counter — never break the response */
+    }
     return NextResponse.json({ ok: true, message: "لینک دانلود برای شما ارسال شد (نسخه نمایشی)." });
   }
 
